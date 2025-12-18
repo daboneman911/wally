@@ -727,7 +727,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.16</div> <!-- UPDATED: Changed from 3.15 to 3.16 -->
+            <div class="app-version">Version 3.21</div> <!-- UPDATED to 3.21 -->
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1145,6 +1145,18 @@
     </div>
 </div>
 
+<!-- DUPLICATE WALLY MODAL (NEW) -->
+<div class="modal-overlay" id="duplicate-wally-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Duplicate Wally Detected</h2>
+        <p style="text-align:center; color:#757575; margin-bottom:25px; padding: 0 10px;">
+            Wally <span id="duplicate-wally-id"></span> has already been completed during this shift. This will be marked as a duplicate in the logs.
+        </p>
+        <button class="btn-primary" onclick="continueWithDuplicate()">Continue Anyway</button>
+        <button class="btn-cancel" onclick="closeModal('duplicate-wally-modal')" style="margin-top:10px;">Cancel</button>
+    </div>
+</div>
+
 <!-- INBOUND FORM -->
 <div class="modal-overlay" id="input-modal">
     <div class="modal-sheet">
@@ -1279,20 +1291,10 @@
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Log Entry</h2>
         <input type="hidden" id="edit-log-index">
         
-        .type-selector {
-            display: flex; background: #f2f2f7; padding: 5px;
-            border-radius: 16px; margin-bottom: 25px;
-        }
-
-        .type-opt {
-            flex: 1; text-align: center; padding: 12px;
-            border-radius: 12px; font-weight: 700; font-size: 15px;
-            color: var(--text-sub); cursor: pointer;
-        }
-
-        .type-opt.selected {
-            background: white; color: #000; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+        <div class="type-selector">
+            <div class="type-opt selected" id="edit-opt-wally" onclick="setEditType('Wally')">Wally</div>
+            <div class="type-opt" id="edit-opt-cpu" onclick="setEditType('CPU')">CPU (53')</div>
+        </div>
 
         <div style="margin-bottom:15px;">
             <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">ID / Trailer #</label>
@@ -1311,14 +1313,16 @@
 
 <script>
     // --- GLOBAL VARIABLES ---
-    let demoActive = false; // Added missing variable
+    let demoActive = false;
+    let duplicateWallyFlag = false;
+    let pendingWallyDuplicate = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         init();
     });
 
     // --- CONFIG ---
-    const APP_VERSION = '3.16';
+    const APP_VERSION = '3.21'; // UPDATED to 3.21
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H"];
@@ -1471,6 +1475,42 @@
             }
             
             badge.style.display = 'flex';
+        }
+    }
+    
+    // --- DUPLICATE WALLY CHECK ---
+    function checkDuplicateWally(wallyId) {
+        const { shiftStart } = getShiftTimeWindows();
+        const shiftStartTime = shiftStart.getTime();
+        const now = Date.now();
+        
+        // Check if this Wally ID has been completed during the current shift
+        return historyLog.some(log => 
+            log.type === 'Wally' && 
+            log.id === wallyId && 
+            log.end >= shiftStartTime &&
+            log.end <= now
+        );
+    }
+    
+    function continueWithDuplicate() {
+        closeModal('duplicate-wally-modal');
+        if (pendingWallyDuplicate) {
+            const { doorNum, wallyId, unloader } = pendingWallyDuplicate;
+            doors[doorNum] = {
+                status: 'active', 
+                start: Date.now(), 
+                id: wallyId, 
+                account: "", 
+                type: 'Wally', 
+                unloader: unloader,
+                isDuplicate: true
+            };
+            saveData(); 
+            closeModal('input-modal'); 
+            renderDashboard();
+            updateTabBadges();
+            pendingWallyDuplicate = null;
         }
     }
     
@@ -1684,11 +1724,31 @@
         }
     }
     
+    function getTopThreeStaff() {
+        const now = Date.now();
+        const allStaffWithHours = staffing.map(s => {
+            let totalMs = s.accumulated || 0;
+            if (s.status === 'active' && s.start) {
+                totalMs += (now - s.start);
+            }
+            return { ...s, totalHours: totalMs / 3600000 };
+        });
+        
+        // Sort by total hours descending
+        allStaffWithHours.sort((a, b) => b.totalHours - a.totalHours);
+        
+        return allStaffWithHours.slice(0, 3);
+    }
+    
     function renderStaffingView() {
         const activeList = document.getElementById('staff-list-active');
         const cutList = document.getElementById('staff-list-cut');
         activeList.innerHTML = '';
         cutList.innerHTML = '';
+        
+        // Get top three staff by total hours
+        const topThree = getTopThreeStaff();
+        const topThreeIds = topThree.map(s => s.id);
         
         // Sorting logic
         const now = Date.now();
@@ -1698,17 +1758,16 @@
             const durB = (b.accumulated || 0) + (b.status === 'active' ? (now - b.start) : 0);
             return durB - durA;
         });
-        
-        const beltTenderId = activeStaff.length > 0 ? activeStaff[0].id : null;
-        const sweepIds = [];
-        if(activeStaff.length > 1) sweepIds.push(activeStaff[1].id);
-        if(activeStaff.length > 2) sweepIds.push(activeStaff[2].id);
 
         // Build Active List
         activeStaff.forEach(s => {
+             // Determine emoji based on position in top three
              let suggestionBadge = '';
-             if(s.id === beltTenderId) suggestionBadge = '👑'; 
-             else if(sweepIds.includes(s.id)) suggestionBadge = '🧹'; 
+             if (topThreeIds.includes(s.id)) {
+                 const position = topThreeIds.indexOf(s.id);
+                 if (position === 0) suggestionBadge = '👑'; // Crown for #1
+                 else if (position === 1 || position === 2) suggestionBadge = '🧹'; // Broom for #2 and #3
+             }
              
              const isPaused = s.status === 'paused';
              const pauseBtnIcon = isPaused ? 'ph-play' : 'ph-pause';
@@ -1764,11 +1823,20 @@
         cutStaffList.forEach(s => {
              const totalMs = (s.accumulated || 0); 
              const hrs = totalMs / 3600000;
+             
+             // Check if cut staff is in top three
+             let suggestionBadge = '';
+             if (topThreeIds.includes(s.id)) {
+                 const position = topThreeIds.indexOf(s.id);
+                 if (position === 0) suggestionBadge = '👑';
+                 else if (position === 1 || position === 2) suggestionBadge = '🧹';
+             }
+             
              const div = document.createElement('div');
              div.className = 'staff-card cut';
              div.innerHTML = `
                 <div>
-                    <div class="staff-name">${s.name} • ${s.role}</div>
+                    <div class="staff-name">${s.name} ${suggestionBadge} • ${s.role}</div>
                     <div class="staff-time">Ended: ${new Date(s.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -2133,7 +2201,8 @@
             end: end,
             duration: end - start,
             statOffset: statOffset, // Store offset to calculate "Effective Time" for stats
-            logId: Date.now() + Math.random().toString(36).substring(2, 9) 
+            logId: Date.now() + Math.random().toString(36).substring(2, 9),
+            duplicate: d.isDuplicate || false // Mark as duplicate if applicable
         });
 
         if (d.type === 'Wally' && navigator.share && !demoActive) {
@@ -2317,8 +2386,26 @@
         
         if(!idVal || !unl) return alert("Missing info");
         
+        // Check for duplicate Wally
+        if (currentType === 'Wally' && checkDuplicateWally(idVal)) {
+            pendingWallyDuplicate = {
+                doorNum: currentDoor,
+                wallyId: idVal,
+                unloader: unl
+            };
+            document.getElementById('duplicate-wally-id').textContent = idVal;
+            document.getElementById('duplicate-wally-modal').style.display = 'flex';
+            return;
+        }
+        
         doors[currentDoor] = {
-            status: 'active', start: Date.now(), id: idVal, account: accVal, type: currentType, unloader: unl
+            status: 'active', 
+            start: Date.now(), 
+            id: idVal, 
+            account: accVal, 
+            type: currentType, 
+            unloader: unl,
+            isDuplicate: false
         };
         saveData(); closeModal('input-modal'); renderDashboard();
         updateTabBadges(); // Update badges after new arrival
@@ -2524,10 +2611,16 @@
              const badgeColor = '#000';
              const acctInfo = l.account ? ` <span style="color:#8e8e93; font-weight:400">(${l.account})</span>` : '';
              const revertable = (now - l.end) < (120000);
+             const duplicateBadge = l.duplicate ? '<span class="log-type-pill" style="background:#ff3b30; color:#fff; margin-left:6px;">DUP</span>' : '';
+             
              list.innerHTML += `
                 <div class="log-card">
                     <div class="log-info">
-                        <div class="active-card-header"><span class="log-door-pill" onclick="viewDoorLogs(${l.door})">Door ${l.door}</span><span class="log-type-pill" style="background:${badgeColor}; color:#fff">${l.type}</span></div>
+                        <div class="active-card-header">
+                            <span class="log-door-pill" onclick="viewDoorLogs(${l.door})">Door ${l.door}</span>
+                            <span class="log-type-pill" style="background:${badgeColor}; color:#fff">${l.type}</span>
+                            ${duplicateBadge}
+                        </div>
                         <div class="log-title">${l.id}${acctInfo}</div>
                         <div class="log-details">${l.unloader}</div>
                         <div class="log-timestamp">${new Date(l.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
@@ -2585,9 +2678,9 @@
     
     function exportLogsCSV() {
         closeModal('export-modal');
-        let csv = "Type,ID,Account,Door,Unloader,Duration,StartTime,EndTime\n";
+        let csv = "Type,ID,Account,Door,Unloader,Duration,StartTime,EndTime,Duplicate\n";
         historyLog.forEach(l => {
-             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.floor(l.duration/60000)}m,${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()}\n`;
+             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.floor(l.duration/60000)}m,${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${l.duplicate ? 'Yes' : 'No'}\n`;
         });
         const blob = new Blob([csv], {type:'text/csv'});
         const url = window.URL.createObjectURL(blob);
@@ -2648,7 +2741,7 @@
             const logsBody = historyLog.map(l => [
                 new Date(l.end).toLocaleTimeString(),
                 l.door,
-                l.type,
+                l.type + (l.duplicate ? ' (DUP)' : ''),
                 l.id,
                 l.unloader,
                 Math.floor(l.duration/60000) + "m"
@@ -2767,4 +2860,3 @@
 </script>
 </body>
 </html>
-```
