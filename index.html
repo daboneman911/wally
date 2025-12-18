@@ -221,6 +221,7 @@
             height: 60px;
             border-radius: 50%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-size: 20px;
@@ -233,6 +234,16 @@
         }
 
         .bay-circle:active { transform: scale(0.92); }
+        
+        .bay-circle.unavailable {
+            background-color: #8e8e93 !important;
+            opacity: 0.5;
+            color: #666;
+        }
+        
+        .bay-circle.unavailable .bay-timer {
+            color: #666;
+        }
 
         .bay-9 { background-color: var(--bay-green); }
         .bay-10 { background-color: var(--bay-purple); }
@@ -261,7 +272,20 @@
         }
         
         .badge-w { background-color: #000; }
-        .badge-c { background-color: #000; } 
+        .badge-c { background-color: #000; }
+        
+        .bay-timer {
+            position: absolute;
+            bottom: -5px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1px 4px;
+            border-radius: 4px;
+            min-width: 20px;
+            text-align: center;
+        }
 
         /* --- ACTIVE TAB LIST --- */
         .active-tab-list { display: flex; flex-direction: column; gap: 15px; }
@@ -727,7 +751,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.21</div> <!-- UPDATED to 3.21 -->
+            <div class="app-version">Version 3.3</div> <!-- UPDATED to 3.3 -->
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1027,7 +1051,7 @@
     <button class="tab-btn" onclick="switchTab('logs', this)" id="tab-btn-logs">
         <i class="ph ph-list-dashes"></i>
         <span>Logs</span>
-        <span class="tab-badge" id="badge-logs">0</span>
+        <!-- REMOVED: Badge on logs tab -->
     </button>
     <button class="tab-btn" onclick="switchTab('staffing', this)" id="tab-btn-staffing">
         <i class="ph ph-users"></i>
@@ -1316,16 +1340,19 @@
     let demoActive = false;
     let duplicateWallyFlag = false;
     let pendingWallyDuplicate = null;
+    let firstCompletionTime = null;
+    let touchStartTime = {};
+    let touchTimeout = {};
 
     document.addEventListener('DOMContentLoaded', () => {
         init();
     });
 
     // --- CONFIG ---
-    const APP_VERSION = '3.21'; // UPDATED to 3.21
+    const APP_VERSION = '3.3'; // UPDATED to 3.3
     const DOORS_START = 9;
     const DOORS_END = 16;
-    const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H"];
+    const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"]; // ADDED Fonseca J
     
     // --- STATE ---
     let doors = {};
@@ -1368,12 +1395,13 @@
         const sAccts = localStorage.getItem('ps9_accounts');
         const sStaff = localStorage.getItem('ps9_staffing');
         const sDop = localStorage.getItem('ps9_dop');
+        const sFirstCompletion = localStorage.getItem('ps9_first_completion');
         const shiftStart = localStorage.getItem('ps9_shift_start') || "19:55";
 
         if (sDoors) doors = JSON.parse(sDoors);
         else {
             for(let i=DOORS_START; i<=DOORS_END; i++) {
-                doors[i] = { status: 'empty', start: 0, id: '', type: '', unloader: '' };
+                doors[i] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false };
             }
         }
 
@@ -1382,6 +1410,7 @@
         if (sAccts) savedAccounts = JSON.parse(sAccts);
         if (sStaff) staffing = JSON.parse(sStaff);
         if (sDop) currentDOP = sDop;
+        if (sFirstCompletion) firstCompletionTime = parseInt(sFirstCompletion);
         
         // Initialize role for existing staff if not set
         staffing.forEach(s => {
@@ -1403,9 +1432,11 @@
         
         // Staffing Loop (1s)
         setInterval(updateStaffingTimers, 1000);
-        // Update tab badges every 2 seconds (excluding dashboard)
+        // Update tab badges every 2 seconds
         setInterval(updateTabBadges, 2000);
-        // Initial badge update (excluding dashboard)
+        // Update idle timers every 30 seconds
+        setInterval(updateIdleTimers, 30000);
+        // Initial badge update
         updateTabBadges();
     }
     
@@ -1420,16 +1451,13 @@
         // Active tab badge: Active trailers count
         updateBadge('active', activeTrailersCount, 'activeTrailers');
         
-        // Logs badge: New logs in last 30 minutes
-        const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
-        let newLogsCount = historyLog.filter(log => log.end > thirtyMinutesAgo).length;
-        updateBadge('logs', newLogsCount, 'recentLogs');
+        // Logs tab: NO BADGE (removed as requested)
         
         // Staffing badge: Active staff count
         let activeStaffCount = staffing.filter(s => s.status === 'active' || s.status === 'paused').length;
         updateBadge('staffing', activeStaffCount, 'activeStaff');
         
-        // Tools badge: Always 0 (could show if PPH calculator has been used, etc.)
+        // Tools badge: Always 0
         updateBadge('tools', 0, 'default');
         
         // Settings badge: Show if demo mode is active
@@ -1441,7 +1469,13 @@
         const badge = document.getElementById(`badge-${tabId}`);
         if (!badge) return;
         
-        // Update badge text
+        // For logs tab, always hide the badge
+        if (tabId === 'logs') {
+            badge.style.display = 'none';
+            return;
+        }
+        
+        // Update badge text for other tabs
         if (count === 0) {
             badge.textContent = '0';
             badge.classList.add('zero');
@@ -1456,14 +1490,6 @@
                 if (count >= 6) badge.classList.add('warning'); // High activity warning
                 else if (count >= 3) badge.classList.add('success'); // Good activity level
                 else badge.classList.remove('warning', 'success');
-            } else if (type === 'recentLogs') {
-                if (count >= 10) badge.classList.add('success'); // High productivity
-                else if (count >= 5) badge.classList.remove('warning', 'success'); // Normal
-                else {
-                    badge.classList.add('zero');
-                    badge.style.display = 'none';
-                    return;
-                }
             } else if (type === 'activeStaff') {
                 if (count >= 8) badge.classList.add('warning'); // Overstaffed warning
                 else if (count >= 4) badge.classList.add('success'); // Good staffing
@@ -1475,6 +1501,74 @@
             }
             
             badge.style.display = 'flex';
+        }
+    }
+    
+    // --- IDLE TIMER LOGIC ---
+    function updateIdleTimers() {
+        if (!firstCompletionTime) return;
+        
+        const now = Date.now();
+        const idleTimeMs = now - firstCompletionTime;
+        const idleMinutes = Math.floor(idleTimeMs / 60000);
+        
+        // Update timers for empty doors
+        for(let i = DOORS_START; i <= DOORS_END; i++) {
+            if(doors[i].status === 'empty' && !doors[i].unavailable) {
+                const doorEl = document.querySelector(`.bay-circle[data-door="${i}"] .bay-timer`);
+                if(doorEl) {
+                    doorEl.textContent = `${idleMinutes}m`;
+                }
+            }
+        }
+    }
+    
+    // --- DOOR UNAVAILABLE LOGIC ---
+    function setupTouchHandlers() {
+        for(let i = DOORS_START; i <= DOORS_END; i++) {
+            const doorEl = document.querySelector(`.bay-circle[data-door="${i}"]`);
+            if(doorEl) {
+                // Clear any existing listeners
+                doorEl.removeEventListener('touchstart', touchStartTime[i]);
+                doorEl.removeEventListener('touchend', touchTimeout[i]);
+                
+                // Add new listeners
+                doorEl.addEventListener('touchstart', (e) => {
+                    touchStartTime[i] = Date.now();
+                    touchTimeout[i] = setTimeout(() => {
+                        toggleDoorAvailability(i);
+                    }, 800); // 800ms for long press
+                });
+                
+                doorEl.addEventListener('touchend', () => {
+                    if (touchTimeout[i]) {
+                        clearTimeout(touchTimeout[i]);
+                    }
+                });
+                
+                doorEl.addEventListener('touchmove', () => {
+                    if (touchTimeout[i]) {
+                        clearTimeout(touchTimeout[i]);
+                    }
+                });
+            }
+        }
+    }
+    
+    function toggleDoorAvailability(doorNum) {
+        if (doors[doorNum].status === 'active') {
+            alert("Cannot mark an active bay as unavailable. Complete the trailer first.");
+            return;
+        }
+        
+        doors[doorNum].unavailable = !doors[doorNum].unavailable;
+        saveData();
+        renderDashboard();
+        
+        if (doors[doorNum].unavailable) {
+            alert(`Door ${doorNum} marked as unavailable for maintenance.`);
+        } else {
+            alert(`Door ${doorNum} is now available.`);
         }
     }
     
@@ -2003,7 +2097,7 @@
         const unloader = teamNames[Math.floor(Math.random() * teamNames.length)];
         let account = "";
         if(type === 'CPU') account = savedAccounts.length > 0 ? savedAccounts[Math.floor(Math.random() * savedAccounts.length)] : "ACC" + Math.floor(100 + Math.random() * 900);
-        doors[doorNum] = { status: 'active', start: Date.now(), id: id, account: account, type: type, unloader: unloader };
+        doors[doorNum] = { status: 'active', start: Date.now(), id: id, account: account, type: type, unloader: unloader, unavailable: false };
         renderDashboard();
         updateTabBadges(); // Update badges after random arrival
     }
@@ -2047,6 +2141,16 @@
         const lastHourEnd = thisHourStart;
         
         return { thisHourStart, thisHourEnd, lastHourStart, lastHourEnd, shiftStart: start };
+    }
+    
+    // --- HOUR CALCULATION FOR LOGS ---
+    function getCompletionHour(completionTime) {
+        const { shiftStart } = getShiftTimeWindows();
+        const shiftStartTime = shiftStart.getTime();
+        
+        // Calculate which hour of the shift this completion belongs to
+        const hoursSinceShiftStart = Math.floor((completionTime - shiftStartTime) / 3600000);
+        return hoursSinceShiftStart + 1; // 1-based hour numbering
     }
 
     // --- LOGIC ---
@@ -2190,6 +2294,9 @@
                 updateAccountDatalist();
             }
         }
+        
+        // Calculate completion hour
+        const completionHour = getCompletionHour(end - statOffset);
 
         historyLog.unshift({
             door: doorNum,
@@ -2202,14 +2309,22 @@
             duration: end - start,
             statOffset: statOffset, // Store offset to calculate "Effective Time" for stats
             logId: Date.now() + Math.random().toString(36).substring(2, 9),
-            duplicate: d.isDuplicate || false // Mark as duplicate if applicable
+            duplicate: d.isDuplicate || false, // Mark as duplicate if applicable
+            completionHour: completionHour // Store which hour of the shift it was completed
         });
 
         if (d.type === 'Wally' && navigator.share && !demoActive) {
              navigator.share({ text: `Door ${doorNum} done` }).catch(err => console.log(err));
         }
 
-        doors[doorNum] = { status: 'empty', start: 0, id: '', type: '', unloader: '' };
+        doors[doorNum] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false };
+        
+        // Set first completion time if not set
+        if (!firstCompletionTime) {
+            firstCompletionTime = end;
+            localStorage.setItem('ps9_first_completion', firstCompletionTime.toString());
+        }
+        
         saveData();
         renderDashboard();
         renderActiveTab(); // ENSURE ACTIVE TAB LIST UPDATES
@@ -2260,7 +2375,8 @@
             if (d.status === 'active') {
                 hasActive = true;
                 const btn = document.createElement('div');
-                btn.className = `bay-circle bay-${i}`;
+                btn.className = `bay-circle bay-${i} ${d.unavailable ? 'unavailable' : ''}`;
+                btn.setAttribute('data-door', i);
                 btn.innerHTML = `${i}`;
                 const badge = document.createElement('div');
                 badge.className = d.type === 'Wally' ? 'type-badge badge-w' : 'type-badge badge-c';
@@ -2271,14 +2387,36 @@
             } else {
                 hasOpen = true;
                 const btn = document.createElement('div');
-                btn.className = `bay-circle bay-${i}`;
+                btn.className = `bay-circle bay-${i} ${d.unavailable ? 'unavailable' : ''}`;
+                btn.setAttribute('data-door', i);
                 btn.innerText = i;
-                btn.onclick = () => openArrivalModal(i);
+                
+                // Add idle timer if first completion has happened
+                if (firstCompletionTime && d.status === 'empty' && !d.unavailable) {
+                    const idleTimeMs = Date.now() - firstCompletionTime;
+                    const idleMinutes = Math.floor(idleTimeMs / 60000);
+                    const timer = document.createElement('div');
+                    timer.className = 'bay-timer';
+                    timer.textContent = `${idleMinutes}m`;
+                    btn.appendChild(timer);
+                }
+                
+                btn.onclick = () => {
+                    if (d.unavailable) {
+                        alert(`Door ${i} is currently unavailable for maintenance.`);
+                    } else {
+                        openArrivalModal(i);
+                    }
+                };
                 openBaysGrid.appendChild(btn);
             }
         }
+        
         if(!hasOpen) openBaysGrid.innerHTML = '<div class="empty-state-text">All bays full.</div>';
         if(!hasActive) activeTrailersGrid.innerHTML = '<div class="empty-state-text">No active trailers.</div>';
+        
+        // Setup touch handlers for long press
+        setupTouchHandlers();
     }
 
     function renderActiveTab() {
@@ -2365,9 +2503,10 @@
             id: document.getElementById('edit-active-id').value.trim(),
             account: document.getElementById('edit-active-account').value.trim(),
             type: document.getElementById('edit-active-modal').dataset.type,
-            unloader: unl
+            unloader: unl,
+            unavailable: false
         };
-        if(dest !== orig) { doors[dest] = data; doors[orig] = {status:'empty', start:0, id:'', type:'', unloader:''}; }
+        if(dest !== orig) { doors[dest] = data; doors[orig] = {status:'empty', start:0, id:'', type:'', unloader:'', unavailable: false}; }
         else { doors[orig] = data; }
         saveData(); closeModal('edit-active-modal'); renderActiveTab(); renderDashboard();
         updateTabBadges(); // Update badges after editing active bay
@@ -2405,7 +2544,8 @@
             account: accVal, 
             type: currentType, 
             unloader: unl,
-            isDuplicate: false
+            isDuplicate: false,
+            unavailable: false
         };
         saveData(); closeModal('input-modal'); renderDashboard();
         updateTabBadges(); // Update badges after new arrival
@@ -2417,7 +2557,7 @@
         } else {
             // Find first empty door
             for(let i=DOORS_START; i<=DOORS_END; i++) {
-                if(doors[i].status === 'empty') {
+                if(doors[i].status === 'empty' && !doors[i].unavailable) {
                     currentDoor = i;
                     break;
                 }
@@ -2425,11 +2565,11 @@
         }
 
         // Check again if currentDoor is valid empty door if not passed specifically
-        if (!specificDoor && (!currentDoor || doors[currentDoor].status !== 'empty')) {
+        if (!specificDoor && (!currentDoor || doors[currentDoor].status !== 'empty' || doors[currentDoor].unavailable)) {
              // Reset search
              currentDoor = null;
              for(let i=DOORS_START; i<=DOORS_END; i++) {
-                if(doors[i].status === 'empty') {
+                if(doors[i].status === 'empty' && !doors[i].unavailable) {
                     currentDoor = i;
                     break;
                 }
@@ -2612,6 +2752,7 @@
              const acctInfo = l.account ? ` <span style="color:#8e8e93; font-weight:400">(${l.account})</span>` : '';
              const revertable = (now - l.end) < (120000);
              const duplicateBadge = l.duplicate ? '<span class="log-type-pill" style="background:#ff3b30; color:#fff; margin-left:6px;">DUP</span>' : '';
+             const hourBadge = `<span class="log-type-pill" style="background:#007AFF; color:#fff; margin-left:6px;">H${l.completionHour}</span>`;
              
              list.innerHTML += `
                 <div class="log-card">
@@ -2620,6 +2761,7 @@
                             <span class="log-door-pill" onclick="viewDoorLogs(${l.door})">Door ${l.door}</span>
                             <span class="log-type-pill" style="background:${badgeColor}; color:#fff">${l.type}</span>
                             ${duplicateBadge}
+                            ${hourBadge}
                         </div>
                         <div class="log-title">${l.id}${acctInfo}</div>
                         <div class="log-details">${l.unloader}</div>
@@ -2642,7 +2784,7 @@
         if(Date.now() - log.end > 120000 && !demoActive) return alert("Time expired");
         if(doors[log.door].status !== 'empty') return alert("Door occupied");
         
-        doors[log.door] = { status: 'active', start: log.start, id: log.id, account: log.account, type: log.type, unloader: log.unloader };
+        doors[log.door] = { status: 'active', start: log.start, id: log.id, account: log.account, type: log.type, unloader: log.unloader, unavailable: false };
         historyLog.splice(index, 1);
         saveData(); renderDashboard(); renderLogs();
         updateTabBadges(); // Update badges after reverting log
@@ -2669,6 +2811,8 @@
         historyLog[idx].id = document.getElementById('edit-input-id').value;
         historyLog[idx].unloader = document.getElementById('edit-select-unloader').value;
         historyLog[idx].type = document.getElementById('edit-log-modal').dataset.type;
+        // Recalculate completion hour when editing
+        historyLog[idx].completionHour = getCompletionHour(historyLog[idx].end - (historyLog[idx].statOffset || 0));
         saveData(); closeModal('edit-log-modal'); renderLogs();
     }
     
@@ -2678,9 +2822,9 @@
     
     function exportLogsCSV() {
         closeModal('export-modal');
-        let csv = "Type,ID,Account,Door,Unloader,Duration,StartTime,EndTime,Duplicate\n";
+        let csv = "Type,ID,Account,Door,Unloader,Duration,StartTime,EndTime,Duplicate,Hour\n";
         historyLog.forEach(l => {
-             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.floor(l.duration/60000)}m,${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${l.duplicate ? 'Yes' : 'No'}\n`;
+             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.floor(l.duration/60000)}m,${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${l.duplicate ? 'Yes' : 'No'},${l.completionHour}\n`;
         });
         const blob = new Blob([csv], {type:'text/csv'});
         const url = window.URL.createObjectURL(blob);
@@ -2744,12 +2888,13 @@
                 l.type + (l.duplicate ? ' (DUP)' : ''),
                 l.id,
                 l.unloader,
-                Math.floor(l.duration/60000) + "m"
+                Math.floor(l.duration/60000) + "m",
+                `H${l.completionHour}`
             ]);
             
             doc.autoTable({
                 startY: finalY + 5,
-                head: [['Time', 'Door', 'Type', 'ID', 'Unloader', 'Duration']],
+                head: [['Time', 'Door', 'Type', 'ID', 'Unloader', 'Duration', 'Hour']],
                 body: logsBody,
                 theme: 'striped'
             });
@@ -2768,6 +2913,9 @@
         localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
         localStorage.setItem('ps9_staffing', JSON.stringify(staffing));
         localStorage.setItem('ps9_dop', currentDOP);
+        if (firstCompletionTime) {
+            localStorage.setItem('ps9_first_completion', firstCompletionTime.toString());
+        }
     }
     
     function resetData() { 
