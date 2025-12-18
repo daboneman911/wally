@@ -312,7 +312,7 @@
             color: #fff;
             border-radius: 20px;
             padding: 20px;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .staffing-header-title { font-size: 14px; opacity: 0.8; font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
@@ -727,7 +727,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.15</div>
+            <div class="app-version">Version 3.16</div> <!-- UPDATED: Changed from 3.15 to 3.16 -->
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -869,6 +869,22 @@
             <div class="breakdown-row">
                 <span>Belt Hours: <span id="staff-belt-hours">0.0</span></span>
                 <span>Sweep Hours: <span id="staff-sweep-hours">0.0</span></span>
+            </div>
+        </div>
+
+        <!-- Role Summary Cards -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0;">
+            <div style="background: #f2f2f7; border-radius: 12px; padding: 12px; text-align: center;">
+                <div style="font-size: 11px; color: #757575; font-weight: 700; margin-bottom: 4px;">UNLOADERS</div>
+                <div style="font-size: 18px; font-weight: 800; color: #007AFF;" id="unloader-count">0</div>
+            </div>
+            <div style="background: #f2f2f7; border-radius: 12px; padding: 12px; text-align: center;">
+                <div style="font-size: 11px; color: #757575; font-weight: 700; margin-bottom: 4px;">BELT TENDERS</div>
+                <div style="font-size: 18px; font-weight: 800; color: #FF9500;" id="belt-count">0</div>
+            </div>
+            <div style="background: #f2f2f7; border-radius: 12px; padding: 12px; text-align: center;">
+                <div style="font-size: 11px; color: #757575; font-weight: 700; margin-bottom: 4px;">BULK SWEEPS</div>
+                <div style="font-size: 18px; font-weight: 800; color: #34C759;" id="sweep-count">0</div>
             </div>
         </div>
 
@@ -1059,7 +1075,7 @@
             <input type="number" id="pph-unloader-hours-input" class="form-input" 
                    style="font-size:32px; font-weight:800; color:#000; text-align:center; background:transparent; border:none; width:100%; padding:0; margin:0;" 
                    oninput="calculatePPH()" placeholder="0.00">
-            <div style="font-size:12px; color:#757575; margin-top:4px;">Excludes Belt Tenders & Sweeps</div>
+            <div style="font-size:12px; color:#757575; margin-top:4px;" id="pph-note">Excludes Belt Tenders & Sweeps</div>
         </div>
 
         <div style="margin-bottom:20px;">
@@ -1589,6 +1605,7 @@
         if(s) {
             s.role = newRole;
             saveData();
+            renderStaffingView(); // Refresh view to update colors/badges
         }
     }
 
@@ -1622,40 +1639,46 @@
         activeList.innerHTML = '';
         cutList.innerHTML = '';
         
-        // Sorting logic
+        // Sorting logic - sort by total hours (accumulated + current)
         const now = Date.now();
         const activeStaff = staffing.filter(s => s.status === 'active' || s.status === 'paused');
         activeStaff.sort((a,b) => {
             const durA = (a.accumulated || 0) + (a.status === 'active' ? (now - a.start) : 0);
             const durB = (b.accumulated || 0) + (b.status === 'active' ? (now - b.start) : 0);
-            return durB - durA;
+            return durB - durA; // Descending - most hours first
         });
         
-        const beltTenderId = activeStaff.length > 0 ? activeStaff[0].id : null;
-        const sweepIds = [];
-        if(activeStaff.length > 1) sweepIds.push(activeStaff[1].id);
-        if(activeStaff.length > 2) sweepIds.push(activeStaff[2].id);
-
         // Build Active List
         activeStaff.forEach(s => {
-             let suggestionBadge = '';
-             if(s.id === beltTenderId) suggestionBadge = '👑'; 
-             else if(sweepIds.includes(s.id)) suggestionBadge = '🧹'; 
-             
-             const isPaused = s.status === 'paused';
-             const pauseBtnIcon = isPaused ? 'ph-play' : 'ph-pause';
-             const pauseBtnAction = isPaused ? `resumeStaff(${s.id})` : `pauseStaff(${s.id})`;
-             const pauseStyle = isPaused ? 'background:#e5e5ea; color:#000;' : 'background:#e5e5ea; color:#000;';
-             const cardStyle = isPaused ? 'opacity:0.7; border:1px dashed #ccc;' : '';
-             const badgeText = isPaused ? '<span style="background:#ffcc00; color:#000; font-size:10px; padding:2px 4px; border-radius:4px; font-weight:700; margin-left:5px;">PAUSED</span>' : '';
-             
-             // Time string logic
-             const timeStr = isPaused ? 'Paused' : 'Started: ' + new Date(s.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-             
-             const div = document.createElement('div');
-             div.className = 'staff-card';
-             if(isPaused) div.style.cssText = cardStyle;
-             div.innerHTML = `
+            // Role-based suggestion badges
+            let suggestionBadge = '';
+            let roleColor = '#007AFF'; // Default blue for unloaders
+            
+            if (s.role === 'Belt Tender') {
+                suggestionBadge = '👑'; // Crown for Belt Tender
+                roleColor = '#FF9500'; // Orange
+            } else if (s.role === 'Bulk Sweep') {
+                suggestionBadge = '🧹'; // Broom for Sweep
+                roleColor = '#34C759'; // Green
+            } else if (s.role === 'Unloader') {
+                // Unloaders get no special badge
+                roleColor = '#007AFF'; // Blue
+            }
+            
+            const isPaused = s.status === 'paused';
+            const pauseBtnIcon = isPaused ? 'ph-play' : 'ph-pause';
+            const pauseBtnAction = isPaused ? `resumeStaff(${s.id})` : `pauseStaff(${s.id})`;
+            const pauseStyle = isPaused ? 'background:#e5e5ea; color:#000;' : 'background:#e5e5ea; color:#000;';
+            const cardStyle = isPaused ? 'opacity:0.7; border:1px dashed #ccc;' : '';
+            const badgeText = isPaused ? '<span style="background:#ffcc00; color:#000; font-size:10px; padding:2px 4px; border-radius:4px; font-weight:700; margin-left:5px;">PAUSED</span>' : '';
+            
+            // Time string logic
+            const timeStr = isPaused ? 'Paused' : 'Started: ' + new Date(s.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            
+            const div = document.createElement('div');
+            div.className = 'staff-card';
+            if(isPaused) div.style.cssText = cardStyle;
+            div.innerHTML = `
                 <div style="width:100%">
                     <div class="staff-top-row">
                         <div class="staff-name">${s.name} ${suggestionBadge} ${badgeText}</div>
@@ -1668,9 +1691,9 @@
                     </div>
                     <div class="staff-time">${timeStr}</div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                        <div class="staff-hours" id="staff-hours-${s.id}" style="color:var(--accent-blue)">0.00h</div>
+                        <div class="staff-hours" id="staff-hours-${s.id}" style="color:${roleColor}">0.00h</div>
                         <div style="width:50%">
-                            <select class="role-select" onchange="saveStaffRole(${s.id}, this.value)">
+                            <select class="role-select" onchange="saveStaffRole(${s.id}, this.value)" style="border-left: 4px solid ${roleColor};">
                                 <option value="Unloader" ${s.role === 'Unloader' ? 'selected' : ''}>Unloader</option>
                                 <option value="Belt Tender" ${s.role === 'Belt Tender' ? 'selected' : ''}>Belt Tender</option>
                                 <option value="Bulk Sweep" ${s.role === 'Bulk Sweep' ? 'selected' : ''}>Bulk Sweep</option>
@@ -1678,18 +1701,18 @@
                         </div>
                     </div>
                 </div>
-             `;
-             activeList.appendChild(div);
+            `;
+            activeList.appendChild(div);
         });
 
         // Build Cut List
         const cutStaffList = staffing.filter(s => s.status === 'cut');
         cutStaffList.forEach(s => {
-             const totalMs = (s.accumulated || 0); 
-             const hrs = totalMs / 3600000;
-             const div = document.createElement('div');
-             div.className = 'staff-card cut';
-             div.innerHTML = `
+            const totalMs = (s.accumulated || 0); 
+            const hrs = totalMs / 3600000;
+            const div = document.createElement('div');
+            div.className = 'staff-card cut';
+            div.innerHTML = `
                 <div>
                     <div class="staff-name">${s.name}</div>
                     <div class="staff-time">Ended: ${new Date(s.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
@@ -1698,8 +1721,8 @@
                     <div class="staff-hours">${hrs.toFixed(2)}h</div>
                     <button class="icon-btn" onclick="removeStaff(${s.id})" style="width:32px; height:32px; font-size:16px; color:#ff3b30; background:transparent;"><i class="ph ph-trash"></i></button>
                 </div>
-             `;
-             cutList.appendChild(div);
+            `;
+            cutList.appendChild(div);
         });
         
         // Update counts
@@ -1714,13 +1737,15 @@
         const now = Date.now();
         let onClockCount = 0;
         let offClockCount = 0;
-        let totalHours = 0;
-        let beltHours = 0;
-        let sweepHours = 0;
+        let totalUnloaderHours = 0;  // Unloaders only
+        let beltTenderHours = 0;     // Belt Tenders only
+        let bulkSweepHours = 0;      // Bulk Sweeps only
+        let totalAllHours = 0;       // All staff (for display)
         
         staffing.forEach(s => {
             let hrs = 0;
             
+            // Calculate hours based on status
             if(s.status === 'active' || s.status === 'paused') {
                 onClockCount++;
                 let currentTotalMs = (s.accumulated || 0);
@@ -1738,15 +1763,39 @@
                 hrs = (s.accumulated || 0) / 3600000;
             }
             
-            totalHours += hrs;
-            if (s.role === 'Belt Tender') beltHours += hrs;
-            if (s.role === 'Bulk Sweep') sweepHours += hrs;
+            // Categorize hours by role
+            if (s.role === 'Belt Tender') {
+                beltTenderHours += hrs;
+            } else if (s.role === 'Bulk Sweep') {
+                bulkSweepHours += hrs;
+            } else if (s.role === 'Unloader') {
+                totalUnloaderHours += hrs;
+            }
+            
+            // Add to total for display
+            totalAllHours += hrs;
         });
         
+        // Update display counts
         document.getElementById('staff-active-count').innerText = onClockCount;
-        document.getElementById('staff-total-hours').innerText = totalHours.toFixed(2);
-        document.getElementById('staff-belt-hours').innerText = beltHours.toFixed(2);
-        document.getElementById('staff-sweep-hours').innerText = sweepHours.toFixed(2);
+        document.getElementById('staff-total-hours').innerText = totalAllHours.toFixed(2);
+        document.getElementById('staff-belt-hours').innerText = beltTenderHours.toFixed(2);
+        document.getElementById('staff-sweep-hours').innerText = bulkSweepHours.toFixed(2);
+        
+        // Update role counts
+        const activeUnloaders = staffing.filter(s => 
+            (s.status === 'active' || s.status === 'paused') && s.role === 'Unloader'
+        ).length;
+        const activeBeltTenders = staffing.filter(s => 
+            (s.status === 'active' || s.status === 'paused') && s.role === 'Belt Tender'
+        ).length;
+        const activeBulkSweeps = staffing.filter(s => 
+            (s.status === 'active' || s.status === 'paused') && s.role === 'Bulk Sweep'
+        ).length;
+
+        document.getElementById('unloader-count').innerText = activeUnloaders;
+        document.getElementById('belt-count').innerText = activeBeltTenders;
+        document.getElementById('sweep-count').innerText = activeBulkSweeps;
     }
 
     // --- SAVED ACCOUNTS LOGIC ---
@@ -2604,8 +2653,36 @@
     }
     
     // ----------------------------------------------------
-    //  NEW PPH CALCULATOR FUNCTIONS (TOOLS TAB)
+    //  PPH CALCULATOR FUNCTIONS (TOOLS TAB)
     // ----------------------------------------------------
+    
+    function getUnloaderCount() {
+        return staffing.filter(s => s.role === 'Unloader' && (s.status === 'active' || s.status === 'paused')).length;
+    }
+    
+    function calculateUnloaderHours() {
+        const now = Date.now();
+        let totalMs = 0;
+        
+        staffing.forEach(s => {
+            // Only count UNLOADERS (not Belt Tenders or Bulk Sweeps)
+            if (s.role === 'Unloader') {
+                // Base accumulated time
+                let ms = (s.accumulated || 0);
+                
+                // If currently active, add live time
+                if (s.status === 'active' && s.start) {
+                    ms += (now - s.start);
+                }
+                // If paused, accumulated time already includes all time
+                // If cut, accumulated time includes all their work time
+                
+                totalMs += ms;
+            }
+        });
+        
+        return totalMs / 3600000;
+    }
     
     function openPPHModal() {
         const hours = calculateUnloaderHours();
@@ -2617,6 +2694,12 @@
         document.getElementById('pph-volume-input').value = '';
         document.getElementById('pph-result').innerText = '0';
         document.getElementById('pph-modal').style.display = 'flex';
+        
+        // Add a note showing what's being calculated
+        const note = document.getElementById('pph-note');
+        if (note) {
+            note.innerHTML = `Excludes Belt Tenders & Sweeps | Currently tracking: ${getUnloaderCount()} Unloader(s)`;
+        }
         
         // Focus volume input for quick entry, or hours if empty? 
         // User likely wants to enter volume if staffing is auto, or hours if manual.
@@ -2636,31 +2719,16 @@
         document.getElementById('pph-volume-input').value = '';
         document.getElementById('pph-result').innerText = '0';
         
+        // Update note
+        const note = document.getElementById('pph-note');
+        if (note) {
+            note.innerHTML = `Excludes Belt Tenders & Sweeps | Currently tracking: ${getUnloaderCount()} Unloader(s)`;
+        }
+        
         if (hours === 0) input.focus();
         else document.getElementById('pph-volume-input').focus();
     }
 
-    function calculateUnloaderHours() {
-        const now = Date.now();
-        let totalMs = 0;
-        
-        staffing.forEach(s => {
-            if (s.role === 'Unloader') {
-                // Base accumulated time
-                let ms = (s.accumulated || 0);
-                
-                // If currently active, add live time
-                if (s.status === 'active' && s.start) {
-                    ms += (now - s.start);
-                }
-                
-                totalMs += ms;
-            }
-        });
-        
-        return totalMs / 3600000;
-    }
-    
     function calculatePPH() {
         const vol = parseFloat(document.getElementById('pph-volume-input').value) || 0;
         // Get from input value now
