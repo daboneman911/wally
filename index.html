@@ -1389,10 +1389,14 @@
     function init() {
         console.log(`Wally Dashboard v${APP_VERSION} initialized`);
         
+        // Load saved accounts first (before other data)
+        const sAccts = localStorage.getItem('ps9_accounts');
+        if (sAccts) savedAccounts = JSON.parse(sAccts);
+        
+        // Now load other data
         const sDoors = localStorage.getItem('ps9_doors');
         const sHistory = localStorage.getItem('ps9_history');
         const sTeam = localStorage.getItem('ps9_team');
-        const sAccts = localStorage.getItem('ps9_accounts');
         const sStaff = localStorage.getItem('ps9_staffing');
         const sDop = localStorage.getItem('ps9_dop');
         const sFirstCompletion = localStorage.getItem('ps9_first_completion');
@@ -1407,7 +1411,6 @@
 
         if (sHistory) historyLog = JSON.parse(sHistory);
         if (sTeam) teamNames = JSON.parse(sTeam); else teamNames = [...DEFAULT_TEAM];
-        if (sAccts) savedAccounts = JSON.parse(sAccts);
         if (sStaff) staffing = JSON.parse(sStaff);
         if (sDop) currentDOP = sDop;
         if (sFirstCompletion) firstCompletionTime = parseInt(sFirstCompletion);
@@ -1438,6 +1441,27 @@
         setInterval(updateIdleTimers, 30000);
         // Initial badge update
         updateTabBadges();
+    }
+    
+    // --- RESET DATA (Preserves saved accounts) ---
+    function resetData() { 
+        if(confirm("Reset all data? This will preserve saved account numbers.")) { 
+            // Save current accounts before clearing
+            const savedAccountsBackup = savedAccounts;
+            
+            // Clear all other data
+            localStorage.clear();
+            
+            // Restore saved accounts
+            if (savedAccountsBackup.length > 0) {
+                localStorage.setItem('ps9_accounts', JSON.stringify(savedAccountsBackup));
+            }
+            
+            // Also save the default shift start time
+            localStorage.setItem('ps9_shift_start', "19:55");
+            
+            location.reload(); 
+        } 
     }
     
     // --- TAB BADGE FUNCTIONALITY ---
@@ -2286,12 +2310,14 @@
              statOffset = 0; // Disable offset for random history
         }
         
-        // Auto Save Account
-        if (d.type === 'CPU' && d.account) {
-            if(!savedAccounts.includes(d.account)) {
-                savedAccounts.push(d.account);
+        // Auto Save Account (if not already saved)
+        if (d.type === 'CPU' && d.account && d.account.trim() !== "") {
+            const accountUpper = d.account.trim().toUpperCase();
+            if(!savedAccounts.includes(accountUpper)) {
+                savedAccounts.push(accountUpper);
                 localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
                 updateAccountDatalist();
+                renderSavedAccounts();
             }
         }
         
@@ -2916,13 +2942,6 @@
         if (firstCompletionTime) {
             localStorage.setItem('ps9_first_completion', firstCompletionTime.toString());
         }
-    }
-    
-    function resetData() { 
-        if(confirm("Reset all data? This cannot be undone.")) { 
-            localStorage.clear(); 
-            location.reload(); 
-        } 
     }
     
     // ----------------------------------------------------
