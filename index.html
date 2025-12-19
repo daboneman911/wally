@@ -6,10 +6,10 @@
     
     <!-- iOS Web App Capability -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- Updated for Dynamic Island -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WallyTracker">
     <meta name="theme-color" content="#ffffff">
-    <meta name="mobile-web-app-capable" content="yes"> <!-- Added for Android -->
+    <meta name="mobile-web-app-capable" content="yes">
     
     <title>Wally Dashboard</title>
     
@@ -27,15 +27,15 @@
             --card-bg: #f5f5f5;
             --text-main: #000000;
             --text-sub: #757575;
-            --accent-blue: #007AFF; /* Added missing variable */
+            --accent-blue: #000000;
             
             /* Circle Colors */
             --bay-green: #4cd964;
             --bay-purple: #bf5af2;
             --bay-orange: #ff9500;
             
-            /* Safe Area Variables - UPDATED for Dynamic Island */
-            --safe-top: max(env(safe-area-inset-top), 47px); /* Dynamic Island is ~47px */
+            /* Safe Area Variables */
+            --safe-top: max(env(safe-area-inset-top), 47px);
             --safe-bottom: env(safe-area-inset-bottom);
             --tab-height: 80px;
         }
@@ -46,11 +46,11 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            overflow-x: hidden; /* Changed from overflow: hidden */
-            overflow-y: auto; /* Allow vertical scrolling */
             height: 100vh;
             width: 100vw;
             -webkit-font-smoothing: antialiased;
+            -webkit-overflow-scrolling: touch;
+            overflow: hidden;
         }
 
         /* --- LAYOUT --- */
@@ -58,7 +58,10 @@
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding-top: calc(var(--safe-top) + 40px); /* Increased from 20px to 40px */
+            padding-top: calc(var(--safe-top) + 40px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
         }
 
         .tab-content {
@@ -68,6 +71,7 @@
             padding: 0 20px;
             padding-bottom: calc(var(--tab-height) + var(--safe-bottom) + 20px);
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
         }
 
         .tab-content.active { display: block; }
@@ -76,7 +80,7 @@
         .top-actions {
             display: flex;
             gap: 15px;
-            padding: 15px 0 20px 0; /* Increased top padding */
+            padding: 15px 0 20px 0;
             justify-content: center;
         }
 
@@ -102,7 +106,7 @@
             padding: 25px 20px;
             text-align: center;
             margin-bottom: 30px;
-            margin-top: 10px; /* Added top margin */
+            margin-top: 10px;
         }
 
         .header-bar {
@@ -111,7 +115,7 @@
             justify-content: center;
             align-items: center;
             height: 50px;
-            margin: 20px 0 20px 0; /* Increased top margin */
+            margin: 20px 0 20px 0;
         }
         
         .header-bar h1 {
@@ -127,7 +131,6 @@
             gap: 10px;
         }
 
-        /* Filter Icon Button */
         .filter-icon-btn {
             width: 40px;
             height: 40px;
@@ -292,7 +295,7 @@
 
         .active-card {
             background: white;
-            border: 1px solid #e5e5ea;
+            border: 2px solid #000;
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
@@ -420,7 +423,7 @@
         /* --- TOOLS GRID --- */
         .tools-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 2 Columns */
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
             padding: 10px 0;
         }
@@ -433,7 +436,7 @@
             align-items: center; 
             justify-content: center;
             text-align: center;
-            aspect-ratio: 1 / 1; /* Square */
+            aspect-ratio: 1 / 1;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
             cursor: pointer;
             transition: transform 0.1s;
@@ -450,7 +453,7 @@
         }
         
         .tool-title { font-size: 16px; font-weight: 700; color: #000; margin-bottom: 4px; }
-        .tool-desc { font-size: 12px; color: var(--text-sub); display: none; } /* Hide desc for cleaner grid */
+        .tool-desc { font-size: 12px; color: var(--text-sub); display: none; }
         
         /* Add Tool Card Special Style */
         .tool-card.add {
@@ -524,7 +527,7 @@
         .log-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
         
         .log-action-btn {
-            background: #f2f2f7; border: none; border-radius: 12px;
+            background: #f2f2f7; border: 1px solid #000; border-radius: 12px;
             padding: 8px 14px; font-size: 13px; font-weight: 700;
             color: #000; cursor: pointer; display: flex; align-items: center; gap: 6px;
         }
@@ -541,12 +544,12 @@
         .tab-btn {
             background: none; border: none; display: flex; flex-direction: column; align-items: center;
             color: #ccc; font-size: 11px; font-weight: 600; width: 60px; cursor: pointer; gap: 4px;
-            position: relative; /* For badge positioning */
+            position: relative;
         }
         .tab-btn i { font-size: 26px; }
         .tab-btn.active { color: #000; }
 
-        /* Tab Badge Styles - NEW */
+        /* Tab Badge Styles */
         .tab-badge {
             position: absolute;
             top: -4px;
@@ -702,7 +705,7 @@
         }
         .stepper-btn {
             width: 32px; height: 32px; border: none; background: transparent;
-            font-size: 18px; font-weight: 700; cursor: pointer; color: #000; /* Fixed Color */
+            font-size: 18px; font-weight: 700; cursor: pointer; color: #000;
         }
         .stepper-val {
             font-size: 16px; font-weight: 600; width: 24px; text-align: center;
@@ -751,7 +754,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.3</div> <!-- UPDATED to 3.3 -->
+            <div class="app-version">Version 3.5</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -947,7 +950,7 @@
             <div class="settings-header">Saved Accounts</div>
             <div class="settings-group">
                 <div class="settings-row">
-                    <input type="text" id="new-account-input" class="form-input" style="margin:0; padding:10px; background:#f2f2f7; width:65%;" placeholder="New Account Number" autocapitalize="characters">
+                    <input type="text" id="new-account-input" class="form-input" style="margin:0; padding:10px; background:#f2f2f7; width:65%;" placeholder="New Account Number" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()">
                     <button class="settings-btn-inline" onclick="addSavedAccount()">Add</button>
                 </div>
                 <div id="saved-accounts-list" class="saved-accounts-list">
@@ -1016,7 +1019,6 @@
                 </div>
                 
                 <div style="padding:15px;">
-                     <!-- Changed color to BLACK per request -->
                      <button class="btn-primary" style="background:#000; color:#fff;" onclick="startDemo()">Auto-Onboard</button>
                 </div>
             </div>
@@ -1041,7 +1043,6 @@
     <button class="tab-btn active" onclick="switchTab('dashboard', this)" id="tab-btn-dashboard">
         <i class="ph ph-chart-pie-slice"></i>
         <span>Home</span>
-        <!-- Removed badge from dashboard tab -->
     </button>
     <button class="tab-btn" onclick="switchTab('active', this)" id="tab-btn-active">
         <i class="ph ph-truck-trailer"></i>
@@ -1051,7 +1052,6 @@
     <button class="tab-btn" onclick="switchTab('logs', this)" id="tab-btn-logs">
         <i class="ph ph-list-dashes"></i>
         <span>Logs</span>
-        <!-- REMOVED: Badge on logs tab -->
     </button>
     <button class="tab-btn" onclick="switchTab('staffing', this)" id="tab-btn-staffing">
         <i class="ph ph-users"></i>
@@ -1072,14 +1072,13 @@
 
 <!-- === MODALS === -->
 
-<!-- PPH MODAL (NEW) -->
+<!-- PPH MODAL -->
 <div class="modal-overlay" id="pph-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">PPH Calculator</h2>
         
         <div style="background:#f2f2f7; border-radius:16px; padding:20px; margin-bottom:20px; text-align:center;">
             <div style="font-size:13px; color:#757575; font-weight:700; letter-spacing:0.5px; margin-bottom:5px;">TOTAL UNLOADER HOURS</div>
-            <!-- Changed div to input for manual editing -->
             <input type="number" id="pph-unloader-hours-input" class="form-input" 
                    style="font-size:32px; font-weight:800; color:#000; text-align:center; background:transparent; border:none; width:100%; padding:0; margin:0;" 
                    oninput="calculatePPH()" placeholder="0.00">
@@ -1103,7 +1102,7 @@
     </div>
 </div>
 
-<!-- ADD STAFF MODAL (MULTI-SELECT) -->
+<!-- ADD STAFF MODAL -->
 <div class="modal-overlay" id="add-staff-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Clock In Staff</h2>
@@ -1121,7 +1120,7 @@
     </div>
 </div>
 
-<!-- EDIT STAFF MODAL (NEW) -->
+<!-- EDIT STAFF MODAL -->
 <div class="modal-overlay" id="edit-staff-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Staff</h2>
@@ -1169,7 +1168,7 @@
     </div>
 </div>
 
-<!-- DUPLICATE WALLY MODAL (NEW) -->
+<!-- DUPLICATE WALLY MODAL -->
 <div class="modal-overlay" id="duplicate-wally-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Duplicate Wally Detected</h2>
@@ -1211,9 +1210,9 @@
         </div>
 
         <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Assigned Unloader</label>
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Assigned Unloader (Optional)</label>
             <select id="select-unloader" class="form-input" onchange="checkCustomUnloader(this)">
-                <option value="" disabled selected>Select Name...</option>
+                <option value="" selected>Unassigned</option>
             </select>
             <input type="text" id="input-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
         </div>
@@ -1261,9 +1260,19 @@
                 <span class="detail-label">Start Time</span>
                 <span class="detail-value" id="detail-time"></span>
             </div>
+            <div class="detail-row">
+                <span class="detail-label">Duration</span>
+                <span class="detail-value" id="detail-duration">0m</span>
+            </div>
         </div>
 
         <button class="btn-primary btn-danger" onclick="confirmCompleteDoor()">Complete Unload</button>
+        
+        <button class="btn-primary" onclick="toggleDoorAvailability(detailDoor); closeModal('active-detail-modal');" style="background:#000; color:#fff; margin-top:10px;">
+            <i class="ph ph-power" style="margin-right:8px;"></i> 
+            <span id="availability-btn-text">Mark Unavailable</span>
+        </button>
+        
         <div class="modal-actions-row">
             <button class="modal-icon-btn" onclick="openEditActiveModalFromDetail()" style="flex:1"><i class="ph ph-pencil-simple"></i></button>
             <button class="btn-primary btn-history" onclick="viewDoorLogs(detailDoor)" style="flex:3; margin:0;">View History</button>
@@ -1299,9 +1308,7 @@
 
         <div style="margin-bottom:15px;">
             <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Unloader</label>
-            <!-- Changed onchange to use checkActiveCustomUnloader -->
             <select id="edit-active-unloader" class="form-input" onchange="checkActiveCustomUnloader(this)"></select>
-            <!-- Added custom input field -->
             <input type="text" id="edit-active-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
         </div>
 
@@ -1322,7 +1329,7 @@
 
         <div style="margin-bottom:15px;">
             <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">ID / Trailer #</label>
-            <input type="text" id="edit-input-id" class="form-input">
+            <input type="text" id="edit-input-id" class="form-input" oninput="this.value = this.value.toUpperCase()">
         </div>
 
         <div style="margin-bottom:15px;">
@@ -1340,7 +1347,6 @@
     let demoActive = false;
     let duplicateWallyFlag = false;
     let pendingWallyDuplicate = null;
-    let firstCompletionTime = null;
     let touchStartTime = {};
     let touchTimeout = {};
 
@@ -1349,17 +1355,17 @@
     });
 
     // --- CONFIG ---
-    const APP_VERSION = '3.3'; // UPDATED to 3.3
+    const APP_VERSION = '3.5';
     const DOORS_START = 9;
     const DOORS_END = 16;
-    const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"]; // ADDED Fonseca J
+    const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
     
     // --- STATE ---
     let doors = {};
     let historyLog = [];
     let teamNames = [];
     let savedAccounts = [];
-    let staffing = []; // Staffing Data Model: { id, name, start, end, status:'active'|'paused'|'cut', role: 'Unloader'|'Belt Tender'|'Bulk Sweep', accumulated: 0 }
+    let staffing = [];
     let currentDOP = '5-2';
 
     let currentDoor = null;
@@ -1385,27 +1391,43 @@
     // Staging for Attribution
     let pendingCompletion = null;
 
+    // --- HELPER FUNCTIONS ---
+    function getHourText(hour) {
+        if (hour === 1) return "1st Hour";
+        if (hour === 2) return "2nd Hour";
+        if (hour === 3) return "3rd Hour";
+        if (hour === 4) return "4th Hour";
+        if (hour === 5) return "5th Hour";
+        if (hour === 6) return "6th Hour";
+        if (hour === 7) return "7th Hour";
+        if (hour === 8) return "8th Hour";
+        if (hour === 9) return "9th Hour";
+        if (hour === 10) return "10th Hour";
+        if (hour === 11) return "11th Hour";
+        if (hour === 12) return "12th Hour";
+        return `${hour}th Hour`;
+    }
+
     // --- INIT ---
     function init() {
         console.log(`Wally Dashboard v${APP_VERSION} initialized`);
         
-        // Load saved accounts first (before other data)
+        // Load saved accounts first
         const sAccts = localStorage.getItem('ps9_accounts');
         if (sAccts) savedAccounts = JSON.parse(sAccts);
         
-        // Now load other data
+        // Load other data
         const sDoors = localStorage.getItem('ps9_doors');
         const sHistory = localStorage.getItem('ps9_history');
         const sTeam = localStorage.getItem('ps9_team');
         const sStaff = localStorage.getItem('ps9_staffing');
         const sDop = localStorage.getItem('ps9_dop');
-        const sFirstCompletion = localStorage.getItem('ps9_first_completion');
         const shiftStart = localStorage.getItem('ps9_shift_start') || "19:55";
 
         if (sDoors) doors = JSON.parse(sDoors);
         else {
             for(let i=DOORS_START; i<=DOORS_END; i++) {
-                doors[i] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false };
+                doors[i] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false, lastCompletionTime: null };
             }
         }
 
@@ -1413,7 +1435,6 @@
         if (sTeam) teamNames = JSON.parse(sTeam); else teamNames = [...DEFAULT_TEAM];
         if (sStaff) staffing = JSON.parse(sStaff);
         if (sDop) currentDOP = sDop;
-        if (sFirstCompletion) firstCompletionTime = parseInt(sFirstCompletion);
         
         // Initialize role for existing staff if not set
         staffing.forEach(s => {
@@ -1437,13 +1458,11 @@
         setInterval(updateStaffingTimers, 1000);
         // Update tab badges every 2 seconds
         setInterval(updateTabBadges, 2000);
-        // Update idle timers every 30 seconds
-        setInterval(updateIdleTimers, 30000);
         // Initial badge update
         updateTabBadges();
     }
     
-    // --- RESET DATA (Preserves saved accounts) ---
+    // --- RESET DATA ---
     function resetData() { 
         if(confirm("Reset all data? This will preserve saved account numbers.")) { 
             // Save current accounts before clearing
@@ -1471,11 +1490,8 @@
         for(let i = DOORS_START; i <= DOORS_END; i++) {
             if(doors[i].status === 'active') activeTrailersCount++;
         }
-        // Dashboard tab: NO BADGE (removed as requested)
-        // Active tab badge: Active trailers count
-        updateBadge('active', activeTrailersCount, 'activeTrailers');
         
-        // Logs tab: NO BADGE (removed as requested)
+        updateBadge('active', activeTrailersCount, 'activeTrailers');
         
         // Staffing badge: Active staff count
         let activeStaffCount = staffing.filter(s => s.status === 'active' || s.status === 'paused').length;
@@ -1504,22 +1520,22 @@
             badge.textContent = '0';
             badge.classList.add('zero');
             badge.classList.remove('warning', 'success');
-            badge.style.display = 'none'; // Hide zero badges
+            badge.style.display = 'none';
         } else {
             badge.textContent = count > 99 ? '99+' : count.toString();
             badge.classList.remove('zero');
             
             // Apply color coding based on type and thresholds
             if (type === 'activeTrailers') {
-                if (count >= 6) badge.classList.add('warning'); // High activity warning
-                else if (count >= 3) badge.classList.add('success'); // Good activity level
+                if (count >= 6) badge.classList.add('warning');
+                else if (count >= 3) badge.classList.add('success');
                 else badge.classList.remove('warning', 'success');
             } else if (type === 'activeStaff') {
-                if (count >= 8) badge.classList.add('warning'); // Overstaffed warning
-                else if (count >= 4) badge.classList.add('success'); // Good staffing
+                if (count >= 8) badge.classList.add('warning');
+                else if (count >= 4) badge.classList.add('success');
                 else badge.classList.remove('warning', 'success');
             } else if (type === 'demo') {
-                badge.classList.add('warning'); // Demo mode warning
+                badge.classList.add('warning');
             } else {
                 badge.classList.remove('warning', 'success');
             }
@@ -1528,28 +1544,9 @@
         }
     }
     
-    // --- IDLE TIMER LOGIC ---
-    function updateIdleTimers() {
-        if (!firstCompletionTime) return;
-        
-        const now = Date.now();
-        const idleTimeMs = now - firstCompletionTime;
-        const idleMinutes = Math.floor(idleTimeMs / 60000);
-        
-        // Update timers for empty doors
-        for(let i = DOORS_START; i <= DOORS_END; i++) {
-            if(doors[i].status === 'empty' && !doors[i].unavailable) {
-                const doorEl = document.querySelector(`.bay-circle[data-door="${i}"] .bay-timer`);
-                if(doorEl) {
-                    doorEl.textContent = `${idleMinutes}m`;
-                }
-            }
-        }
-    }
-    
     // --- DOOR UNAVAILABLE LOGIC ---
     function setupTouchHandlers() {
-        for(let i = DOORS_START; i <= DOORS_END; i++) {
+        for(let i=DOORS_START; i<=DOORS_END; i++) {
             const doorEl = document.querySelector(`.bay-circle[data-door="${i}"]`);
             if(doorEl) {
                 // Clear any existing listeners
@@ -1561,7 +1558,7 @@
                     touchStartTime[i] = Date.now();
                     touchTimeout[i] = setTimeout(() => {
                         toggleDoorAvailability(i);
-                    }, 800); // 800ms for long press
+                    }, 800);
                 });
                 
                 doorEl.addEventListener('touchend', () => {
@@ -1621,8 +1618,9 @@
                 id: wallyId, 
                 account: "", 
                 type: 'Wally', 
-                unloader: unloader,
-                isDuplicate: true
+                unloader: unloader || "Unassigned",
+                isDuplicate: true,
+                unavailable: false
             };
             saveData(); 
             closeModal('input-modal'); 
@@ -1685,15 +1683,15 @@
                 start: startTime,
                 end: null,
                 status: 'active',
-                role: 'Unloader', // Default Role
-                accumulated: 0 // New field for pausing
+                role: 'Unloader',
+                accumulated: 0
             });
         });
         
         saveData();
         closeModal('add-staff-modal');
         renderStaffingView();
-        updateTabBadges(); // Update badges after adding staff
+        updateTabBadges();
     }
     
     function cutStaff(id) {
@@ -1708,7 +1706,7 @@
             s.start = null; // No active session
             saveData();
             renderStaffingView();
-            updateTabBadges(); // Update badges after cutting staff
+            updateTabBadges();
         }
     }
     
@@ -1717,7 +1715,7 @@
             staffing = staffing.filter(s => s.id !== id);
             saveData();
             renderStaffingView();
-            updateTabBadges(); // Update badges after removing staff
+            updateTabBadges();
         }
     }
     
@@ -1727,7 +1725,7 @@
         document.getElementById('edit-staff-id').value = id;
         
         // Format time for input
-        const date = new Date(s.start || Date.now()); // Fallback if paused
+        const date = new Date(s.start || Date.now());
         const h = date.getHours().toString().padStart(2,'0');
         const m = date.getMinutes().toString().padStart(2,'0');
         document.getElementById('edit-staff-time').value = `${h}:${m}`;
@@ -1749,9 +1747,7 @@
             
             // Handle midnight crossover adjustment heuristic
             const diff = newDate.getTime() - originalDate.getTime();
-            // If user changes 23:00 to 01:00 (next day), diff is -22h. We should add 1 day.
             if(diff < -12 * 3600000) newDate.setDate(newDate.getDate() + 1);
-            // If user changes 01:00 to 23:00 (prev day), diff is +22h. We should sub 1 day.
             if(diff > 12 * 3600000) newDate.setDate(newDate.getDate() - 1);
             
             s.start = newDate.getTime();
@@ -1775,7 +1771,6 @@
                     const currentSessionMs = now - s.start;
                     const currentSessionHours = currentSessionMs / 3600000;
                     
-                    // Show a confirmation dialog about the hour transfer
                     if(confirm(`${s.name} has ${currentSessionHours.toFixed(2)} hours in this session. Moving from ${oldRole} to ${newRole} will transfer these hours to the new role. Continue?`)) {
                         // Add current session to accumulated BEFORE changing role
                         s.accumulated = (s.accumulated || 0) + currentSessionMs;
@@ -1796,7 +1791,6 @@
                     }
                 } else if(s.status === 'paused') {
                     // For paused staff, the hours are already in accumulated
-                    // Just change the role without affecting accumulated hours
                     if(confirm(`Change ${s.name}'s role from ${oldRole} to ${newRole}? Their ${(s.accumulated/3600000).toFixed(2)} accumulated hours will now count towards ${newRole}.`)) {
                         s.role = newRole;
                         saveData();
@@ -1824,10 +1818,10 @@
         if (s && s.status === 'active') {
             s.status = 'paused';
             s.accumulated = (s.accumulated || 0) + (Date.now() - s.start);
-            s.start = null; // Clear active start time
+            s.start = null;
             saveData();
             renderStaffingView();
-            updateTabBadges(); // Update badges after pausing staff
+            updateTabBadges();
         }
     }
 
@@ -1838,7 +1832,7 @@
             s.start = Date.now();
             saveData();
             renderStaffingView();
-            updateTabBadges(); // Update badges after resuming staff
+            updateTabBadges();
         }
     }
     
@@ -1883,8 +1877,8 @@
              let suggestionBadge = '';
              if (topThreeIds.includes(s.id)) {
                  const position = topThreeIds.indexOf(s.id);
-                 if (position === 0) suggestionBadge = '👑'; // Crown for #1
-                 else if (position === 1 || position === 2) suggestionBadge = '🧹'; // Broom for #2 and #3
+                 if (position === 0) suggestionBadge = '👑';
+                 else if (position === 1 || position === 2) suggestionBadge = '🧹';
              }
              
              const isPaused = s.status === 'paused';
@@ -1902,9 +1896,9 @@
              const totalHours = totalMs / 3600000;
              
              // Determine role-specific display color
-             let roleColor = 'var(--accent-blue)';
-             if (s.role === 'Belt Tender') roleColor = '#ff9500'; // Orange
-             if (s.role === 'Bulk Sweep') roleColor = '#34c759'; // Green
+             let roleColor = '#000';
+             if (s.role === 'Belt Tender') roleColor = '#ff9500';
+             if (s.role === 'Bulk Sweep') roleColor = '#34c759';
              
              const div = document.createElement('div');
              div.className = 'staff-card';
@@ -1977,7 +1971,7 @@
         const now = Date.now();
         let onClockCount = 0;
         let offClockCount = 0;
-        let totalUnloaderHours = 0; // Renamed for clarity
+        let totalUnloaderHours = 0;
         let beltHours = 0;
         let sweepHours = 0;
         
@@ -2011,7 +2005,7 @@
         });
         
         document.getElementById('staff-active-count').innerText = onClockCount;
-        document.getElementById('staff-total-hours').innerText = totalUnloaderHours.toFixed(2); // Only unloader hours
+        document.getElementById('staff-total-hours').innerText = totalUnloaderHours.toFixed(2);
         document.getElementById('staff-belt-hours').innerText = beltHours.toFixed(2);
         document.getElementById('staff-sweep-hours').innerText = sweepHours.toFixed(2);
     }
@@ -2073,9 +2067,8 @@
         const checked = el.classList.contains('checked');
         
         if(id === 'demo-mode') { 
-            // Update demoActive variable when demo mode is toggled
             demoActive = checked;
-            updateTabBadges(); // Update badges to show demo status
+            updateTabBadges();
         }
         if(id === 'demo-replenish') config.replenish = checked;
         if(id === 'demo-random') config.randomHistory = checked;
@@ -2111,7 +2104,7 @@
         }
         alert("Demo Started: " + count + " doors filled.");
         switchTab('dashboard'); 
-        updateTabBadges(); // Update badges after starting demo
+        updateTabBadges();
     }
     
     function randomArrival(doorNum) {
@@ -2121,9 +2114,9 @@
         const unloader = teamNames[Math.floor(Math.random() * teamNames.length)];
         let account = "";
         if(type === 'CPU') account = savedAccounts.length > 0 ? savedAccounts[Math.floor(Math.random() * savedAccounts.length)] : "ACC" + Math.floor(100 + Math.random() * 900);
-        doors[doorNum] = { status: 'active', start: Date.now(), id: id, account: account, type: type, unloader: unloader, unavailable: false };
+        doors[doorNum] = { status: 'active', start: Date.now(), id: id.toUpperCase(), account: account.toUpperCase(), type: type, unloader: unloader, unavailable: false, lastCompletionTime: null };
         renderDashboard();
-        updateTabBadges(); // Update badges after random arrival
+        updateTabBadges();
     }
     
     // --- SHIFT & TIME ---
@@ -2138,7 +2131,7 @@
 
     function getShiftTimeWindows() {
         if (config.disableTimes) {
-             // Basic hardcoded logic fallback (e.g. 20:00 start)
+             // Basic hardcoded logic fallback
              const now = new Date();
              const h = now.getHours();
              const thisHourStart = new Date(now); thisHourStart.setMinutes(0,0,0);
@@ -2174,7 +2167,7 @@
         
         // Calculate which hour of the shift this completion belongs to
         const hoursSinceShiftStart = Math.floor((completionTime - shiftStartTime) / 3600000);
-        return hoursSinceShiftStart + 1; // 1-based hour numbering
+        return hoursSinceShiftStart + 1;
     }
 
     // --- LOGIC ---
@@ -2183,7 +2176,7 @@
         ids.forEach(id => {
             const el = document.getElementById(id);
             if(el) {
-                el.innerHTML = '<option value="" disabled selected>Select...</option>';
+                el.innerHTML = '<option value="" selected>Unassigned</option>';
                 [...teamNames].sort().forEach(name => {
                     const opt = document.createElement('option');
                     opt.value = name; opt.innerText = name;
@@ -2205,8 +2198,13 @@
         const input=document.getElementById('input-new-unloader-name'); 
         const val=input.value.trim(); 
         if(val){ 
-            if(!teamNames.includes(val)){
-                teamNames.push(val); 
+            // Capitalize first letter of each word
+            const capitalized = val.toLowerCase().split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+            
+            if(!teamNames.includes(capitalized)){
+                teamNames.push(capitalized); 
                 localStorage.setItem('ps9_team',JSON.stringify(teamNames)); 
                 populateUnloaderSelect();
             } 
@@ -2248,18 +2246,12 @@
     function confirmCompleteDoor() {
         if(!detailDoor) return;
         completeDoor(detailDoor);
-        closeModal('active-detail-modal');
     }
 
     function completeDoor(doorNum) {
-        // 1. Check for 00-10 Window
+        // Check for 00-10 Window
         const now = new Date();
         const mins = now.getMinutes();
-        
-        // Conditions for Attribution:
-        // 1. Window enabled (not disabled)
-        // 2. Time is :00-:10 (OR simulate toggle is ON)
-        // 3. We are past the first hour of shift (rough check: shift start < now - 1hr)
         
         const { shiftStart } = getShiftTimeWindows();
         const isPastFirstHour = (now - shiftStart) > 3600000;
@@ -2281,13 +2273,9 @@
         closeModal('hour-attribution-modal');
         if (!pendingCompletion) return;
         
-        // If "Previous", we shift the statistical time back by (minutes + 1) to land in previous hour
-        // E.g. if 9:05, shift back 6 mins -> 8:59 for stats purpose.
-        // Actually, better: calculate offset to force it into previous bin.
         let offset = 0;
         if (choice === 'Previous') {
             const d = new Date(pendingCompletion.time);
-            // subtract enough ms to go to :59 of previous hour
             const mins = d.getMinutes();
             offset = (mins + 1) * 60000; 
         }
@@ -2301,13 +2289,16 @@
         let end = actualEndTime;
         let start = d.start;
         
+        // Calculate duration in minutes
+        const durationMinutes = Math.floor((end - start) / 60000);
+        
         // Random History Logic for Demo
         if (config.randomHistory && demoActive) {
              const { shiftStart } = getShiftTimeWindows();
              const earliest = shiftStart.getTime();
              end = Math.floor(Math.random() * (Date.now() - earliest) + earliest);
              start = end - (Math.floor(Math.random() * 30 + 15) * 60000);
-             statOffset = 0; // Disable offset for random history
+             statOffset = 0;
         }
         
         // Auto Save Account (if not already saved)
@@ -2333,42 +2324,52 @@
             start: start,
             end: end,
             duration: end - start,
-            statOffset: statOffset, // Store offset to calculate "Effective Time" for stats
+            durationMinutes: durationMinutes,
+            statOffset: statOffset,
             logId: Date.now() + Math.random().toString(36).substring(2, 9),
-            duplicate: d.isDuplicate || false, // Mark as duplicate if applicable
-            completionHour: completionHour // Store which hour of the shift it was completed
+            duplicate: d.isDuplicate || false,
+            completionHour: completionHour
         });
 
         if (d.type === 'Wally' && navigator.share && !demoActive) {
-             navigator.share({ text: `Door ${doorNum} done` }).catch(err => console.log(err));
+             navigator.share({ 
+                 text: `Door ${doorNum} completed: ${d.type} ${d.id} | Duration: ${durationMinutes}m | ${new Date(end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`
+             }).then(() => {
+                 // Auto-close the modal after sharing
+                 closeModal('active-detail-modal');
+             }).catch(err => console.log(err));
+        } else {
+            // Auto-close if no share or not Wally
+            closeModal('active-detail-modal');
         }
 
-        doors[doorNum] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false };
-        
-        // Set first completion time if not set
-        if (!firstCompletionTime) {
-            firstCompletionTime = end;
-            localStorage.setItem('ps9_first_completion', firstCompletionTime.toString());
-        }
+        doors[doorNum] = { 
+            status: 'empty', 
+            start: 0, 
+            id: '', 
+            type: '', 
+            unloader: '', 
+            unavailable: false,
+            lastCompletionTime: end // Store completion time for this door
+        };
         
         saveData();
         renderDashboard();
-        renderActiveTab(); // ENSURE ACTIVE TAB LIST UPDATES
-        updateTabBadges(); // Update badges after completion
+        renderActiveTab();
+        updateTabBadges();
         
         if (demoActive && config.replenish) {
             setTimeout(() => { if (doors[doorNum].status === 'empty') randomArrival(doorNum); }, 7000);
         }
     }
 
-    // --- STATS UPDATE (Updated for Attribution) ---
+    // --- STATS UPDATE ---
     function updateStats() {
         const { thisHourStart, thisHourEnd, lastHourStart, lastHourEnd } = getShiftTimeWindows();
 
         let totalWally = 0, totalCPU = 0, hourWally = 0, lastHourWally = 0;
 
         historyLog.forEach(log => {
-            // Use effective time for stats (Actual Time - Offset)
             const effectiveTime = log.end - (log.statOffset || 0);
             
             if (log.type === 'Wally') {
@@ -2417,9 +2418,9 @@
                 btn.setAttribute('data-door', i);
                 btn.innerText = i;
                 
-                // Add idle timer if first completion has happened
-                if (firstCompletionTime && d.status === 'empty' && !d.unavailable) {
-                    const idleTimeMs = Date.now() - firstCompletionTime;
+                // Add idle timer only for doors that have been completed before
+                if (d.lastCompletionTime && d.status === 'empty' && !d.unavailable) {
+                    const idleTimeMs = Date.now() - d.lastCompletionTime;
                     const idleMinutes = Math.floor(idleTimeMs / 60000);
                     const timer = document.createElement('div');
                     timer.className = 'bay-timer';
@@ -2467,26 +2468,45 @@
         document.getElementById('detail-door-num').innerText = doorNum;
         document.getElementById('detail-type').innerText = d.type;
         document.getElementById('detail-id').innerText = d.id;
-        document.getElementById('detail-unloader').innerText = d.unloader;
+        document.getElementById('detail-unloader').innerText = d.unloader || "Unassigned";
         document.getElementById('detail-time').innerText = new Date(d.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
+        // Calculate and show duration
+        const durationMs = Date.now() - d.start;
+        const durationMinutes = Math.floor(durationMs / 60000);
+        document.getElementById('detail-duration').innerText = `${durationMinutes}m`;
+        
+        // Update availability button text
+        const availBtn = document.getElementById('availability-btn-text');
+        if (availBtn) {
+            availBtn.textContent = d.unavailable ? "Mark Available" : "Mark Unavailable";
+        }
+        
         const acctRow = document.getElementById('row-account');
-        if (d.account) { acctRow.style.display = 'flex'; document.getElementById('detail-account').innerText = d.account; } 
-        else { acctRow.style.display = 'none'; }
+        if (d.account) { 
+            acctRow.style.display = 'flex'; 
+            document.getElementById('detail-account').innerText = d.account; 
+        } else { 
+            acctRow.style.display = 'none'; 
+        }
         document.getElementById('active-detail-modal').style.display = 'flex';
     }
     
-    function openEditActiveModalFromDetail() { closeModal('active-detail-modal'); openEditActiveModal(detailDoor); }
+    function openEditActiveModalFromDetail() { 
+        closeModal('active-detail-modal'); 
+        openEditActiveModal(detailDoor); 
+    }
 
     function openEditActiveModal(doorNum) {
         const d = doors[doorNum];
         document.getElementById('edit-active-original-door').value = doorNum;
         document.getElementById('edit-active-id').value = d.id;
         document.getElementById('edit-active-account').value = d.account || "";
+        
         // Pre-select unloader
         const unloaderSelect = document.getElementById('edit-active-unloader');
-        unloaderSelect.value = d.unloader;
-        if(unloaderSelect.selectedIndex === -1) { // If custom/deleted
+        unloaderSelect.value = d.unloader || "";
+        if(unloaderSelect.selectedIndex === -1) {
              unloaderSelect.value = 'Custom';
              checkActiveCustomUnloader(unloaderSelect);
              document.getElementById('edit-active-custom-unloader').value = d.unloader;
@@ -2495,12 +2515,17 @@
         }
 
         setEditActiveType(d.type);
+        
         // Populate bay select
         const sel = document.getElementById('edit-active-door-select');
         sel.innerHTML = '';
         for(let i=DOORS_START; i<=DOORS_END; i++) {
             if(i===doorNum || doors[i].status==='empty') {
-                const opt = document.createElement('option'); opt.value = i; opt.innerText = `Bay ${i}`; if(i===doorNum) opt.selected=true; sel.appendChild(opt);
+                const opt = document.createElement('option'); 
+                opt.value = i; 
+                opt.innerText = `Bay ${i}`; 
+                if(i===doorNum) opt.selected=true; 
+                sel.appendChild(opt);
             }
         }
         document.getElementById('edit-active-modal').style.display = 'flex';
@@ -2523,19 +2548,38 @@
         
         let unl = document.getElementById('edit-active-unloader').value;
         if(unl === 'Custom') unl = document.getElementById('edit-active-custom-unloader').value.trim();
+        if (!unl) unl = "Unassigned";
+        
+        // Capitalize custom names
+        if (unl !== "Unassigned" && unl === document.getElementById('edit-active-custom-unloader').value.trim()) {
+            unl = unl.toLowerCase().split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
         
         const data = {
-            status: 'active', start: doors[orig].start,
-            id: document.getElementById('edit-active-id').value.trim(),
-            account: document.getElementById('edit-active-account').value.trim(),
+            status: 'active', 
+            start: doors[orig].start,
+            id: document.getElementById('edit-active-id').value.trim().toUpperCase(),
+            account: document.getElementById('edit-active-account').value.trim().toUpperCase(),
             type: document.getElementById('edit-active-modal').dataset.type,
             unloader: unl,
-            unavailable: false
+            unavailable: false,
+            lastCompletionTime: doors[orig].lastCompletionTime
         };
-        if(dest !== orig) { doors[dest] = data; doors[orig] = {status:'empty', start:0, id:'', type:'', unloader:'', unavailable: false}; }
-        else { doors[orig] = data; }
-        saveData(); closeModal('edit-active-modal'); renderActiveTab(); renderDashboard();
-        updateTabBadges(); // Update badges after editing active bay
+        
+        if(dest !== orig) { 
+            doors[dest] = data; 
+            doors[orig] = {status:'empty', start:0, id:'', type:'', unloader:'', unavailable: false, lastCompletionTime: doors[orig].lastCompletionTime}; 
+        } else { 
+            doors[orig] = data; 
+        }
+        
+        saveData(); 
+        closeModal('edit-active-modal'); 
+        renderActiveTab(); 
+        renderDashboard();
+        updateTabBadges();
     }
 
     function checkCustomUnloader(select) {
@@ -2547,18 +2591,33 @@
         const idVal = currentType === 'Wally' ? document.getElementById('input-wally-id').value : document.getElementById('input-trailer-id').value;
         const accVal = currentType === 'CPU' ? document.getElementById('input-account-id').value : "";
         const sel = document.getElementById('select-unloader');
-        let unl = sel.value; if(unl === 'Custom') unl = document.getElementById('input-custom-unloader').value;
+        let unl = sel.value; 
         
-        if(!idVal || !unl) return alert("Missing info");
+        if(unl === 'Custom') {
+            unl = document.getElementById('input-custom-unloader').value;
+            // Capitalize first letter of each word for custom names
+            if (unl) {
+                unl = unl.toLowerCase().split(' ').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+            }
+        }
+        
+        // Remove unloader requirement
+        if(!idVal) return alert("Missing Wally/Trailer ID");
+        
+        // Auto-capitalize account and trailer numbers
+        const formattedId = idVal.toUpperCase();
+        const formattedAccount = accVal.toUpperCase();
         
         // Check for duplicate Wally
-        if (currentType === 'Wally' && checkDuplicateWally(idVal)) {
+        if (currentType === 'Wally' && checkDuplicateWally(formattedId)) {
             pendingWallyDuplicate = {
                 doorNum: currentDoor,
-                wallyId: idVal,
-                unloader: unl
+                wallyId: formattedId,
+                unloader: unl || "Unassigned"
             };
-            document.getElementById('duplicate-wally-id').textContent = idVal;
+            document.getElementById('duplicate-wally-id').textContent = formattedId;
             document.getElementById('duplicate-wally-modal').style.display = 'flex';
             return;
         }
@@ -2566,15 +2625,18 @@
         doors[currentDoor] = {
             status: 'active', 
             start: Date.now(), 
-            id: idVal, 
-            account: accVal, 
+            id: formattedId, 
+            account: formattedAccount, 
             type: currentType, 
-            unloader: unl,
+            unloader: unl || "Unassigned",
             isDuplicate: false,
-            unavailable: false
+            unavailable: false,
+            lastCompletionTime: null
         };
-        saveData(); closeModal('input-modal'); renderDashboard();
-        updateTabBadges(); // Update badges after new arrival
+        saveData(); 
+        closeModal('input-modal'); 
+        renderDashboard();
+        updateTabBadges();
     }
     
     function openArrivalModal(specificDoor = null) {
@@ -2633,7 +2695,6 @@
         }, 100);
     }
 
-    // 2. setType
     function setType(t) {
         currentType = t;
         const optWally = document.getElementById('opt-wally');
@@ -2667,17 +2728,22 @@
             activeLogFilter.type = 'CPU';
         } else if (type === 'Hour-0') {
             activeLogFilter.timeRange = 'ThisHour';
-            activeLogFilter.type = 'Wally'; // "Wallies This Hour"
+            activeLogFilter.type = 'Wally';
         } else if (type === 'Hour-1') {
             activeLogFilter.timeRange = 'LastHour';
-            activeLogFilter.type = 'Wally'; // "Wallies Last Hour"
+            activeLogFilter.type = 'Wally';
         }
         
         // Switch tab and render
         switchTab('logs');
     }
     
-    function viewDoorLogs(doorNum) { closeModal('input-modal'); closeModal('active-detail-modal'); setLogFilter(doorNum); switchTab('logs'); }
+    function viewDoorLogs(doorNum) { 
+        closeModal('input-modal'); 
+        closeModal('active-detail-modal'); 
+        setLogFilter(doorNum); 
+        switchTab('logs'); 
+    }
     
     function openFilterModal() {
         const g = document.getElementById('filter-grid');
@@ -2686,11 +2752,24 @@
         document.getElementById('filter-modal').style.display='flex';
     }
     
-    function applyFilter(v) { currentLogFilter = v; activeLogFilter.door = v; closeModal('filter-modal'); renderLogs(); }
+    function applyFilter(v) { 
+        currentLogFilter = v; 
+        activeLogFilter.door = v; 
+        closeModal('filter-modal'); 
+        renderLogs(); 
+    }
     
-    function clearLogFilter() { currentLogFilter = 'All'; activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' }; renderLogs(); }
+    function clearLogFilter() { 
+        currentLogFilter = 'All'; 
+        activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' }; 
+        renderLogs(); 
+    }
     
-    function setLogFilter(v) { currentLogFilter = v; activeLogFilter.door = v; renderLogs(); }
+    function setLogFilter(v) { 
+        currentLogFilter = v; 
+        activeLogFilter.door = v; 
+        renderLogs(); 
+    }
     
     function toggleStats(section) {
         const c = document.getElementById(section === 'unloader' ? 'stats-content' : 'hourly-content');
@@ -2698,7 +2777,10 @@
         const show = c.style.display !== 'block';
         c.style.display = show ? 'block' : 'none';
         i.className = show ? 'ph ph-caret-up' : 'ph ph-caret-down';
-        if(show) { if(section==='unloader') calculateAndRenderStats(); else calculateAndRenderHourlyStats(); }
+        if(show) { 
+            if(section==='unloader') calculateAndRenderStats(); 
+            else calculateAndRenderHourlyStats(); 
+        }
     }
     
     function calculateAndRenderStats() {
@@ -2723,7 +2805,7 @@
         });
         const tbody = document.getElementById('hourly-stats-body'); tbody.innerHTML='';
         Object.keys(hourly).sort((a,b)=>a-b).forEach(h => {
-             tbody.innerHTML += `<tr><td>${h}${h==1?'st':h==2?'nd':h==3?'rd':'th'} Hour</td><td style="text-align:center">${hourly[h]}</td></tr>`;
+             tbody.innerHTML += `<tr><td>${getHourText(h)}</td><td style="text-align:center">${hourly[h]}</td></tr>`;
         });
     }
 
@@ -2761,7 +2843,7 @@
              if (activeLogFilter.type !== 'All' && l.type !== activeLogFilter.type) return false;
              // Time Filter
              if (activeLogFilter.timeRange !== 'All') {
-                  const endTime = l.end - (l.statOffset || 0); // Use effective time for stats
+                  const endTime = l.end - (l.statOffset || 0);
                   if (activeLogFilter.timeRange === 'ThisHour') {
                       if (endTime < thisHourStart.getTime() || endTime >= thisHourEnd.getTime()) return false;
                   } else if (activeLogFilter.timeRange === 'LastHour') {
@@ -2771,31 +2853,37 @@
              return true;
         });
 
-        if(filtered.length === 0) { list.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">No logs found.</div>'; return; }
+        if(filtered.length === 0) { 
+            list.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">No logs found.</div>'; 
+            return; 
+        }
         
         filtered.forEach(({l, i}) => {
-             const badgeColor = '#000';
              const acctInfo = l.account ? ` <span style="color:#8e8e93; font-weight:400">(${l.account})</span>` : '';
              const revertable = (now - l.end) < (120000);
              const duplicateBadge = l.duplicate ? '<span class="log-type-pill" style="background:#ff3b30; color:#fff; margin-left:6px;">DUP</span>' : '';
-             const hourBadge = `<span class="log-type-pill" style="background:#007AFF; color:#fff; margin-left:6px;">H${l.completionHour}</span>`;
+             const hourBadge = `<span class="log-type-pill" style="background:#000; color:#fff; margin-left:6px;">${getHourText(l.completionHour)}</span>`;
              
              list.innerHTML += `
                 <div class="log-card">
                     <div class="log-info">
                         <div class="active-card-header">
                             <span class="log-door-pill" onclick="viewDoorLogs(${l.door})">Door ${l.door}</span>
-                            <span class="log-type-pill" style="background:${badgeColor}; color:#fff">${l.type}</span>
+                            <span class="log-type-pill" style="background:#000; color:#fff">${l.type}</span>
                             ${duplicateBadge}
                             ${hourBadge}
                         </div>
                         <div class="log-title">${l.id}${acctInfo}</div>
-                        <div class="log-details">${l.unloader}</div>
-                        <div class="log-timestamp">${new Date(l.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                        <div class="log-details">${l.unloader} • ${l.durationMinutes || Math.floor(l.duration/60000)}m</div>
+                        <div class="log-timestamp">
+                            <span style="color:#000; font-weight:700;">${new Date(l.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                             → 
+                            <span style="color:#000; font-weight:700;">${new Date(l.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                        </div>
                     </div>
                     <div class="log-actions">
-                         ${revertable ? `<button class="log-action-btn log-revert-btn" onclick="revertLog(${i})" style="color:var(--accent-blue)"><i class="ph ph-arrow-u-up-left"></i> Revert</button>` : ''}
-                         <button class="log-action-btn" onclick="openEditLogModal(${i})"><i class="ph ph-pencil-simple"></i> Edit</button>
+                         ${revertable ? `<button class="log-action-btn log-revert-btn" onclick="revertLog(${i})" style="color:#000; border:1px solid #000;"><i class="ph ph-arrow-u-up-left"></i> Revert</button>` : ''}
+                         <button class="log-action-btn" onclick="openEditLogModal(${i})" style="color:#000; border:1px solid #000;"><i class="ph ph-pencil-simple"></i> Edit</button>
                     </div>
                 </div>
              `;
@@ -2810,18 +2898,36 @@
         if(Date.now() - log.end > 120000 && !demoActive) return alert("Time expired");
         if(doors[log.door].status !== 'empty') return alert("Door occupied");
         
-        doors[log.door] = { status: 'active', start: log.start, id: log.id, account: log.account, type: log.type, unloader: log.unloader, unavailable: false };
+        doors[log.door] = { 
+            status: 'active', 
+            start: log.start, 
+            id: log.id, 
+            account: log.account, 
+            type: log.type, 
+            unloader: log.unloader, 
+            unavailable: false,
+            lastCompletionTime: null
+        };
         historyLog.splice(index, 1);
-        saveData(); renderDashboard(); renderLogs();
-        updateTabBadges(); // Update badges after reverting log
+        saveData(); 
+        renderDashboard(); 
+        renderLogs();
+        updateTabBadges();
     }
     
     function openEditLogModal(i) {
-        const l = historyLog[i]; document.getElementById('edit-log-index').value = i;
+        const l = historyLog[i]; 
+        document.getElementById('edit-log-index').value = i;
         document.getElementById('edit-input-id').value = l.id;
         
-        const sel = document.getElementById('edit-select-unloader'); sel.innerHTML='';
-        teamNames.sort().forEach(n => {const o=document.createElement('option'); o.value=n; o.innerText=n; sel.appendChild(o);});
+        const sel = document.getElementById('edit-select-unloader'); 
+        sel.innerHTML='<option value="">Unassigned</option>';
+        teamNames.sort().forEach(n => {
+            const o=document.createElement('option'); 
+            o.value=n; 
+            o.innerText=n; 
+            sel.appendChild(o);
+        });
         sel.value = l.unloader;
         
         // Type toggle
@@ -2834,12 +2940,17 @@
     
     function confirmLogEdit() {
         const idx = parseInt(document.getElementById('edit-log-index').value);
-        historyLog[idx].id = document.getElementById('edit-input-id').value;
-        historyLog[idx].unloader = document.getElementById('edit-select-unloader').value;
+        const newId = document.getElementById('edit-input-id').value.toUpperCase();
+        const newUnloader = document.getElementById('edit-select-unloader').value;
+        
+        historyLog[idx].id = newId;
+        historyLog[idx].unloader = newUnloader;
         historyLog[idx].type = document.getElementById('edit-log-modal').dataset.type;
         // Recalculate completion hour when editing
         historyLog[idx].completionHour = getCompletionHour(historyLog[idx].end - (historyLog[idx].statOffset || 0));
-        saveData(); closeModal('edit-log-modal'); renderLogs();
+        saveData(); 
+        closeModal('edit-log-modal'); 
+        renderLogs();
     }
     
     function openExportModal() {
@@ -2848,9 +2959,9 @@
     
     function exportLogsCSV() {
         closeModal('export-modal');
-        let csv = "Type,ID,Account,Door,Unloader,Duration,StartTime,EndTime,Duplicate,Hour\n";
+        let csv = "Type,ID,Account,Door,Unloader,Duration(mins),StartTime,EndTime,StartHour,EndHour,Duplicate,Hour\n";
         historyLog.forEach(l => {
-             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.floor(l.duration/60000)}m,${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${l.duplicate ? 'Yes' : 'No'},${l.completionHour}\n`;
+             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.floor(l.duration/60000)},${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${new Date(l.start).getHours()},${new Date(l.end).getHours()},${l.duplicate ? 'Yes' : 'No'},${l.completionHour}\n`;
         });
         const blob = new Blob([csv], {type:'text/csv'});
         const url = window.URL.createObjectURL(blob);
@@ -2864,10 +2975,19 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
+            // Add date to title
+            const now = new Date();
+            const dateString = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
             doc.setFontSize(18);
-            doc.text("PS9 Wally Tracker Report", 14, 20);
+            doc.text(`PS9 Wally Tracker Report - ${dateString}`, 14, 20);
             doc.setFontSize(12);
-            doc.text("Date: " + new Date().toLocaleString(), 14, 30);
+            doc.text(`Generated: ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`, 14, 30);
             
             // 1. Unloader Stats Table
             const stats = {};
@@ -2893,7 +3013,7 @@
                 const idx = Math.floor((effTime - shiftStart.getTime())/3600000) + 1;
                 if(!hourly[idx]) hourly[idx]=0; hourly[idx]++;
             });
-            const hourlyBody = Object.keys(hourly).sort((a,b)=>a-b).map(h => [`${h}${h==1?'st':h==2?'nd':h==3?'rd':'th'} Hour`, hourly[h]]);
+            const hourlyBody = Object.keys(hourly).sort((a,b)=>a-b).map(h => [getHourText(h), hourly[h]]);
             
             let finalY = doc.lastAutoTable.finalY + 15;
             doc.text("Hourly Breakdown", 14, finalY);
@@ -2909,13 +3029,13 @@
             doc.text("Detailed Logs", 14, finalY);
             
             const logsBody = historyLog.map(l => [
-                new Date(l.end).toLocaleTimeString(),
+                new Date(l.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
                 l.door,
                 l.type + (l.duplicate ? ' (DUP)' : ''),
                 l.id,
                 l.unloader,
                 Math.floor(l.duration/60000) + "m",
-                `H${l.completionHour}`
+                getHourText(l.completionHour)
             ]);
             
             doc.autoTable({
@@ -2925,7 +3045,7 @@
                 theme: 'striped'
             });
             
-            doc.save("wally-report.pdf");
+            doc.save(`wally-report-${now.toISOString().split('T')[0]}.pdf`);
         } catch (e) {
             alert("Error generating PDF. Please ensure internet connection is active to load PDF libraries.");
             console.error(e);
@@ -2939,19 +3059,11 @@
         localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
         localStorage.setItem('ps9_staffing', JSON.stringify(staffing));
         localStorage.setItem('ps9_dop', currentDOP);
-        if (firstCompletionTime) {
-            localStorage.setItem('ps9_first_completion', firstCompletionTime.toString());
-        }
     }
     
-    // ----------------------------------------------------
-    //  NEW PPH CALCULATOR FUNCTIONS (TOOLS TAB)
-    // ----------------------------------------------------
-    
+    // --- PPH CALCULATOR FUNCTIONS ---
     function openPPHModal() {
         const hours = calculateUnloaderHours();
-        // If hours are 0 (no staffing used), user might want to input manually. 
-        // If hours exist, pre-fill.
         const input = document.getElementById('pph-unloader-hours-input');
         input.value = hours > 0 ? hours.toFixed(2) : '';
         
@@ -2959,8 +3071,6 @@
         document.getElementById('pph-result').innerText = '0';
         document.getElementById('pph-modal').style.display = 'flex';
         
-        // Focus volume input for quick entry, or hours if empty? 
-        // User likely wants to enter volume if staffing is auto, or hours if manual.
         if (hours > 0) {
             setTimeout(() => document.getElementById('pph-volume-input').focus(), 100);
         } else {
@@ -2969,7 +3079,6 @@
     }
     
     function resetPPH() {
-        // Reset to auto-calculated hours
         const hours = calculateUnloaderHours();
         const input = document.getElementById('pph-unloader-hours-input');
         input.value = hours > 0 ? hours.toFixed(2) : '';
@@ -2987,10 +3096,8 @@
         
         staffing.forEach(s => {
             if (s.role === 'Unloader') {
-                // Base accumulated time
                 let ms = (s.accumulated || 0);
                 
-                // If currently active, add live time
                 if (s.status === 'active' && s.start) {
                     ms += (now - s.start);
                 }
@@ -3004,7 +3111,6 @@
     
     function calculatePPH() {
         const vol = parseFloat(document.getElementById('pph-volume-input').value) || 0;
-        // Get from input value now
         const hours = parseFloat(document.getElementById('pph-unloader-hours-input').value) || 0;
         
         if (hours === 0) {
@@ -3016,7 +3122,6 @@
         document.getElementById('pph-result').innerText = pph.toLocaleString();
     }
 
-    // Set edit type for log editing
     function setEditType(t) {
         document.getElementById('edit-opt-wally').classList.toggle('selected', t === 'Wally');
         document.getElementById('edit-opt-cpu').classList.toggle('selected', t === 'CPU');
