@@ -841,7 +841,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.8</div>
+            <div class="app-version">Version 3.9</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1427,7 +1427,7 @@
     let hourlyVisible = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.8';
+    const APP_VERSION = '3.9';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
@@ -2466,7 +2466,7 @@
         let start = d.start;
         
         // Calculate duration in minutes
-        const durationMinutes = Math.floor((end - start) / 60000);
+        const durationMinutes = Math.round((end - start) / 60000);
         
         // Random History Logic for Demo
         if (config.randomHistory && demoActive) {
@@ -3071,7 +3071,7 @@
                         
                         <div class="log-details" style="display:flex; justify-content:space-between; margin-top:4px;">
                             <span>👤 ${l.unloader}</span>
-                            <span style="font-weight:700; color:#000;">⏱️ ${l.durationMinutes || Math.floor(l.duration/60000)} min</span>
+                            <span style="font-weight:700; color:#000;">Duration: <span style="font-weight:800; color:#000;">${l.durationMinutes || Math.round(l.duration/60000)}m</span></span>
                         </div>
                         
                         <div class="log-timestamp" style="margin-top:6px; color:#555;">
@@ -3158,7 +3158,7 @@
         closeModal('export-modal');
         let csv = "Type,ID,Account,Door,Unloader,Duration(mins),StartTime,EndTime,StartHour,EndHour,Duplicate,Hour\n";
         historyLog.forEach(l => {
-             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.floor(l.duration/60000)},${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${new Date(l.start).getHours()},${new Date(l.end).getHours()},${l.duplicate ? 'Yes' : 'No'},${l.completionHour}\n`;
+             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.round(l.duration/60000)},${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${new Date(l.start).getHours()},${new Date(l.end).getHours()},${l.duplicate ? 'Yes' : 'No'},${l.completionHour}\n`;
         });
         const blob = new Blob([csv], {type:'text/csv'});
         const url = window.URL.createObjectURL(blob);
@@ -3231,7 +3231,7 @@
                 l.type + (l.duplicate ? ' (DUP)' : ''),
                 l.id,
                 l.unloader,
-                Math.floor(l.duration/60000) + "m",
+                Math.round(l.duration/60000) + "m",
                 getHourText(l.completionHour)
             ]);
             
