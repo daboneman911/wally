@@ -841,7 +841,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.6</div>
+            <div class="app-version">Version 3.8</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1427,7 +1427,7 @@
     let hourlyVisible = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.6';
+    const APP_VERSION = '3.8';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
@@ -3054,6 +3054,10 @@
              const duplicateBadge = l.duplicate ? '<span class="log-type-pill" style="background:#ff3b30; color:#fff; margin-left:6px;">DUP</span>' : '';
              const hourBadge = `<span class="log-type-pill" style="background:#000; color:#fff; margin-left:6px;">${getHourText(l.completionHour)}</span>`;
              
+             // Format times clearly
+             const startTimeStr = new Date(l.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+             const endTimeStr = new Date(l.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+             
              list.innerHTML += `
                 <div class="log-card">
                     <div class="log-info">
@@ -3064,11 +3068,14 @@
                             ${hourBadge}
                         </div>
                         <div class="log-title">${l.id}${acctInfo}</div>
-                        <div class="log-details">${l.unloader} • ${l.durationMinutes || Math.floor(l.duration/60000)}m</div>
-                        <div class="log-timestamp">
-                            <span style="color:#000; font-weight:700;">${new Date(l.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                             → 
-                            <span style="color:#000; font-weight:700;">${new Date(l.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                        
+                        <div class="log-details" style="display:flex; justify-content:space-between; margin-top:4px;">
+                            <span>👤 ${l.unloader}</span>
+                            <span style="font-weight:700; color:#000;">⏱️ ${l.durationMinutes || Math.floor(l.duration/60000)} min</span>
+                        </div>
+                        
+                        <div class="log-timestamp" style="margin-top:6px; color:#555;">
+                            ${startTimeStr} - ${endTimeStr}
                         </div>
                     </div>
                     <div class="log-actions">
