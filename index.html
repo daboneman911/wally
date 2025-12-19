@@ -733,6 +733,109 @@
         }
         .delete-acct-btn { color: #ff3b30; font-size: 20px; cursor: pointer; }
 
+        /* Slider Styles */
+        .settings-slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px 20px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .slider-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000;
+            background: #f2f2f7;
+            padding: 4px 10px;
+            border-radius: 8px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .slider-track {
+            position: absolute;
+            width: 100%;
+            height: 6px;
+            background: #e5e5ea;
+            border-radius: 3px;
+            z-index: 1;
+        }
+
+        .slider-fill {
+            position: absolute;
+            height: 6px;
+            background: #000;
+            border-radius: 3px;
+            z-index: 2;
+            transition: width 0.1s;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #000;
+            border-radius: 15px;
+            z-index: 3;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        .slider-ticks {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            width: 100%;
+            top: 25px;
+            pointer-events: none;
+        }
+
+        .slider-tick {
+            width: 1px;
+            height: 8px;
+            background: #ccc;
+            position: relative;
+        }
+
+        .slider-tick-label {
+            position: absolute;
+            top: 12px;
+            font-size: 11px;
+            color: #8e8e93;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        /* Special styling for the attribution display */
+        .attribution-window-display {
+            font-size: 14px;
+            color: #000;
+            font-weight: 600;
+            margin-top: 8px;
+            text-align: center;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
     </style>
 </head>
 <body>
@@ -972,22 +1075,6 @@
                 </div>
                 
                 <div class="settings-row">
-                    <span class="settings-label">Simulate 00-10 Window (Demo)</span>
-                    <div class="toggle-switch" id="switch-sim-window" onclick="toggleSwitch('sim-window')"></div>
-                </div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">Disable 00-10 Window (Demo)</span>
-                    <div class="toggle-switch" id="switch-dis-window" onclick="toggleSwitch('dis-window')"></div>
-                </div>
-            </div>
-            
-            <div class="settings-note">
-                Note: The 00-10 attribution window is only active when the shift start time is 8:00 PM. If your start time is 7:45 PM, the window is disabled by default.
-            </div>
-
-            <div class="settings-group">
-                <div class="settings-row">
                     <span class="settings-label">Randomize History (Demo)</span>
                     <div class="toggle-switch" id="switch-demo-random" onclick="toggleSwitch('demo-random')"></div>
                 </div>
@@ -1023,6 +1110,84 @@
                 </div>
             </div>
             
+            <!-- Attribution Window Section -->
+            <div class="settings-header">Attribution Window</div>
+            <div class="settings-group">
+                <div class="settings-slider-container">
+                    <div class="slider-header">
+                        <span class="settings-label">Window Size: 00-10</span>
+                        <span class="slider-value" id="attribution-value">0</span>
+                    </div>
+                    
+                    <!-- Slider Container -->
+                    <div class="slider-wrapper">
+                        <div class="slider-track"></div>
+                        <div class="slider-fill" id="slider-fill"></div>
+                        <div class="slider-thumb" id="slider-thumb"></div>
+                        
+                        <!-- Tick Marks -->
+                        <div class="slider-ticks">
+                            <div class="slider-tick" style="left: 0%">
+                                <div class="slider-tick-label">0</div>
+                            </div>
+                            <div class="slider-tick" style="left: 10%">
+                                <div class="slider-tick-label">5</div>
+                            </div>
+                            <div class="slider-tick" style="left: 20%">
+                                <div class="slider-tick-label">10</div>
+                            </div>
+                            <div class="slider-tick" style="left: 30%">
+                                <div class="slider-tick-label">15</div>
+                            </div>
+                            <div class="slider-tick" style="left: 40%">
+                                <div class="slider-tick-label">20</div>
+                            </div>
+                            <div class="slider-tick" style="left: 50%">
+                                <div class="slider-tick-label">25</div>
+                            </div>
+                            <div class="slider-tick" style="left: 60%">
+                                <div class="slider-tick-label">30</div>
+                            </div>
+                            <div class="slider-tick" style="left: 70%">
+                                <div class="slider-tick-label">35</div>
+                            </div>
+                            <div class="slider-tick" style="left: 80%">
+                                <div class="slider-tick-label">40</div>
+                            </div>
+                            <div class="slider-tick" style="left: 90%">
+                                <div class="slider-tick-label">45</div>
+                            </div>
+                            <div class="slider-tick" style="left: 100%">
+                                <div class="slider-tick-label">55</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="attribution-window-display" id="attribution-display">
+                        Window: 0 minutes before hour to 10 minutes after hour
+                    </div>
+                    
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="settings-btn-inline" onclick="saveAttributionSetting()">Save</button>
+                        <button class="settings-btn-inline" onclick="resetAttributionSetting()" style="background: #e5e5ea; color: #000;">Reset to 00-10</button>
+                    </div>
+                </div>
+                
+                <div class="settings-row">
+                    <span class="settings-label">Simulate Window (Demo)</span>
+                    <div class="toggle-switch" id="switch-sim-window" onclick="toggleSwitch('sim-window')"></div>
+                </div>
+                
+                <div class="settings-row">
+                    <span class="settings-label">Disable Window</span>
+                    <div class="toggle-switch" id="switch-dis-window" onclick="toggleSwitch('dis-window')"></div>
+                </div>
+            </div>
+            
+            <div class="settings-note">
+                <strong>Attribution Window:</strong> When a trailer is completed during this window (e.g., 55 minutes before the hour to 10 minutes after), you'll be prompted to attribute it to the previous or current hour.
+            </div>
+
             <!-- Shift Time (Existing) -->
             <div class="settings-header">Shift Configuration</div>
             <div class="settings-group">
@@ -1144,11 +1309,13 @@
     </div>
 </div>
 
-<!-- ATTRIBUTION MODAL (00-10) -->
+<!-- ATTRIBUTION MODAL (Custom Window) -->
 <div class="modal-overlay" id="hour-attribution-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Attribute Completion</h2>
-        <p style="text-align:center; color:#757575; margin-bottom:25px;">This trailer was completed during the shift transition window (00-10).</p>
+        <p style="text-align:center; color:#757575; margin-bottom:25px; padding: 0 10px;">
+            This trailer was completed during the shift transition window (<span id="attribution-window-text">00-10</span>).
+        </p>
         <button class="btn-primary" onclick="resolveAttribution('Previous')">Previous Hour</button>
         <button class="btn-primary" onclick="resolveAttribution('Current')" style="background:#f2f2f7; color:#000; margin-top:10px;">Current Hour</button>
     </div>
@@ -1377,6 +1544,13 @@
         disableWindow: false
     };
 
+    // Attribution window configuration
+    let attributionConfig = {
+        startMinute: 0,  // 0 minutes before the hour (default: 00-10)
+        endMinute: 10,   // 10 minutes after the hour (fixed)
+        enabled: true
+    };
+
     // Staging for Attribution
     let pendingCompletion = null;
 
@@ -1404,6 +1578,9 @@
         // Load saved accounts first
         const sAccts = localStorage.getItem('ps9_accounts');
         if (sAccts) savedAccounts = JSON.parse(sAccts);
+        
+        // Load attribution config
+        initAttributionSettings();
         
         // Load other data
         const sDoors = localStorage.getItem('ps9_doors');
@@ -1443,6 +1620,12 @@
         populateUnloaderSelect();
         renderDashboard();
         
+        // Initialize UI after everything is loaded
+        setTimeout(() => {
+            updateAttributionUI();
+            setupAttributionSlider();
+        }, 100);
+        
         // Staffing Loop (1s)
         setInterval(updateStaffingTimers, 1000);
         // Update tab badges every 2 seconds
@@ -1470,6 +1653,122 @@
             
             location.reload(); 
         } 
+    }
+    
+    // --- ATTRIBUTION WINDOW FUNCTIONS ---
+    function initAttributionSettings() {
+        const saved = localStorage.getItem('ps9_attribution_config');
+        if (saved) {
+            attributionConfig = JSON.parse(saved);
+        }
+        updateAttributionUI();
+    }
+
+    function updateAttributionUI() {
+        const valueEl = document.getElementById('attribution-value');
+        const fillEl = document.getElementById('slider-fill');
+        const thumbEl = document.getElementById('slider-thumb');
+        const displayEl = document.getElementById('attribution-display');
+        
+        if (!valueEl || !fillEl || !thumbEl || !displayEl) return;
+        
+        // Convert start minute to slider position (55 = 100%, 0 = 0%)
+        const sliderPos = attributionConfig.startMinute;
+        const percentage = (sliderPos / 55) * 100;
+        
+        // Update UI
+        valueEl.textContent = sliderPos;
+        fillEl.style.width = `${percentage}%`;
+        thumbEl.style.left = `${percentage}%`;
+        
+        // Update display text
+        if (sliderPos === 0) {
+            displayEl.textContent = 'Window: 00 minutes before hour to 10 minutes after hour';
+        } else if (sliderPos === 55) {
+            displayEl.textContent = 'Window: 55 minutes before hour to 10 minutes after hour';
+        } else {
+            displayEl.textContent = `Window: ${sliderPos} minutes before hour to 10 minutes after hour`;
+        }
+    }
+
+    function saveAttributionSetting() {
+        localStorage.setItem('ps9_attribution_config', JSON.stringify(attributionConfig));
+        alert('Attribution window saved!');
+    }
+
+    function resetAttributionSetting() {
+        attributionConfig.startMinute = 0;
+        attributionConfig.endMinute = 10;
+        updateAttributionUI();
+        saveAttributionSetting();
+    }
+
+    function setupAttributionSlider() {
+        const sliderTrack = document.querySelector('.slider-track');
+        const sliderThumb = document.getElementById('slider-thumb');
+        const sliderFill = document.getElementById('slider-fill');
+        const valueEl = document.getElementById('attribution-value');
+        const displayEl = document.getElementById('attribution-display');
+        
+        if (!sliderTrack || !sliderThumb || !sliderFill || !valueEl || !displayEl) return;
+        
+        let isDragging = false;
+        
+        function updateSlider(clientX) {
+            const rect = sliderTrack.getBoundingClientRect();
+            let percentage = ((clientX - rect.left) / rect.width) * 100;
+            
+            // Clamp between 0 and 100
+            percentage = Math.max(0, Math.min(100, percentage));
+            
+            // Snap to nearest 5.5% increment (since 0-55 range, 10 increments of 5.5% each)
+            const snapStep = 100 / 10; // 10 steps (0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 55)
+            const snappedPercentage = Math.round(percentage / snapStep) * snapStep;
+            
+            // Convert to actual minute value (0-55)
+            const minuteValue = Math.round((snappedPercentage / 100) * 55);
+            
+            // Update configuration
+            attributionConfig.startMinute = minuteValue;
+            
+            // Update UI
+            updateAttributionUI();
+        }
+        
+        // Mouse events
+        sliderThumb.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            updateSlider(e.clientX);
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        // Touch events for mobile
+        sliderThumb.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            updateSlider(e.touches[0].clientX);
+        });
+        
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+        
+        // Click on track to jump
+        sliderTrack.addEventListener('click', (e) => {
+            updateSlider(e.clientX);
+        });
     }
     
     // --- TAB BADGE FUNCTIONALITY ---
@@ -2036,7 +2335,10 @@
         if(id === 'mixed-types') config.mixedTypes = checked;
         if(id === 'disable-times') config.disableTimes = checked;
         if(id === 'sim-window') config.simulateWindow = checked;
-        if(id === 'dis-window') config.disableWindow = checked;
+        if(id === 'dis-window') {
+            config.disableWindow = checked;
+            attributionConfig.enabled = !checked;
+        }
         
         renderDashboard();
     }
@@ -2198,7 +2500,7 @@
         if(modal) modal.style.display='none'; 
     }
 
-    // --- COMPLETION LOGIC WITH 00-10 WINDOW ---
+    // --- COMPLETION LOGIC WITH CONFIGURABLE ATTRIBUTION WINDOW ---
     function initiateCompleteDoor() {
         if (!detailDoor) return;
         confirmCompleteDoor();
@@ -2210,17 +2512,28 @@
     }
 
     function completeDoor(doorNum) {
-        // Check for 00-10 Window
+        // Check for configurable attribution window
         const now = new Date();
         const mins = now.getMinutes();
         
         const { shiftStart } = getShiftTimeWindows();
         const isPastFirstHour = (now - shiftStart) > 3600000;
-        const inWindow = (mins >= 0 && mins <= 10);
         
-        const shouldCheckAttribution = !config.disableWindow && isPastFirstHour && (inWindow || config.simulateWindow);
+        // Calculate window boundaries using config
+        const windowStart = attributionConfig.startMinute; // 0-55
+        const windowEnd = attributionConfig.endMinute; // 10 (fixed)
+        
+        // Determine if we're in the attribution window
+        // The window spans from (60 - windowStart) minutes of previous hour to windowEnd of current hour
+        const inWindow = (mins >= 0 && mins <= windowEnd) || (windowStart > 0 && mins >= (60 - windowStart));
+        
+        const shouldCheckAttribution = !config.disableWindow && isPastFirstHour && attributionConfig.enabled && (inWindow || config.simulateWindow);
 
         if (shouldCheckAttribution) {
+            // Update modal text
+            document.getElementById('attribution-window-text').textContent = 
+                `${attributionConfig.startMinute === 0 ? '00' : attributionConfig.startMinute}-${attributionConfig.endMinute}`;
+            
             // Pause and ask
             pendingCompletion = { doorNum, time: now.getTime() };
             document.getElementById('hour-attribution-modal').style.display = 'flex';
