@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- iOS Web App Capability -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WallyTracker">
@@ -12,8 +13,10 @@
     
     <title>Wally Dashboard</title>
     
+    <!-- Using Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
+    <!-- PDF Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     
@@ -24,18 +27,19 @@
             --card-bg: #f5f5f5;
             --text-main: #000000;
             --text-sub: #757575;
-            --accent-blue: #000000;
             
             /* Circle Colors */
             --bay-green: #4cd964;
             --bay-purple: #bf5af2;
             --bay-orange: #ff9500;
             
-            /* Safe Area Variables */
-            --safe-top: max(env(safe-area-inset-top), 47px);
+            /* iOS Safe Area handling for Dynamic Island (iPhone 14/15/16 Pro) */
+            --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
             --tab-height: 80px;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -43,32 +47,28 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            height: 100vh;
+            height: 100dvh;
             width: 100vw;
             -webkit-font-smoothing: antialiased;
-            -webkit-overflow-scrolling: touch;
             overflow: hidden;
         }
 
-        /* --- LAYOUT --- */
+        /* --- NATIVE APP LAYOUT --- */
         .app-container {
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding-top: calc(var(--safe-top) + 40px);
+            /* Padding top adjusted to clear Dynamic Island */
+            padding-top: calc(var(--safe-top) + 10px);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: contain;
         }
 
         .tab-content {
             flex: 1;
-            overflow-y: auto;
             display: none;
             padding: 0 20px;
-            padding-bottom: calc(var(--tab-height) + var(--safe-bottom) + 20px);
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: contain;
+            padding-bottom: calc(var(--tab-height) + var(--safe-bottom) + 30px);
         }
 
         .tab-content.active { display: block; }
@@ -76,8 +76,8 @@
         /* --- BUTTONS & ACTIONS --- */
         .top-actions {
             display: flex;
-            gap: 15px;
-            padding: 15px 0 20px 0;
+            gap: 12px;
+            padding: 10px 0 20px 0;
             justify-content: center;
         }
 
@@ -86,14 +86,14 @@
             color: white;
             border: none;
             border-radius: 30px;
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 15px;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         /* --- HEADER --- */
@@ -102,148 +102,40 @@
             border-radius: 20px;
             padding: 25px 20px;
             text-align: center;
-            margin-bottom: 30px;
-            margin-top: 10px;
-        }
-
-        .header-bar {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 50px;
-            margin: 20px 0 20px 0;
-        }
-        
-        .header-bar h1 {
-            font-size: 24px;
-            font-weight: 800;
-            margin: 0;
-        }
-        
-        .header-right {
-            position: absolute;
-            right: 0;
-            display: flex;
-            gap: 10px;
-        }
-
-        .filter-icon-btn {
-            width: 40px;
-            height: 40px;
-            border: 2px solid #000;
-            border-radius: 50%;
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-size: 20px;
-            cursor: pointer;
-            transition: background 0.1s;
-        }
-        .filter-icon-btn:active {
-            background: #f0f0f0;
-        }
-        
-        .export-icon-btn {
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 50%;
-            background: #f2f2f7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-size: 20px;
-            cursor: pointer;
+            margin-bottom: 25px;
         }
 
         .app-title { font-size: 32px; font-weight: 900; margin: 0; letter-spacing: -0.5px; }
-        .app-subtitle { font-size: 15px; color: var(--text-sub); margin-top: 4px; font-style: italic; }
-        .app-version { font-size: 12px; color: #bbb; margin-top: 4px; font-weight: 600; }
+        .app-subtitle { font-size: 14px; color: var(--text-sub); margin-top: 4px; }
+        .header-bar { display: flex; justify-content: center; align-items: center; position: relative; height: 50px; margin: 10px 0; }
+        .header-bar h1 { font-size: 22px; font-weight: 800; margin: 0; }
+        .header-right { position: absolute; right: 0; display: flex; gap: 8px; }
 
-        .section-title {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            color: #000;
-            text-align: center;
+        .icon-btn-round {
+            width: 40px; height: 40px; border-radius: 50%; background: #f2f2f7; border: none;
+            display: flex; align-items: center; justify-content: center; font-size: 20px; color: #000;
         }
+
+        .section-title { font-size: 19px; font-weight: 800; margin-bottom: 15px; color: #000; text-align: center; }
 
         /* --- STATS GRID --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
         .stat-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 90px;
-            cursor: pointer;
-            transition: transform 0.1s;
+            background: var(--card-bg); border-radius: 18px; padding: 18px;
+            display: flex; flex-direction: column; justify-content: space-between; min-height: 90px;
         }
-        
-        .stat-card:active { transform: scale(0.98); background: #ebebeb; }
-
-        .stat-label { font-size: 13px; color: var(--text-sub); font-weight: 600; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-value { font-size: 32px; font-weight: 800; color: #000; line-height: 1; }
+        .stat-label { font-size: 11px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 30px; font-weight: 800; color: #000; line-height: 1; margin-top: 5px; }
 
         /* --- BAYS GRID --- */
-        .bays-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 40px;
-            min-height: 60px;
-        }
-        
-        .empty-state-text {
-            color: var(--text-sub);
-            font-size: 16px;
-            font-weight: 500;
-            text-align: center;
-            width: 100%;
-            padding: 20px 0;
-        }
-
+        .bays-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 30px; }
         .bay-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 800;
-            color: #000;
-            cursor: pointer;
-            transition: transform 0.1s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            position: relative;
+            width: 62px; height: 62px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 20px; font-weight: 800; color: #000;
+            position: relative; box-shadow: 0 3px 8px rgba(0,0,0,0.08); transition: transform 0.1s;
         }
-
         .bay-circle:active { transform: scale(0.92); }
-        
-        .bay-circle.unavailable {
-            background-color: #8e8e93 !important;
-            opacity: 0.5;
-            color: #666;
-        }
-        
-        .bay-circle.unavailable .bay-timer {
-            color: #666;
-        }
+        .bay-circle.unavailable { background: #8e8e93 !important; opacity: 0.4; }
 
         .bay-9 { background-color: var(--bay-green); }
         .bay-10 { background-color: var(--bay-purple); }
@@ -255,584 +147,73 @@
         .bay-16 { background-color: var(--bay-orange); }
 
         .type-badge {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 900;
-            color: white;
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        }
-        
-        .badge-w { background-color: #000; }
-        .badge-c { background-color: #000; }
-        
-        .bay-timer {
-            position: absolute;
-            bottom: -5px;
-            font-size: 9px;
-            font-weight: 700;
-            color: #000;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 1px 4px;
-            border-radius: 4px;
-            min-width: 20px;
-            text-align: center;
+            position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 900; color: white; border: 2px solid white; background: #000;
         }
 
         /* --- ACTIVE TAB LIST --- */
-        .active-tab-list { display: flex; flex-direction: column; gap: 15px; }
-
         .active-card {
-            background: white;
-            border: 2px solid #000;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            background: white; border: 2px solid #000; border-radius: 18px; padding: 18px;
+            margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start;
         }
+        .door-pill { background: #000; color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
 
-        .active-card-info { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; }
-        .active-card-header { display: flex; align-items: center; gap: 10px; }
-        .active-card-title { font-size: 20px; font-weight: 800; color: #000; }
-        .door-pill {
-            background: #000; color: white;
-            font-size: 12px; font-weight: 700;
-            padding: 4px 10px; border-radius: 30px;
-        }
-        .active-card-details { font-size: 15px; color: var(--text-sub); font-weight: 500; }
-        .active-card-time { font-size: 14px; color: #000; font-weight: 700; }
-        
-        .active-card-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        
-        .icon-btn {
-            background: #f2f2f7;
-            border: none;
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            color: #000;
-            font-size: 20px;
-        }
-        
-        /* --- STAFFING TAB --- */
-        .staffing-header-card {
-            background: #000;
-            color: #fff;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .staffing-header-title { font-size: 14px; opacity: 0.8; font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
-        .staffing-header-val { font-size: 32px; font-weight: 800; }
-        
-        /* DOP Selector */
-        .dop-container {
-            margin-bottom: 20px;
-            background: #fff;
-            border: 1px solid #e5e5ea;
-            border-radius: 16px;
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .dop-label { font-size: 14px; font-weight: 700; color: #000; }
-        .dop-select { 
-            background: #f2f2f7; border: none; padding: 8px 12px; 
-            border-radius: 8px; font-size: 14px; font-weight: 600; 
-        }
-        
-        .staff-section-title { font-size: 18px; font-weight: 800; margin: 25px 0 15px 0; display: flex; justify-content: space-between; align-items: center; }
-        .staff-count-badge { background: #e5e5ea; color: #000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-left: 8px; }
-        
-        .staff-card {
-            background: white; border: 1px solid #e5e5ea; border-radius: 18px;
-            padding: 16px; margin-bottom: 12px;
-            display: flex; flex-direction: column; gap: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        }
-        
-        .staff-card.cut { opacity: 0.6; background: #f9f9f9; }
-        
-        .staff-top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .staff-name { font-size: 17px; font-weight: 700; color: #000; display: flex; align-items: center; gap: 6px; }
-        .staff-time { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
-        .staff-hours { font-size: 16px; font-weight: 800; color: #000; font-variant-numeric: tabular-nums; }
-        
-        .staff-action-btn {
-            background: #ffe5e5; color: #ff3b30; border: none;
-            padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 700;
-            cursor: pointer;
-        }
-        
-        .staff-delete-btn {
-            background: transparent; color: #ff3b30; border: none;
-            padding: 4px; font-size: 18px; cursor: pointer;
-        }
+        /* --- STAFFING --- */
+        .staff-card { background: white; border: 1px solid #e5e5ea; border-radius: 16px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .staff-hours { font-size: 16px; font-weight: 800; color: #000; }
 
-        .role-select {
-            width: 100%; padding: 8px; background: #f2f2f7; border: none; 
-            border-radius: 8px; font-size: 13px; font-weight: 600; color: #000;
-            margin-top: 4px;
-        }
-        
-        .suggestion-badge {
-            font-size: 11px; padding: 2px 6px; border-radius: 4px; 
-            background: #000; color: #fff; font-weight: 700; margin-left: 6px;
-        }
-        
-        /* Detailed Breakdowns for Staffing */
-        .breakdown-row {
-            display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7);
-            margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Staff Multi-Select */
-        .staff-checkbox-list {
-            max-height: 250px; overflow-y: auto; border: 1px solid #e5e5ea;
-            border-radius: 12px; background: #f9f9f9;
-        }
-        .staff-checkbox-item {
-            display: flex; align-items: center; padding: 12px 16px;
-            border-bottom: 1px solid #e5e5ea; cursor: pointer;
-        }
-        .staff-checkbox-item:last-child { border-bottom: none; }
-        .staff-checkbox-item input { margin-right: 12px; width: 20px; height: 20px; accent-color: #000; }
-        .staff-checkbox-item span { font-size: 16px; font-weight: 500; }
-
-        /* --- TOOLS GRID --- */
-        .tools-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 10px 0;
-        }
-        .tool-card {
-            background: #fff; 
-            border-radius: 24px;
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            text-align: center;
-            aspect-ratio: 1 / 1;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .tool-card:active { transform: scale(0.96); background: #f9f9f9; }
-        
-        .tool-icon-wrapper {
-            width: 50px; height: 50px; 
-            background: #000; 
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; 
-            color: #fff; font-size: 24px;
-            margin-bottom: 12px;
-        }
-        
-        .tool-title { font-size: 16px; font-weight: 700; color: #000; margin-bottom: 4px; }
-        .tool-desc { font-size: 12px; color: var(--text-sub); display: none; }
-        
-        /* Add Tool Card Special Style */
-        .tool-card.add {
-            border: 2px dashed #ccc;
-            background: transparent;
-            box-shadow: none;
-        }
-        .tool-card.add .tool-icon-wrapper {
-            background: #e5e5ea;
-            color: #000;
-        }
-
-        /* --- LOGS SECTION --- */
-        .stats-collapse-btn {
-            width: 100%;
-            background: #f2f2f7;
-            border: none;
-            border-radius: 16px;
-            padding: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-            font-weight: 700;
-            color: #000;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        
-        .stats-content-area {
-            background: white;
-            border: 1px solid #e5e5ea;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 25px;
-            display: none; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        }
-        
-        .stats-table { width: 100%; border-collapse: collapse; font-size: 15px; }
-        .stats-table th { text-align: left; color: var(--text-sub); font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid #e5e5ea; }
-        .stats-table td { padding: 12px 0; border-bottom: 1px solid #f9f9f9; color: #000; font-weight: 500; }
-        .stats-table td:last-child { font-weight: 800; text-align: right; }
-        
-        .active-filter-display {
-            display: flex; align-items: center; justify-content: space-between;
-            background: #000; color: white; padding: 12px 20px;
-            border-radius: 16px; margin-bottom: 20px; font-weight: 600;
-        }
-
-        .logs-list { display: flex; flex-direction: column; gap: 15px; }
-        
-        .log-card {
-            background: white; border: 1px solid #e5e5ea; border-radius: 20px;
-            padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            display: flex; justify-content: space-between; align-items: flex-start;
-        }
-
-        .log-info { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; }
-        .log-door-pill {
-            background: #000; color: #fff; font-size: 12px; font-weight: 700;
-            padding: 4px 10px; border-radius: 30px; cursor: pointer; 
-        }
-        .log-type-pill {
-            font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 30px;
-            background: #000; color: #fff; margin-left: 6px;
-        }
-        .log-title { font-size: 18px; font-weight: 800; color: #000; }
-        .log-details { font-size: 15px; color: var(--text-sub); }
-        .log-timestamp { font-size: 14px; color: #000; font-weight: 700; margin-top: 4px; }
-        .log-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
-        
-        .log-action-btn {
-            background: #f2f2f7; border: 1px solid #000; border-radius: 12px;
-            padding: 8px 14px; font-size: 13px; font-weight: 700;
-            color: #000; cursor: pointer; display: flex; align-items: center; gap: 6px;
-        }
-
-        /* --- BOTTOM NAV --- */
-        .tab-bar {
-            position: fixed; bottom: 30px; left: 20px; right: 20px;
-            background: white; border-radius: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            display: flex; justify-content: space-around; align-items: center;
-            height: 70px; z-index: 1000; padding-bottom: 0; 
-        }
-
-        .tab-btn {
-            background: none; border: none; display: flex; flex-direction: column; align-items: center;
-            color: #ccc; font-size: 11px; font-weight: 600; width: 60px; cursor: pointer; gap: 4px;
-            position: relative;
-        }
-        .tab-btn i { font-size: 26px; }
-        .tab-btn.active { color: #000; }
-
-        /* Tab Badge Styles */
-        .tab-badge {
-            position: absolute;
-            top: -4px;
-            right: 0;
-            background: #ff3b30;
-            color: white;
-            font-size: 10px;
-            font-weight: 800;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border: 2px solid white;
-        }
-        
-        .tab-badge.zero {
-            background: #e5e5ea;
-            color: #8e8e93;
-        }
-        
-        .tab-badge.warning {
-            background: #ff9500;
-        }
-        
-        .tab-badge.success {
-            background: #34c759;
-        }
-
-        /* --- MODAL STYLES --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6); z-index: 2000;
-            display: none; justify-content: center; align-items: flex-end;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-sheet {
-            background: white; width: 100%; max-width: 600px;
-            border-top-left-radius: 28px; border-top-right-radius: 28px;
-            padding: 30px; padding-bottom: max(40px, var(--safe-bottom));
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .form-input {
-            width: 100%; padding: 18px; background: #f2f2f7; border: none;
-            border-radius: 16px; font-size: 18px; margin-bottom: 15px;
-            box-sizing: border-box; outline: none; appearance: none;
-            color: #000; font-weight: 500;
-        }
-
-        .type-selector {
-            display: flex; background: #f2f2f7; padding: 5px;
-            border-radius: 16px; margin-bottom: 25px;
-        }
-
-        .type-opt {
-            flex: 1; text-align: center; padding: 12px;
-            border-radius: 12px; font-weight: 700; font-size: 15px;
-            color: var(--text-sub); cursor: pointer;
-        }
-
-        .type-opt.selected {
-            background: white; color: #000; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .btn-primary {
-            width: 100%; padding: 18px; border-radius: 16px;
-            border: none; font-size: 17px; font-weight: 800;
-            background: #000; color: white; margin-top: 10px; cursor: pointer;
-        }
-        
-        .btn-danger { background: #ff3b30; }
-        .btn-history { background: #f2f2f7; color: #000; margin-top: 10px; }
-
-        .btn-cancel {
-            background: transparent; color: var(--text-sub); width: 100%;
-            padding: 15px; border: none; font-size: 16px; font-weight: 600;
-            margin-top: 5px; cursor: pointer;
-        }
-        
-        .detail-row {
-            display: flex; justify-content: space-between;
-            padding: 12px 0; border-bottom: 1px solid #f2f2f7;
-        }
-        .detail-label { color: var(--text-sub); font-weight: 600; font-size: 15px; }
-        .detail-value { font-weight: 700; color: #000; font-size: 15px; }
-
-        .modal-actions-row { display: flex; gap: 15px; margin-top: 10px; }
-        .modal-icon-btn {
-            background: #f2f2f7; border: none; width: 56px; border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px; cursor: pointer; color: #000;
-        }
-        
-        .filter-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;
-        }
-        .filter-btn {
-            background: #f2f2f7; padding: 15px 0; border-radius: 12px;
-            text-align: center; font-weight: 700; font-size: 16px; cursor: pointer;
-        }
-        .filter-btn.active { background: #000; color: white; }
-        
-        /* Settings Styles */
-        .settings-header {
-            font-size: 22px; font-weight: 800; margin: 30px 0 10px 0; color: #000;
-        }
-        .settings-group {
-            background: #fff; border-radius: 16px; overflow: hidden;
-            margin-bottom: 20px; border: 1px solid #e5e5ea;
-        }
-        .settings-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 16px 20px; border-bottom: 1px solid #f2f2f7; background: #fff;
-        }
+        /* --- SETTINGS: REWORKED --- */
+        .settings-header { font-size: 20px; font-weight: 800; margin: 25px 0 10px 0; color: #000; }
+        .settings-group { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e5ea; margin-bottom: 20px; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #f2f2f7; }
         .settings-row:last-child { border-bottom: none; }
-        .settings-label { font-size: 16px; font-weight: 600; color: #000; }
-        
-        .settings-input-inline {
-            background: #f2f2f7; border: none; padding: 8px 12px; 
-            border-radius: 8px; font-size: 16px; width: 110px; text-align: right;
-        }
-        
-        .settings-btn-inline {
-            background: #000; color: #fff; border: none; 
-            border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 14px;
-        }
+        .settings-label { font-size: 16px; font-weight: 600; }
 
-        /* Toggle Switch */
-        .toggle-switch {
-            width: 50px; height: 30px; background: #e5e5ea;
-            border-radius: 15px; position: relative; cursor: pointer;
-            transition: background 0.2s;
+        /* Reworked Attribution Slider */
+        .slider-container { padding: 20px 16px; }
+        .slider-wrapper { position: relative; width: 100%; height: 44px; display: flex; align-items: center; margin: 15px 0; }
+        .slider-track { position: absolute; width: 100%; height: 8px; background: #e5e5ea; border-radius: 4px; }
+        .slider-fill { position: absolute; height: 8px; background: #000; border-radius: 4px; }
+        .slider-thumb { 
+            position: absolute; width: 30px; height: 30px; background: #fff; border: 3px solid #000; 
+            border-radius: 50%; transform: translateX(-50%); box-shadow: 0 3px 10px rgba(0,0,0,0.15); z-index: 5;
         }
-        .toggle-switch.checked { background: #000; } 
-        .toggle-switch::after {
-            content: ''; position: absolute; left: 2px; top: 2px;
-            width: 26px; height: 26px; background: white;
-            border-radius: 50%; transition: left 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .slider-ticks { display: flex; justify-content: space-between; position: absolute; width: 100%; top: 32px; pointer-events: none; }
+        .slider-tick { width: 2px; height: 8px; background: #ccc; position: relative; }
+        .slider-tick-label { position: absolute; top: 12px; font-size: 11px; font-weight: 700; color: #8e8e93; transform: translateX(-50%); }
+
+        .attribution-display { text-align: center; background: #f9f9f9; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #666; margin-top: 10px; }
+
+        /* --- NAVIGATION --- */
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            height: calc(75px + var(--safe-bottom)); display: flex; justify-content: space-around;
+            padding-bottom: var(--safe-bottom); border-top: 1px solid rgba(0,0,0,0.05); z-index: 1000;
         }
+        .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ccc; width: 60px; gap: 4px; }
+        .tab-btn.active { color: #000; }
+        .tab-btn i { font-size: 24px; }
+        .tab-btn span { font-size: 10px; font-weight: 700; }
+        .tab-badge { position: absolute; top: 10px; right: 5px; background: #ff3b30; color: white; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: flex-end; backdrop-filter: blur(5px); }
+        .modal-sheet { background: white; width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 25px; padding-bottom: calc(30px + var(--safe-bottom)); animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .form-input { width: 100%; padding: 16px; background: #f2f2f7; border: none; border-radius: 14px; font-size: 17px; margin-bottom: 12px; outline: none; }
+        .type-selector { display: flex; background: #f2f2f7; padding: 4px; border-radius: 14px; margin-bottom: 20px; }
+        .type-opt { flex: 1; text-align: center; padding: 10px; border-radius: 10px; font-weight: 700; color: #8e8e93; }
+        .type-opt.selected { background: white; color: #000; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .btn-primary { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 17px; font-weight: 700; background: #000; color: white; cursor: pointer; }
+        .btn-cancel { background: transparent; color: #8e8e93; width: 100%; padding: 12px; border: none; font-weight: 600; margin-top: 5px; }
+
+        /* Toggle */
+        .toggle-switch { width: 50px; height: 30px; background: #e5e5ea; border-radius: 15px; position: relative; }
+        .toggle-switch.checked { background: #34c759; }
+        .toggle-switch::after { content: ''; position: absolute; left: 2px; top: 2px; width: 26px; height: 26px; background: white; border-radius: 50%; transition: left 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .toggle-switch.checked::after { left: 22px; }
-        
-        .stepper {
-            display: flex; align-items: center; background: #f2f2f7; 
-            border-radius: 8px; padding: 2px;
-        }
-        .stepper-btn {
-            width: 32px; height: 32px; border: none; background: transparent;
-            font-size: 18px; font-weight: 700; cursor: pointer; color: #000;
-        }
-        .stepper-val {
-            font-size: 16px; font-weight: 600; width: 24px; text-align: center;
-        }
-        
-        .segment-control {
-            display: flex; background: #f2f2f7; border-radius: 8px; padding: 2px;
-        }
-        .segment-opt {
-            padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;
-            color: #8e8e93; cursor: pointer;
-        }
-        .segment-opt.selected {
-            background: #fff; color: #000; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .settings-note {
-            font-size: 13px; color: #8e8e93; padding: 0 10px; margin-bottom: 20px; line-height: 1.4;
-        }
-        
-        .saved-accounts-list { padding: 0 20px 20px 20px; }
-        .saved-acct-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid #f2f2f7; font-size: 16px; font-weight: 500;
-        }
-        .delete-acct-btn { color: #ff3b30; font-size: 20px; cursor: pointer; }
-
-        /* REWORKED Slider Styles */
-        .settings-slider-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 20px;
-            border-top: 1px solid #f2f2f7;
-        }
-
-        .slider-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .slider-value {
-            font-size: 18px;
-            font-weight: 800;
-            color: #000;
-            background: #f2f2f7;
-            padding: 6px 14px;
-            border-radius: 10px;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .slider-wrapper {
-            position: relative;
-            width: 100%;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .slider-track {
-            position: absolute;
-            width: 100%;
-            height: 8px;
-            background: #e5e5ea;
-            border-radius: 4px;
-            z-index: 1;
-        }
-
-        .slider-fill {
-            position: absolute;
-            height: 8px;
-            background: #000;
-            border-radius: 4px;
-            z-index: 2;
-        }
-
-        .slider-thumb {
-            position: absolute;
-            width: 32px;
-            height: 32px;
-            background: #fff;
-            border: 3px solid #000;
-            border-radius: 50%;
-            z-index: 3;
-            transform: translateX(-50%);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            cursor: pointer;
-            touch-action: none;
-        }
-
-        .slider-ticks {
-            display: flex;
-            justify-content: space-between;
-            position: absolute;
-            width: 100%;
-            top: 32px;
-            pointer-events: none;
-        }
-
-        .slider-tick {
-            width: 2px;
-            height: 10px;
-            background: #ccc;
-            position: relative;
-        }
-
-        .slider-tick-label {
-            position: absolute;
-            top: 14px;
-            font-size: 12px;
-            color: #8e8e93;
-            transform: translateX(-50%);
-            font-weight: 700;
-        }
-
-        .attribution-window-display {
-            font-size: 14px;
-            color: #757575;
-            font-weight: 600;
-            margin: 10px 0;
-            text-align: center;
-            background: #f9f9f9;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #eee;
-        }
 
     </style>
 </head>
@@ -840,40 +221,27 @@
 
 <div class="app-container">
     
+    <!-- === TAB 1: DASHBOARD === -->
     <div id="tab-dashboard" class="tab-content active">
-        
         <div class="top-actions">
-            <button class="action-btn" onclick="openAddUnloaderModal()">
-                <i class="ph ph-user-plus"></i> Add Unloader
-            </button>
-            <button class="action-btn" onclick="openArrivalModal()">
-                <i class="ph ph-truck"></i> Onboard
-            </button>
+            <button class="action-btn" onclick="openAddUnloaderModal()"><i class="ph ph-user-plus"></i> Unloader</button>
+            <button class="action-btn" onclick="openArrivalModal()"><i class="ph ph-truck"></i> Onboard</button>
         </div>
 
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
-            <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.5</div>
+            <div class="app-subtitle">by Fitz Joseph • v3.6.1</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
         <div class="stats-grid">
-            <div class="stat-card" onclick="viewStatLogs('Wally')">
+            <div class="stat-card" onclick="switchTab('logs')">
                 <div class="stat-label">Total Wallies</div>
                 <div class="stat-value" id="stat-total-wally">0</div>
             </div>
-            <div class="stat-card" onclick="viewStatLogs('CPU')">
+            <div class="stat-card" onclick="switchTab('logs')">
                 <div class="stat-label">Total CPUs</div>
                 <div class="stat-value" id="stat-total-cpu">0</div>
-            </div>
-            <div class="stat-card" onclick="viewStatLogs('Hour-0')">
-                <div class="stat-label">Wallies This Hour</div>
-                <div class="stat-value" id="stat-hour-wally">0</div>
-            </div>
-            <div class="stat-card" onclick="viewStatLogs('Hour-1')">
-                <div class="stat-label">Wallies Last Hour</div>
-                <div class="stat-value" id="stat-last-wally">0</div>
             </div>
         </div>
 
@@ -882,1210 +250,385 @@
 
         <div class="section-title">Open Bays</div>
         <div id="open-bays-grid" class="bays-grid"></div>
-        
-        <div style="height: 100px;"></div>
     </div>
 
-
+    <!-- === TAB 2: ACTIVE === -->
     <div id="tab-active" class="tab-content">
-        <div class="header-bar">
-            <h1>Active Details</h1>
-        </div>
-        <div id="active-tab-list" class="active-tab-list"></div>
+        <div class="header-bar"><h1>Active Details</h1></div>
+        <div id="active-tab-list"></div>
     </div>
 
+    <!-- === TAB 3: LOGS === -->
     <div id="tab-logs" class="tab-content">
         <div class="header-bar">
             <h1>Logs</h1>
             <div class="header-right">
-                <button class="filter-icon-btn" onclick="openFilterModal()">
-                    <i class="ph ph-faders"></i>
-                </button>
-                <button class="export-icon-btn" onclick="openExportModal()">
-                    <i class="ph ph-export"></i>
-                </button>
+                <button class="icon-btn-round" onclick="openExportModal()"><i class="ph ph-export"></i></button>
             </div>
         </div>
-        
-        <button class="stats-collapse-btn" onclick="toggleStats('unloader')">
-            Unloader Statistics
-            <i class="ph ph-caret-down" id="stats-caret"></i>
-        </button>
-        
-        <div id="stats-content" class="stats-content-area">
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th style="text-align:center">Wally</th>
-                        <th style="text-align:center">CPU</th>
-                        <th style="text-align:right">Total</th>
-                    </tr>
-                </thead>
-                <tbody id="unloader-stats-body"></tbody>
-            </table>
-        </div>
-        
-        <button class="stats-collapse-btn" onclick="toggleStats('hourly')">
-            Hourly Breakdown
-            <i class="ph ph-caret-down" id="hourly-caret"></i>
-        </button>
-        
-        <div id="hourly-content" class="stats-content-area">
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th>Hour</th>
-                        <th style="text-align:center">Count</th>
-                    </tr>
-                </thead>
-                <tbody id="hourly-stats-body"></tbody>
-            </table>
-        </div>
-        
-        <div id="active-filter-display" class="active-filter-display" style="display:none;">
-            <span>Filtering: <span id="filter-text-display"></span></span>
-            <i class="ph ph-x" style="cursor:pointer" onclick="clearLogFilter()"></i>
-        </div>
-
-        <div id="logs-list" class="logs-list"></div>
+        <div id="logs-list"></div>
     </div>
-    
+
+    <!-- === TAB 4: STAFFING === -->
     <div id="tab-staffing" class="tab-content">
         <div class="header-bar">
             <h1>Staffing</h1>
             <div class="header-right">
-                <button class="action-btn" style="padding: 10px 16px; border-radius:20px; height:40px; font-size:14px;" onclick="openAddStaffModal()">
-                    <i class="ph ph-plus"></i> Add
-                </button>
+                <button class="icon-btn-round" onclick="openAddStaffModal()"><i class="ph ph-plus"></i></button>
             </div>
         </div>
-        
-        <div class="dop-container">
-            <span class="dop-label">Daily Operating Plan</span>
-            <select id="dop-select" class="dop-select" onchange="saveDOP(this.value)">
-                <option value="5-2">5-2</option>
-                <option value="6-2">6-2</option>
-                <option value="7-2">7-2</option>
-                <option value="8-2">8-2</option>
-            </select>
-        </div>
-
-        <div class="staffing-header-card">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <div>
-                    <div class="staffing-header-title">Active Staff</div>
-                    <div class="staffing-header-val" id="staff-active-count">0</div>
-                </div>
-                <div style="text-align:right;">
-                    <div class="staffing-header-title">Total Hours</div>
-                    <div class="staffing-header-val" id="staff-total-hours">0.0</div>
-                </div>
-            </div>
-            
-            <div class="breakdown-row">
-                <span>Belt Hours: <span id="staff-belt-hours">0.0</span></span>
-                <span>Sweep Hours: <span id="staff-sweep-hours">0.0</span></span>
-            </div>
-        </div>
-
-        <div class="staff-section-title">
-            On Clock <span class="staff-count-badge" id="badge-on-clock">0</span>
+        <div class="dashboard-header" style="background:#000; color:#fff; text-align:left;">
+            <div class="stat-label" style="color:rgba(255,255,255,0.6)">Total Unloader Hours</div>
+            <div class="stat-value" id="staff-total-hours" style="color:#fff">0.00</div>
         </div>
         <div id="staff-list-active"></div>
-
-        <div class="staff-section-title" style="margin-top:40px; opacity:0.6;">
-            Off Clock <span class="staff-count-badge" id="badge-off-clock">0</span>
-        </div>
-        <div id="staff-list-cut"></div>
     </div>
-    
-    <div id="tab-tools" class="tab-content" style="background:#f2f2f7;">
-        <div style="background:white; padding: 20px 20px 10px 20px; border-bottom:1px solid #e5e5ea; margin: -20px -20px 20px -20px;">
-             <div class="header-bar" style="margin:0;"><h1>Tools</h1></div>
-        </div>
-        
-        <div class="tools-grid">
-            <div class="tool-card" onclick="openPPHModal()">
-                <div class="tool-icon-wrapper"><i class="ph ph-calculator"></i></div>
-                <div class="tool-title">PPH Calculator</div>
-            </div>
 
-            <div class="tool-card" onclick="alert('Observation Corner coming soon')">
-                <div class="tool-icon-wrapper"><i class="ph ph-eye"></i></div>
-                <div class="tool-title">Observation</div>
-            </div>
-            
-             <div class="tool-card add" onclick="alert('More tools soon')">
-                <div class="tool-icon-wrapper"><i class="ph ph-plus"></i></div>
-                <div class="tool-title">Add Tool</div>
+    <!-- === TAB 5: TOOLS === -->
+    <div id="tab-tools" class="tab-content">
+        <div class="header-bar"><h1>Tools</h1></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div class="stat-card" onclick="openPPHModal()" style="text-align:center; align-items:center;">
+                <i class="ph ph-calculator" style="font-size:32px; margin-bottom:10px;"></i>
+                <div class="stat-label">PPH Calculator</div>
             </div>
         </div>
     </div>
-    
+
+    <!-- === TAB 6: SETTINGS === -->
     <div id="tab-settings" class="tab-content" style="background:#f2f2f7; padding:0;">
-        <div style="background:white; padding: 20px 20px 10px 20px; border-bottom:1px solid #e5e5ea;">
-            <div class="header-bar" style="margin:0;">
-                <h1>Settings</h1>
-            </div>
+        <div style="background:#fff; padding:20px 20px 10px 20px; border-bottom:1px solid #e5e5ea;">
+            <h1 style="font-size:28px; font-weight:800; margin:0;">Settings</h1>
         </div>
 
-        <div style="padding: 20px 20px 120px 20px;">
-            
+        <div style="padding:20px;">
+            <!-- REWORKED: SHIFT SETTINGS AT TOP -->
             <div class="settings-header">Shift Configuration</div>
             <div class="settings-group">
                 <div class="settings-row">
                     <span class="settings-label">Shift Start Time</span>
-                    <input type="time" id="setting-shift-start" class="settings-input-inline" onchange="saveShiftStart(this.value)">
+                    <input type="time" id="setting-shift-start" style="border:none; font-size:16px; background:#f2f2f7; padding:8px; border-radius:8px;" onchange="saveShiftStart(this.value)">
                 </div>
-
-                <div class="settings-slider-container">
-                    <div class="slider-header">
+                
+                <div class="slider-container">
+                    <div style="display:flex; justify-content:space-between; align-items:baseline;">
                         <span class="settings-label">Attribution Window</span>
-                        <span class="slider-value" id="attribution-value">5</span>
+                        <span style="font-size:20px; font-weight:800;" id="attr-val-display">5m</span>
                     </div>
-                    
                     <div class="slider-wrapper">
                         <div class="slider-track"></div>
-                        <div class="slider-fill" id="slider-fill" style="width: 50%;"></div>
-                        <div class="slider-thumb" id="slider-thumb" style="left: 50%;"></div>
-                        
+                        <div class="slider-fill" id="slider-fill"></div>
+                        <div class="slider-thumb" id="slider-thumb"></div>
                         <div class="slider-ticks">
-                            <div class="slider-tick" style="left: 0%"><div class="slider-tick-label">0</div></div>
-                            <div class="slider-tick" style="left: 50%"><div class="slider-tick-label">5</div></div>
-                            <div class="slider-tick" style="left: 100%"><div class="slider-tick-label">10</div></div>
+                            <div class="slider-tick" style="left:0%"><span class="slider-tick-label">0</span></div>
+                            <div class="slider-tick" style="left:50%"><span class="slider-tick-label">5</span></div>
+                            <div class="slider-tick" style="left:100%"><span class="slider-tick-label">10</span></div>
                         </div>
                     </div>
-                    
-                    <div class="attribution-window-display" id="attribution-display">
-                        Window: 0 to 5 minutes after the hour
-                    </div>
-                    
-                    <div style="margin-top: 5px; display: flex; gap: 10px;">
-                        <button class="settings-btn-inline" onclick="saveAttributionSetting()">Save Window</button>
-                    </div>
-
-                    <div class="settings-row" style="padding: 15px 0 0 0; border-bottom: none;">
-                        <span class="settings-label" style="font-size: 14px;">Disable Window</span>
-                        <div class="toggle-switch" id="switch-dis-window" onclick="toggleSwitch('dis-window')"></div>
-                    </div>
+                    <div class="attribution-display" id="attr-text">Window: 0 to 5 minutes after hour</div>
                 </div>
-            </div>
-            
-            <div class="settings-note">
-                <strong>Config Tip:</strong> Set the attribution window to capture trailers completed just after the hour mark.
-            </div>
 
-            <div class="settings-header">Saved Accounts</div>
-            <div class="settings-group">
                 <div class="settings-row">
-                    <input type="text" id="new-account-input" class="form-input" style="margin:0; padding:10px; background:#f2f2f7; width:65%;" placeholder="New Account Number" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()">
-                    <button class="settings-btn-inline" onclick="addSavedAccount()">Add</button>
-                </div>
-                <div id="saved-accounts-list" class="saved-accounts-list">
-                    <div style="padding:15px 0; color:#8e8e93; text-align:center;">No saved accounts</div>
+                    <span class="settings-label">Disable Window</span>
+                    <div class="toggle-switch" id="switch-dis-window" onclick="toggleSwitch('dis-window')"></div>
                 </div>
             </div>
 
-            <div class="settings-header">Demo Controls</div>
+            <div class="settings-header">App Controls</div>
             <div class="settings-group">
                 <div class="settings-row">
                     <span class="settings-label">Demo Mode</span>
                     <div class="toggle-switch" id="switch-demo-mode" onclick="toggleSwitch('demo-mode')"></div>
                 </div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">Simulate Window</span>
-                    <div class="toggle-switch" id="switch-sim-window" onclick="toggleSwitch('sim-window')"></div>
-                </div>
-
-                <div class="settings-row">
-                    <span class="settings-label">Disable hardcoded times</span>
-                    <div class="toggle-switch" id="switch-disable-times" onclick="toggleSwitch('disable-times')"></div>
-                </div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">Randomize History</span>
-                    <div class="toggle-switch" id="switch-demo-random" onclick="toggleSwitch('demo-random')"></div>
-                </div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">Auto re-onboard</span>
-                    <div class="toggle-switch" id="switch-demo-replenish" onclick="toggleSwitch('demo-replenish')"></div>
-                </div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">Number of Doors</span>
-                    <div class="stepper">
-                        <button class="stepper-btn" onclick="stepDoor(-1)">−</button>
-                        <span class="stepper-val" id="demo-door-val">2</span>
-                        <button class="stepper-btn" onclick="stepDoor(1)">+</button>
-                    </div>
-                </div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">Mixed Types</span>
-                    <div class="toggle-switch" id="switch-mixed-types" onclick="toggleSwitch('mixed-types')"></div>
-                </div>
-                
-                <div class="settings-row" style="justify-content:center; background:#f9f9f9;">
-                    <div class="segment-control">
-                        <div class="segment-opt selected" id="seg-wally" onclick="setDemoType('Wally')">Wally</div>
-                        <div class="segment-opt" id="seg-cpu" onclick="setDemoType('CPU')">CPU</div>
-                    </div>
-                </div>
-                
-                <div style="padding:15px;">
-                     <button class="btn-primary" style="background:#000; color:#fff;" onclick="startDemo()">Auto-Onboard</button>
+                <div class="settings-row" onclick="resetData()">
+                    <span class="settings-label" style="color:#ff3b30; font-weight:700;">Reset All Data</span>
                 </div>
             </div>
-
-            <button class="btn-primary" onclick="resetData()" style="background:#ff3b30; margin-bottom:100px;">Reset All Data</button>
         </div>
     </div>
 
 </div>
 
+<!-- === NAVIGATION === -->
 <nav class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('dashboard', this)" id="tab-btn-dashboard">
-        <i class="ph ph-chart-pie-slice"></i>
-        <span>Home</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('active', this)" id="tab-btn-active">
-        <i class="ph ph-truck-trailer"></i>
-        <span>Active</span>
-        <span class="tab-badge" id="badge-active">0</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('logs', this)" id="tab-btn-logs">
-        <i class="ph ph-list-dashes"></i>
-        <span>Logs</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('staffing', this)" id="tab-btn-staffing">
-        <i class="ph ph-users"></i>
-        <span>Staffing</span>
-        <span class="tab-badge" id="badge-staffing">0</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('tools', this)" id="tab-btn-tools">
-        <i class="ph ph-toolbox"></i>
-        <span>Tools</span>
-        <span class="tab-badge" id="badge-tools">0</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('settings', this)" id="tab-btn-settings">
-        <i class="ph ph-gear"></i>
-        <span>Settings</span>
-        <span class="tab-badge" id="badge-settings">0</span>
-    </button>
+    <button class="tab-btn active" onclick="switchTab('dashboard', this)"><i class="ph-fill ph-chart-pie-slice"></i><span>Home</span></button>
+    <button class="tab-btn" onclick="switchTab('active', this)"><i class="ph-fill ph-truck-trailer"></i><span>Active</span><span class="tab-badge" id="badge-active">0</span></button>
+    <button class="tab-btn" onclick="switchTab('logs', this)"><i class="ph-fill ph-list-dashes"></i><span>Logs</span></button>
+    <button class="tab-btn" onclick="switchTab('staffing', this)"><i class="ph-fill ph-users"></i><span>Staffing</span></button>
+    <button class="tab-btn" onclick="switchTab('tools', this)"><i class="ph-fill ph-toolbox"></i><span>Tools</span></button>
+    <button class="tab-btn" onclick="switchTab('settings', this)"><i class="ph-fill ph-gear"></i><span>Settings</span></button>
 </nav>
+
+<!-- === MODALS === -->
+<div class="modal-overlay" id="input-modal">
+    <div class="modal-sheet">
+        <h2 style="text-align:center; margin-top:0;">Onboard Door <span id="modal-door-num"></span></h2>
+        <div class="type-selector">
+            <div class="type-opt selected" id="opt-wally" onclick="setType('Wally')">Wally</div>
+            <div class="type-opt" id="opt-cpu" onclick="setType('CPU')">CPU (53')</div>
+        </div>
+        <input type="text" id="input-id" class="form-input" placeholder="ID Number" autocapitalize="characters">
+        <input type="text" id="input-unloader" class="form-input" placeholder="Unloader Name (Optional)" autocapitalize="words">
+        <button class="btn-primary" onclick="confirmArrival()">Start Unload</button>
+        <button class="btn-cancel" onclick="closeModal('input-modal')">Cancel</button>
+    </div>
+</div>
 
 <div class="modal-overlay" id="pph-modal">
     <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">PPH Calculator</h2>
-        
-        <div style="background:#f2f2f7; border-radius:16px; padding:20px; margin-bottom:20px; text-align:center;">
-            <div style="font-size:13px; color:#757575; font-weight:700; letter-spacing:0.5px; margin-bottom:5px;">TOTAL UNLOADER HOURS</div>
-            <input type="number" id="pph-unloader-hours-input" class="form-input" 
-                   style="font-size:32px; font-weight:800; color:#000; text-align:center; background:transparent; border:none; width:100%; padding:0; margin:0;" 
-                   oninput="calculatePPH()" placeholder="0.00">
-            <div style="font-size:12px; color:#757575; margin-top:4px;">Excludes Belt Tenders & Sweeps</div>
-        </div>
-
-        <div style="margin-bottom:20px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Total Volume</label>
-            <input type="number" id="pph-volume-input" class="form-input" placeholder="Enter package count" oninput="calculatePPH()">
-        </div>
-        
-        <div style="text-align:center; margin-bottom:30px;">
-            <div style="font-size:14px; color:var(--text-sub); font-weight:700;">CURRENT PPH</div>
-            <div style="font-size:60px; font-weight:900; color:#000; letter-spacing:-2px;" id="pph-result">0</div>
-        </div>
-
-        <div style="display:flex; gap:10px;">
-            <button class="btn-primary" onclick="resetPPH()" style="background:#e5e5ea; color:#000; flex:1;">Reset</button>
-            <button class="btn-cancel" onclick="closeModal('pph-modal')" style="flex:1; margin-top:0; border: 1px solid #e5e5ea; border-radius:16px; padding:18px;">Close</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="add-staff-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Clock In Staff</h2>
-        <div style="margin-bottom:15px;">
-             <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Select Employees</label>
-             <div id="staff-checkbox-list" class="staff-checkbox-list"></div>
-        </div>
-        <div style="margin-bottom:15px;">
-             <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Start Time Override (Optional)</label>
-             <input type="time" id="staff-input-time" class="form-input">
-             <div style="font-size:12px; color:#8e8e93; margin-top:4px;">Leave blank for current shift start time</div>
-        </div>
-        <button class="btn-primary" onclick="confirmAddStaff()">Clock In</button>
-        <button class="btn-cancel" onclick="closeModal('add-staff-modal')">Cancel</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="edit-staff-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Staff</h2>
-        <input type="hidden" id="edit-staff-id">
-        <div style="margin-bottom:15px;">
-             <label class="settings-label">Start Time</label>
-             <input type="time" id="edit-staff-time" class="form-input">
-        </div>
-        <button class="btn-primary" onclick="saveStaffEdit()">Save Changes</button>
-        <button class="btn-cancel" onclick="closeModal('edit-staff-modal')">Discard</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="export-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Export Data</h2>
-        <button class="btn-primary" onclick="exportLogsCSV()">Export CSV (Spreadsheet)</button>
-        <button class="btn-primary" onclick="exportLogsPDF()" style="margin-top:10px; background:#e5e5ea; color:#000;">Export PDF (Report)</button>
-        <button class="btn-cancel" onclick="closeModal('export-modal')">Cancel</button>
+        <h2 style="text-align:center;">PPH Calculator</h2>
+        <input type="number" id="pph-vol" class="form-input" placeholder="Package Volume">
+        <input type="number" id="pph-hrs" class="form-input" placeholder="Total Hours">
+        <div style="text-align:center; font-size:40px; font-weight:900; margin:20px 0;" id="pph-result">0</div>
+        <button class="btn-primary" onclick="calculatePPH()">Calculate</button>
+        <button class="btn-cancel" onclick="closeModal('pph-modal')">Close</button>
     </div>
 </div>
 
 <div class="modal-overlay" id="hour-attribution-modal">
     <div class="modal-sheet">
-        <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Attribute Completion</h2>
-        <p style="text-align:center; color:#757575; margin-bottom:25px; padding: 0 10px;">
-            This trailer was completed within <span id="attribution-window-text">5</span> minutes after the hour.
-        </p>
+        <h2 style="text-align:center;">Attribute Completion</h2>
+        <p style="text-align:center; color:#666;">This was finished within the attribution window. Which hour should it count for?</p>
         <button class="btn-primary" onclick="resolveAttribution('Previous')">Previous Hour</button>
-        <button class="btn-primary" onclick="resolveAttribution('Current')" style="background:#f2f2f7; color:#000; margin-top:10px;">Current Hour</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="filter-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Filter by Door</h2>
-        
-        <div class="filter-grid" id="filter-grid">
-            </div>
-        
-        <button class="btn-primary" onclick="applyFilter('All')">Show All</button>
-        <button class="btn-cancel" onclick="closeModal('filter-modal')">Cancel</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="duplicate-wally-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Duplicate Wally Detected</h2>
-        <p style="text-align:center; color:#757575; margin-bottom:25px; padding: 0 10px;">
-            Wally <span id="duplicate-wally-id"></span> has already been completed during this shift. This will be marked as a duplicate in the logs.
-        </p>
-        <button class="btn-primary" onclick="continueWithDuplicate()">Continue Anyway</button>
-        <button class="btn-cancel" onclick="closeModal('duplicate-wally-modal')" style="margin-top:10px;">Cancel</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="input-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Onboard Door <span id="modal-door-num"></span></h2>
-        
-        <div class="type-selector">
-            <div class="type-opt selected" id="opt-wally" onclick="setType('Wally')">Wally</div>
-            <div class="type-opt" id="opt-cpu" onclick="setType('CPU')">CPU (53')</div>
-        </div>
-
-        <div id="wally-inputs">
-            <div style="margin-bottom:15px;">
-                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Wally Number</label>
-                <input type="text" id="input-wally-id" class="form-input" placeholder="e.g. 5589" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            </div>
-        </div>
-
-        <div id="cpu-inputs" style="display:none;">
-            <div style="margin-bottom:15px;">
-                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Trailer Number</label>
-                <input type="text" id="input-trailer-id" class="form-input" placeholder="e.g. TRL123" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()">
-            </div>
-            <div style="margin-bottom:15px;">
-                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Account Number</label>
-                <input type="text" id="input-account-id" class="form-input" placeholder="e.g. ACCT456" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" list="saved-accounts-datalist">
-                <datalist id="saved-accounts-datalist"></datalist>
-            </div>
-        </div>
-
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Assigned Unloader (Optional)</label>
-            <select id="select-unloader" class="form-input" onchange="checkCustomUnloader(this)">
-                <option value="" selected>Unassigned</option>
-            </select>
-            <input type="text" id="input-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
-        </div>
-
-        <button class="btn-primary" onclick="confirmArrival()">Start Unload</button>
-        <button class="btn-primary btn-history" onclick="viewDoorLogs(currentDoor)">View History</button>
-        <button class="btn-cancel" onclick="closeModal('input-modal')">Cancel</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="add-unloader-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Add New Unloader</h2>
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Unloader Name</label>
-            <input type="text" id="input-new-unloader-name" class="form-input" placeholder="e.g. John Doe" autocapitalize="words">
-        </div>
-        <button class="btn-primary" onclick="confirmAddUnloader()">Add Name</button>
-        <button class="btn-cancel" onclick="closeModal('add-unloader-modal')">Cancel</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="active-detail-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Active Door <span id="detail-door-num"></span></h2>
-        
-        <div style="margin-bottom: 25px;">
-            <div class="detail-row">
-                <span class="detail-label">Type</span>
-                <span class="detail-value" id="detail-type"></span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">ID #</span>
-                <span class="detail-value" id="detail-id"></span>
-            </div>
-            <div class="detail-row" id="row-account" style="display:none;">
-                <span class="detail-label">Account #</span>
-                <span class="detail-value" id="detail-account"></span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Unloader</span>
-                <span class="detail-value" id="detail-unloader"></span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Start Time</span>
-                <span class="detail-value" id="detail-time"></span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Duration</span>
-                <span class="detail-value" id="detail-duration">0m</span>
-            </div>
-        </div>
-
-        <button class="btn-primary btn-danger" onclick="confirmCompleteDoor()">Complete Unload</button>
-        
-        <div class="modal-actions-row">
-            <button class="modal-icon-btn" onclick="openEditActiveModalFromDetail()" style="flex:1"><i class="ph ph-pencil-simple"></i></button>
-            <button class="btn-primary btn-history" onclick="viewDoorLogs(detailDoor)" style="flex:3; margin:0;">View History</button>
-        </div>
-        <button class="btn-cancel" onclick="closeModal('active-detail-modal')">Close</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="edit-active-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Active Bay</h2>
-        <input type="hidden" id="edit-active-original-door">
-        
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Bay Number</label>
-            <select id="edit-active-door-select" class="form-input"></select>
-        </div>
-
-        <div class="type-selector">
-            <div class="type-opt selected" id="active-opt-wally" onclick="setEditActiveType('Wally')">Wally</div>
-            <div class="type-opt" id="active-opt-cpu" onclick="setEditActiveType('CPU')">CPU</div>
-        </div>
-
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">ID / Trailer #</label>
-            <input type="text" id="edit-active-id" class="form-input" oninput="this.value = this.value.toUpperCase()">
-        </div>
-        
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Account # (CPU only)</label>
-            <input type="text" id="edit-active-account" class="form-input" oninput="this.value = this.value.toUpperCase()">
-        </div>
-
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Unloader</label>
-            <select id="edit-active-unloader" class="form-input" onchange="checkActiveCustomUnloader(this)"></select>
-            <input type="text" id="edit-active-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
-        </div>
-
-        <button class="btn-primary" onclick="saveActiveEdit()">Save Changes</button>
-        <button class="btn-cancel" onclick="closeModal('edit-active-modal')">Discard</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="edit-log-modal">
-    <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Log Entry</h2>
-        <input type="hidden" id="edit-log-index">
-        
-        <div class="type-selector">
-            <div class="type-opt selected" id="edit-opt-wally" onclick="setEditType('Wally')">Wally</div>
-            <div class="type-opt" id="edit-opt-cpu" onclick="setEditType('CPU')">CPU (53')</div>
-        </div>
-
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">ID / Trailer #</label>
-            <input type="text" id="edit-input-id" class="form-input" oninput="this.value = this.value.toUpperCase()">
-        </div>
-
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Unloader</label>
-            <select id="edit-select-unloader" class="form-input"></select>
-        </div>
-
-        <button class="btn-primary" onclick="confirmLogEdit()">Save Changes</button>
-        <button class="btn-cancel" onclick="closeModal('edit-log-modal')">Discard</button>
+        <button class="btn-primary" style="background:#f2f2f7; color:#000; margin-top:10px;" onclick="resolveAttribution('Current')">Current Hour</button>
     </div>
 </div>
 
 <script>
-    // --- GLOBAL VARIABLES ---
-    let demoActive = false;
-    let duplicateWallyFlag = false;
-    let pendingWallyDuplicate = null;
+    // --- APP STATE ---
+    let doors = JSON.parse(localStorage.getItem('ps9_doors')) || {};
+    let historyLog = JSON.parse(localStorage.getItem('ps9_history')) || [];
+    let staffing = JSON.parse(localStorage.getItem('ps9_staffing')) || [];
+    let attributionConfig = JSON.parse(localStorage.getItem('ps9_attribution_config')) || { minutesAfterHour: 5, enabled: true };
+    
     let currentDoor = null;
     let currentType = 'Wally';
-    let detailDoor = null;
-    let currentLogFilter = 'All'; 
-    let activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' };
-    let statsVisible = false;
-    let hourlyVisible = false;
-    
-    // --- CONFIG ---
-    const APP_VERSION = '3.5';
-    const DOORS_START = 9;
-    const DOORS_END = 16;
-    const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
-    
-    // --- STATE ---
-    let doors = {};
-    let historyLog = [];
-    let teamNames = [];
-    let savedAccounts = [];
-    let staffing = [];
-    let currentDOP = '5-2';
-
-    // Config State
-    let config = {
-        replenish: false,
-        randomHistory: false,
-        doorCount: 2,
-        mixedTypes: false,
-        demoType: 'Wally',
-        disableTimes: false,
-        simulateWindow: false,
-        disableWindow: false
-    };
-
-    // Attribution window configuration (0-10 range)
-    let attributionConfig = {
-        minutesAfterHour: 5,
-        enabled: true
-    };
-
-    // Staging for Attribution
     let pendingCompletion = null;
 
-    // --- HELPER FUNCTIONS ---
-    function getHourText(hour) {
-        if (hour === 1) return "1st Hour";
-        if (hour === 2) return "2nd Hour";
-        if (hour === 3) return "3rd Hour";
-        if (hour === 4) return "4th Hour";
-        if (hour === 5) return "5th Hour";
-        if (hour === 6) return "6th Hour";
-        if (hour === 7) return "7th Hour";
-        if (hour === 8) return "8th Hour";
-        if (hour === 9) return "9th Hour";
-        if (hour === 10) return "10th Hour";
-        if (hour === 11) return "11th Hour";
-        if (hour === 12) return "12th Hour";
-        return `${hour}th Hour`;
-    }
+    const DOORS_START = 9;
+    const DOORS_END = 16;
 
-    // --- INIT ---
     function init() {
-        console.log(`Wally Dashboard v${APP_VERSION} initialized`);
-        
-        // Load saved accounts
-        const sAccts = localStorage.getItem('ps9_accounts');
-        if (sAccts) savedAccounts = JSON.parse(sAccts);
-        
-        // Load attribution config
-        initAttributionSettings();
-        
-        // Load other data
-        const sDoors = localStorage.getItem('ps9_doors');
-        const sHistory = localStorage.getItem('ps9_history');
-        const sTeam = localStorage.getItem('ps9_team');
-        const sStaff = localStorage.getItem('ps9_staffing');
-        const sDop = localStorage.getItem('ps9_dop');
-        const shiftStart = localStorage.getItem('ps9_shift_start') || "19:55";
-
-        if (sDoors) doors = JSON.parse(sDoors);
-        else {
+        if (Object.keys(doors).length === 0) {
             for(let i=DOORS_START; i<=DOORS_END; i++) {
                 doors[i] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false, lastCompletionTime: null };
             }
         }
-
-        if (sHistory) historyLog = JSON.parse(sHistory);
-        if (sTeam) teamNames = JSON.parse(sTeam); else teamNames = [...DEFAULT_TEAM];
-        if (sStaff) staffing = JSON.parse(sStaff);
-        if (sDop) currentDOP = sDop;
-        
-        staffing.forEach(s => {
-            if (!s.role) s.role = 'Unloader';
-            if (!s.accumulated) s.accumulated = 0;
-        });
-        
-        const startInput = document.getElementById('setting-shift-start');
-        if(startInput) startInput.value = shiftStart;
-        
-        const dopSelect = document.getElementById('dop-select');
-        if(dopSelect) dopSelect.value = currentDOP;
-
-        renderSavedAccounts();
-        updateAccountDatalist();
-        populateUnloaderSelect();
+        document.getElementById('setting-shift-start').value = localStorage.getItem('ps9_shift_start') || "19:55";
         renderDashboard();
-        
-        setTimeout(() => {
-            updateAttributionUI();
-            setupAttributionSlider();
-        }, 100);
-        
-        setInterval(updateStaffingTimers, 1000);
-        setInterval(updateTabBadges, 2000);
-        updateTabBadges();
-    }
-    
-    // --- RESET DATA ---
-    function resetData() { 
-        if(confirm("Reset all data? This will preserve saved account numbers.")) { 
-            const savedAccountsBackup = savedAccounts;
-            localStorage.clear();
-            if (savedAccountsBackup.length > 0) {
-                localStorage.setItem('ps9_accounts', JSON.stringify(savedAccountsBackup));
-            }
-            localStorage.setItem('ps9_shift_start', "19:55");
-            location.reload(); 
-        } 
-    }
-    
-    // --- ATTRIBUTION WINDOW FUNCTIONS ---
-    function initAttributionSettings() {
-        const saved = localStorage.getItem('ps9_attribution_config');
-        if (saved) {
-            attributionConfig = JSON.parse(saved);
-        }
         updateAttributionUI();
-    }
-
-    function updateAttributionUI() {
-        const valueEl = document.getElementById('attribution-value');
-        const fillEl = document.getElementById('slider-fill');
-        const thumbEl = document.getElementById('slider-thumb');
-        const displayEl = document.getElementById('attribution-display');
-        const toggleEl = document.getElementById('switch-dis-window');
-        
-        if (!valueEl || !fillEl || !thumbEl || !displayEl) return;
-        
-        const minutes = attributionConfig.minutesAfterHour;
-        const percentage = (minutes / 10) * 100;
-        
-        valueEl.textContent = minutes;
-        fillEl.style.width = `${percentage}%`;
-        thumbEl.style.left = `${percentage}%`;
-        
-        displayEl.textContent = `Window: 0 to ${minutes} minutes after the hour mark`;
-
-        // Sync toggle
-        if(toggleEl) {
-            if(!attributionConfig.enabled) toggleEl.classList.add('checked');
-            else toggleEl.classList.remove('checked');
-        }
-    }
-
-    function saveAttributionSetting() {
-        localStorage.setItem('ps9_attribution_config', JSON.stringify(attributionConfig));
-        alert('Attribution window settings saved!');
-    }
-
-    function setupAttributionSlider() {
-        const sliderTrack = document.querySelector('.slider-track');
-        const sliderThumb = document.getElementById('slider-thumb');
-        
-        if (!sliderTrack || !sliderThumb) return;
-        
-        let isDragging = false;
-        
-        function updateSlider(clientX) {
-            const rect = sliderTrack.getBoundingClientRect();
-            let percentage = ((clientX - rect.left) / rect.width) * 100;
-            percentage = Math.max(0, Math.min(100, percentage));
-            const minuteValue = Math.round((percentage / 100) * 10);
-            attributionConfig.minutesAfterHour = minuteValue;
-            updateAttributionUI();
-        }
-        
-        sliderThumb.addEventListener('mousedown', (e) => { isDragging = true; e.preventDefault(); });
-        document.addEventListener('mousemove', (e) => { if (isDragging) updateSlider(e.clientX); });
-        document.addEventListener('mouseup', () => { isDragging = false; });
-        
-        sliderThumb.addEventListener('touchstart', (e) => { isDragging = true; e.preventDefault(); });
-        document.addEventListener('touchmove', (e) => { if (isDragging) updateSlider(e.touches[0].clientX); });
-        document.addEventListener('touchend', () => { isDragging = false; });
-        
-        sliderTrack.parentElement.addEventListener('click', (e) => { updateSlider(e.clientX); });
-    }
-    
-    // --- TAB BADGE FUNCTIONALITY ---
-    function updateTabBadges() {
-        let activeTrailersCount = 0;
-        for(let i = DOORS_START; i <= DOORS_END; i++) {
-            if(doors[i].status === 'active') activeTrailersCount++;
-        }
-        updateBadge('active', activeTrailersCount, 'activeTrailers');
-        let activeStaffCount = staffing.filter(s => s.status === 'active' || s.status === 'paused').length;
-        updateBadge('staffing', activeStaffCount, 'activeStaff');
-        updateBadge('tools', 0, 'default');
-        let settingsBadgeCount = demoActive ? 1 : 0;
-        updateBadge('settings', settingsBadgeCount, 'demo');
-    }
-    
-    function updateBadge(tabId, count, type) {
-        const badge = document.getElementById(`badge-${tabId}`);
-        if (!badge) return;
-        if (tabId === 'logs') { badge.style.display = 'none'; return; }
-        if (count === 0) {
-            badge.style.display = 'none';
-        } else {
-            badge.textContent = count > 99 ? '99+' : count.toString();
-            badge.classList.remove('zero');
-            if (type === 'demo') badge.classList.add('warning');
-            badge.style.display = 'flex';
-        }
-    }
-    
-    // --- DOOR LOGIC ---
-    function toggleDoorAvailability(doorNum) {
-        const door = doors[doorNum];
-        if (door.status === 'active') return alert("Cannot mark an active bay as unavailable.");
-        door.unavailable = !door.unavailable;
-        saveData();
-        renderDashboard();
-    }
-    
-    function checkDuplicateWally(wallyId) {
-        const { shiftStart } = getShiftTimeWindows();
-        const shiftStartTime = shiftStart.getTime();
-        const now = Date.now();
-        return historyLog.some(log => 
-            log.type === 'Wally' && 
-            log.id === wallyId && 
-            log.end >= shiftStartTime &&
-            log.end <= now
-        );
-    }
-    
-    function continueWithDuplicate() {
-        closeModal('duplicate-wally-modal');
-        if (pendingWallyDuplicate) {
-            const { doorNum, wallyId, unloader } = pendingWallyDuplicate;
-            doors[doorNum] = {
-                status: 'active', start: Date.now(), id: wallyId, account: "", type: 'Wally', 
-                unloader: unloader || "Unassigned", isDuplicate: true, unavailable: false
-            };
-            saveData(); 
-            closeModal('input-modal'); 
-            renderDashboard();
-            updateTabBadges();
-            pendingWallyDuplicate = null;
-        }
-    }
-    
-    // --- STAFFING LOGIC ---
-    function saveDOP(val) { currentDOP = val; localStorage.setItem('ps9_dop', currentDOP); }
-    
-    function openAddStaffModal() {
-        const container = document.getElementById('staff-checkbox-list');
-        container.innerHTML = '';
-        [...teamNames].sort().forEach(n => {
-            const isActive = staffing.find(s => s.name === n && (s.status === 'active' || s.status === 'paused'));
-            if(!isActive) {
-                const item = document.createElement('label');
-                item.className = 'staff-checkbox-item';
-                item.innerHTML = `<input type="checkbox" value="${n}" class="staff-checkbox"><span>${n}</span>`;
-                container.appendChild(item);
-            }
-        });
-        document.getElementById('staff-input-time').value = ''; 
-        document.getElementById('add-staff-modal').style.display = 'flex';
-    }
-    
-    function confirmAddStaff() {
-        const checkboxes = document.querySelectorAll('.staff-checkbox:checked');
-        const timeInput = document.getElementById('staff-input-time').value;
-        if(checkboxes.length === 0) return alert("Select at least one employee");
-        let startTime;
-        if(timeInput) {
-            const now = new Date();
-            const [h, m] = timeInput.split(':').map(Number);
-            const d = new Date(now); d.setHours(h, m, 0, 0);
-            if(d > now) d.setDate(d.getDate() - 1);
-            startTime = d.getTime();
-        } else {
-            const { shiftStart } = getShiftTimeWindows();
-            startTime = shiftStart.getTime();
-        }
-        checkboxes.forEach(cb => {
-            staffing.push({ id: Date.now() + Math.random(), name: cb.value, start: startTime, end: null, status: 'active', role: 'Unloader', accumulated: 0 });
-        });
-        saveData();
-        closeModal('add-staff-modal');
-        renderStaffingView();
+        setupSlider();
         updateTabBadges();
-    }
-    
-    function cutStaff(id) {
-        const s = staffing.find(x => x.id === id);
-        if(s) {
-            s.status = 'cut'; s.end = Date.now();
-            if (s.start !== null) s.accumulated = (s.accumulated || 0) + (Date.now() - s.start);
-            s.start = null; saveData(); renderStaffingView(); updateTabBadges();
-        }
-    }
-    
-    function removeStaff(id) {
-        if(confirm("Delete this employee record?")) {
-            staffing = staffing.filter(s => s.id !== id);
-            saveData(); renderStaffingView(); updateTabBadges();
-        }
-    }
-    
-    function openEditStaffModal(id) {
-        const s = staffing.find(x => x.id === id); if(!s) return;
-        document.getElementById('edit-staff-id').value = id;
-        const date = new Date(s.start || Date.now());
-        const h = date.getHours().toString().padStart(2,'0');
-        const m = date.getMinutes().toString().padStart(2,'0');
-        document.getElementById('edit-staff-time').value = `${h}:${m}`;
-        document.getElementById('edit-staff-modal').style.display = 'flex';
+        setInterval(updateStaffingTimers, 1000);
     }
 
-    function saveStaffEdit() {
-        const id = parseFloat(document.getElementById('edit-staff-id').value);
-        const timeInput = document.getElementById('edit-staff-time').value;
-        const s = staffing.find(x => x.id === id);
-        if(s && timeInput) {
-            const [h, m] = timeInput.split(':').map(Number);
-            const originalDate = new Date(s.start || Date.now());
-            const newDate = new Date(originalDate); newDate.setHours(h, m);
-            s.start = newDate.getTime();
-            saveData(); renderStaffingView(); closeModal('edit-staff-modal');
-        }
-    }
-
-    function saveStaffRole(id, newRole) {
-        const s = staffing.find(x => x.id === id);
-        if(s && s.role !== newRole) {
-            const now = Date.now();
-            if(s.status === 'active' && s.start) {
-                s.accumulated = (s.accumulated || 0) + (now - s.start);
-                s.start = now;
-            }
-            s.role = newRole; saveData(); renderStaffingView();
-        }
-    }
-
-    function pauseStaff(id) {
-        const s = staffing.find(x => x.id === id);
-        if (s && s.status === 'active') {
-            s.status = 'paused'; s.accumulated = (s.accumulated || 0) + (Date.now() - s.start);
-            s.start = null; saveData(); renderStaffingView();
-        }
-    }
-
-    function resumeStaff(id) {
-        const s = staffing.find(x => x.id === id);
-        if (s && s.status === 'paused') {
-            s.status = 'active'; s.start = Date.now(); saveData(); renderStaffingView();
-        }
-    }
-    
-    function renderStaffingView() {
-        const activeList = document.getElementById('staff-list-active');
-        const cutList = document.getElementById('staff-list-cut');
-        activeList.innerHTML = ''; cutList.innerHTML = '';
-        const now = Date.now();
-        staffing.filter(s => s.status === 'active' || s.status === 'paused').forEach(s => {
-            const isPaused = s.status === 'paused';
-            const totalMs = (s.accumulated || 0) + (s.status === 'active' && s.start ? (now - s.start) : 0);
-            const div = document.createElement('div');
-            div.className = 'staff-card';
-            div.innerHTML = `<div class="staff-top-row"><div class="staff-name">${s.name}</div><div style="display:flex; gap:8px;"><button class="icon-btn" onclick="${isPaused ? `resumeStaff(${s.id})` : `pauseStaff(${s.id})`}" style="width:32px; height:32px;"><i class="ph ${isPaused ? 'ph-play' : 'ph-pause'}"></i></button><button class="staff-action-btn" onclick="cutStaff(${s.id})">CUT</button></div></div><div class="staff-time">${s.role}</div><div class="staff-hours">${(totalMs/3600000).toFixed(2)}h</div>`;
-            activeList.appendChild(div);
-        });
-        updateStaffingTimers();
-    }
-    
-    function updateStaffingTimers() {
-        let onClock = 0, hours = 0;
-        staffing.forEach(s => {
-            if(s.status !== 'cut') onClock++;
-            let ms = (s.accumulated || 0) + (s.status === 'active' ? (Date.now() - s.start) : 0);
-            if(s.role === 'Unloader') hours += (ms/3600000);
-        });
-        document.getElementById('staff-active-count').innerText = onClock;
-        document.getElementById('staff-total-hours').innerText = hours.toFixed(2);
-    }
-
-    // --- ACCOUNTS ---
-    function addSavedAccount() {
-        const input = document.getElementById('new-account-input');
-        const val = input.value.trim().toUpperCase();
-        if(val && !savedAccounts.includes(val)) {
-            savedAccounts.push(val); localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
-            renderSavedAccounts(); updateAccountDatalist(); input.value = '';
-        }
-    }
-    
-    function removeAccount(acct) {
-        savedAccounts = savedAccounts.filter(a => a !== acct);
-        localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
-        renderSavedAccounts(); updateAccountDatalist();
-    }
-    
-    function renderSavedAccounts() {
-        const list = document.getElementById('saved-accounts-list'); if(!list) return;
-        list.innerHTML = savedAccounts.length ? '' : '<div style="padding:15px 0; color:#8e8e93; text-align:center;">No saved accounts</div>';
-        savedAccounts.forEach(acct => {
-            const div = document.createElement('div'); div.className = 'saved-acct-item';
-            div.innerHTML = `<span>${acct}</span><i class="ph ph-minus-circle delete-acct-btn" onclick="removeAccount('${acct}')"></i>`;
-            list.appendChild(div);
-        });
-    }
-    
-    function updateAccountDatalist() {
-        const dl = document.getElementById('saved-accounts-datalist'); if (!dl) return; 
-        dl.innerHTML = '';
-        savedAccounts.forEach(acct => { const opt = document.createElement('option'); opt.value = acct; dl.appendChild(opt); });
-    }
-    
-    // --- SETTINGS ---
-    function toggleSwitch(id) {
-        const el = document.getElementById('switch-' + id); el.classList.toggle('checked');
-        const checked = el.classList.contains('checked');
-        if(id === 'demo-mode') { demoActive = checked; updateTabBadges(); }
-        if(id === 'demo-replenish') config.replenish = checked;
-        if(id === 'demo-random') config.randomHistory = checked;
-        if(id === 'mixed-types') config.mixedTypes = checked;
-        if(id === 'disable-times') config.disableTimes = checked;
-        if(id === 'sim-window') config.simulateWindow = checked;
-        if(id === 'dis-window') { config.disableWindow = checked; attributionConfig.enabled = !checked; }
-        renderDashboard();
-    }
-    
-    function stepDoor(delta) {
-        let val = parseInt(document.getElementById('demo-door-val').innerText);
-        val += delta; if(val < 1) val = 1; if(val > 8) val = 8;
-        document.getElementById('demo-door-val').innerText = val; config.doorCount = val;
-    }
-    
-    function setDemoType(type) {
-        config.demoType = type;
-        document.getElementById('seg-wally').classList.toggle('selected', type === 'Wally');
-        document.getElementById('seg-cpu').classList.toggle('selected', type === 'CPU');
-    }
-    
-    function startDemo() {
-        const count = config.doorCount; demoActive = true; 
-        for(let i=DOORS_START; i<=DOORS_END; i++) {
-            if(doors[i].status === 'empty' && (i - DOORS_START) < count) randomArrival(i);
-        }
-        switchTab('dashboard'); updateTabBadges();
-    }
-    
-    function randomArrival(doorNum) {
-        let type = config.demoType; if(config.mixedTypes) type = Math.random() > 0.5 ? 'Wally' : 'CPU';
-        const id = Math.floor(1000 + Math.random() * 9000).toString();
-        const unloader = teamNames[Math.floor(Math.random() * teamNames.length)];
-        doors[doorNum] = { status: 'active', start: Date.now(), id: id.toUpperCase(), account: "DEMO", type: type, unloader: unloader, unavailable: false, lastCompletionTime: null };
-        renderDashboard(); updateTabBadges();
-    }
-    
-    function saveShiftStart(val) { localStorage.setItem('ps9_shift_start', val); renderDashboard(); }
-
-    function getShiftTimeWindows() {
-        const startStr = localStorage.getItem('ps9_shift_start') || "19:55";
-        const [h, m] = startStr.split(':').map(Number);
-        const now = new Date(); let start = new Date(now); start.setHours(h, m, 0, 0);
-        if (now < start) start.setDate(start.getDate() - 1);
-        const hoursElapsed = Math.floor((now - start) / 3600000);
-        const thisHourStart = new Date(start.getTime() + (hoursElapsed * 3600000));
-        return { thisHourStart, thisHourEnd: new Date(thisHourStart.getTime() + 3600000), lastHourStart: new Date(thisHourStart.getTime() - 3600000), lastHourEnd: thisHourStart, shiftStart: start };
-    }
-    
-    function getCompletionHour(completionTime) {
-        const { shiftStart } = getShiftTimeWindows();
-        return Math.floor((completionTime - shiftStart.getTime()) / 3600000) + 1;
-    }
-
-    function populateUnloaderSelect() {
-        const ids = ['select-unloader', 'edit-select-unloader', 'edit-active-unloader'];
-        ids.forEach(id => {
-            const el = document.getElementById(id); if(!el) return;
-            el.innerHTML = '<option value="" selected>Unassigned</option>';
-            [...teamNames].sort().forEach(name => {
-                const opt = document.createElement('option'); opt.value = name; opt.innerText = name; el.appendChild(opt);
-            });
-            const cust = document.createElement('option'); cust.value = "Custom"; cust.innerText = "Custom / Other"; el.appendChild(cust);
-        });
-    }
-
-    function openAddUnloaderModal() { document.getElementById('input-new-unloader-name').value=''; document.getElementById('add-unloader-modal').style.display='flex'; }
-    function confirmAddUnloader() { 
-        const val=document.getElementById('input-new-unloader-name').value.trim(); 
-        if(val && !teamNames.includes(val)){
-            teamNames.push(val); localStorage.setItem('ps9_team',JSON.stringify(teamNames)); populateUnloaderSelect();
-        } closeModal('add-unloader-modal');
-    }
-    
+    // --- NAVIGATION ---
     function switchTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.getElementById(`tab-${tabId}`).classList.add('active');
-        document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         if(btn) btn.classList.add('active');
-        if(tabId==='dashboard') renderDashboard();
-        if(tabId==='active') renderActiveTab();
-        if(tabId==='logs') renderLogs();
-        if(tabId==='staffing') renderStaffingView();
-    }
-    
-    function closeModal(id) { const m = document.getElementById(id); if(m) m.style.display='none'; }
-
-    function confirmCompleteDoor() { if(detailDoor) completeDoor(detailDoor); }
-
-    function completeDoor(doorNum) {
-        const now = new Date(); const mins = now.getMinutes();
-        const inWindow = mins <= attributionConfig.minutesAfterHour;
-        if (!config.disableWindow && attributionConfig.enabled && inWindow) {
-            pendingCompletion = { doorNum, time: now.getTime() };
-            document.getElementById('attribution-window-text').textContent = attributionConfig.minutesAfterHour;
-            document.getElementById('hour-attribution-modal').style.display = 'flex';
-        } else {
-            finalizeCompletion(doorNum, now.getTime(), 0);
-        }
-    }
-    
-    function resolveAttribution(choice) {
-        closeModal('hour-attribution-modal'); if (!pendingCompletion) return;
-        let offset = 0;
-        if (choice === 'Previous') { offset = (new Date(pendingCompletion.time).getMinutes() + 1) * 60000; }
-        finalizeCompletion(pendingCompletion.doorNum, pendingCompletion.time, offset);
-        pendingCompletion = null;
+        if(tabId === 'dashboard') renderDashboard();
+        if(tabId === 'active') renderActiveTab();
+        if(tabId === 'logs') renderLogs();
+        if(tabId === 'staffing') renderStaffingView();
     }
 
-    function finalizeCompletion(doorNum, actualEndTime, statOffset) {
-        const d = doors[doorNum];
-        const end = actualEndTime;
-        historyLog.unshift({
-            door: doorNum, id: d.id, account: d.account, type: d.type, unloader: d.unloader, 
-            start: d.start, end: end, duration: end - d.start, durationMinutes: Math.floor((end - d.start) / 60000),
-            statOffset: statOffset, duplicate: d.isDuplicate || false, completionHour: getCompletionHour(end - statOffset)
-        });
-        closeModal('active-detail-modal');
-        doors[doorNum] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false, lastCompletionTime: end };
-        saveData(); renderDashboard(); renderActiveTab(); updateTabBadges();
-    }
-
-    function updateStats() {
-        const { thisHourStart, thisHourEnd, lastHourStart, lastHourEnd } = getShiftTimeWindows();
-        let tw = 0, tc = 0, hw = 0, lw = 0;
-        historyLog.forEach(l => {
-            const et = l.end - (l.statOffset || 0);
-            if (l.type === 'Wally') {
-                tw++;
-                if (et >= thisHourStart.getTime() && et < thisHourEnd.getTime()) hw++;
-                else if (et >= lastHourStart.getTime() && et < lastHourEnd.getTime()) lw++;
-            } else tc++;
-        });
-        document.getElementById('stat-total-wally').innerText = tw;
-        document.getElementById('stat-total-cpu').innerText = tc;
-        document.getElementById('stat-hour-wally').innerText = hw;
-        document.getElementById('stat-last-wally').innerText = lw;
-    }
-    
+    // --- DASHBOARD ---
     function renderDashboard() {
-        updateStats();
         const ag = document.getElementById('active-trailers-grid');
         const og = document.getElementById('open-bays-grid');
         ag.innerHTML = ''; og.innerHTML = '';
+
+        let totalW = 0, totalC = 0;
+        historyLog.forEach(l => { if(l.type === 'Wally') totalW++; else totalC++; });
+        document.getElementById('stat-total-wally').innerText = totalW;
+        document.getElementById('stat-total-cpu').innerText = totalC;
+
         for(let i=DOORS_START; i<=DOORS_END; i++) {
-            const d = doors[i]; const btn = document.createElement('div');
+            const d = doors[i];
+            const btn = document.createElement('div');
             btn.className = `bay-circle bay-${i} ${d.unavailable ? 'unavailable' : ''}`;
             btn.innerText = i;
+            
             if(d.status === 'active') {
+                const badge = document.createElement('div');
+                badge.className = 'type-badge';
+                badge.innerText = d.type === 'Wally' ? 'W' : 'C';
+                btn.appendChild(badge);
                 btn.onclick = () => openActiveDetails(i);
                 ag.appendChild(btn);
             } else {
-                btn.onclick = () => d.unavailable ? null : openArrivalModal(i);
+                btn.onclick = () => openArrivalModal(i);
                 og.appendChild(btn);
             }
         }
     }
 
-    function renderActiveTab() {
-        const list = document.getElementById('active-tab-list'); list.innerHTML = '';
-        for(let i=DOORS_START; i<=DOORS_END; i++) {
-            if(doors[i].status === 'active') {
-                const d = doors[i];
-                list.innerHTML += `<div class="active-card"><div class="active-card-info"><div>Door ${i} - ${d.id}</div></div><button class="btn-primary" style="width:auto;" onclick="completeDoor(${i})">Finish</button></div>`;
-            }
+    function openActiveDetails(doorNum) {
+        if(confirm(`Complete Unload for Door ${doorNum}?`)) {
+            completeDoor(doorNum);
         }
     }
 
-    function openActiveDetails(doorNum) {
-        detailDoor = doorNum; const d = doors[doorNum];
-        document.getElementById('detail-door-num').innerText = doorNum;
-        document.getElementById('detail-type').innerText = d.type;
-        document.getElementById('detail-id').innerText = d.id;
-        document.getElementById('detail-unloader').innerText = d.unloader;
-        document.getElementById('detail-time').innerText = new Date(d.start).toLocaleTimeString();
-        document.getElementById('active-detail-modal').style.display = 'flex';
-    }
-
+    // --- ONBOARDING ---
     function openArrivalModal(doorNum) {
-        currentDoor = doorNum; document.getElementById('modal-door-num').innerText = doorNum;
+        currentDoor = doorNum;
+        document.getElementById('modal-door-num').innerText = doorNum;
+        document.getElementById('input-id').value = '';
         document.getElementById('input-modal').style.display = 'flex';
+        setTimeout(() => document.getElementById('input-id').focus(), 100);
     }
 
     function setType(t) {
         currentType = t;
-        document.getElementById('opt-wally').classList.toggle('selected', t==='Wally');
-        document.getElementById('opt-cpu').classList.toggle('selected', t==='CPU');
-        document.getElementById('wally-inputs').style.display = t==='Wally' ? 'block' : 'none';
-        document.getElementById('cpu-inputs').style.display = t==='CPU' ? 'block' : 'none';
+        document.getElementById('opt-wally').classList.toggle('selected', t === 'Wally');
+        document.getElementById('opt-cpu').classList.toggle('selected', t === 'CPU');
     }
 
     function confirmArrival() {
-        const id = currentType === 'Wally' ? document.getElementById('input-wally-id').value : document.getElementById('input-trailer-id').value;
-        if(!id) return alert("Missing ID");
-        doors[currentDoor] = { status: 'active', start: Date.now(), id: id.toUpperCase(), account: "", type: currentType, unloader: "Unassigned", unavailable: false };
-        saveData(); closeModal('input-modal'); renderDashboard(); updateTabBadges();
+        const id = document.getElementById('input-id').value.toUpperCase();
+        if(!id) return;
+        doors[currentDoor] = {
+            status: 'active', start: Date.now(), id: id, unloader: document.getElementById('input-unloader').value || "Unassigned", type: currentType
+        };
+        saveData();
+        closeModal('input-modal');
+        renderDashboard();
+        updateTabBadges();
     }
 
-    function renderLogs() {
-        const list = document.getElementById('logs-list'); list.innerHTML = '';
-        historyLog.forEach((l, i) => {
-            list.innerHTML += `<div class="log-card"><div>Door ${l.door} - ${l.id}</div></div>`;
+    // --- COMPLETION & ATTRIBUTION ---
+    function completeDoor(doorNum) {
+        const now = new Date();
+        const mins = now.getMinutes();
+        const inWindow = mins < attributionConfig.minutesAfterHour;
+
+        if (attributionConfig.enabled && inWindow) {
+            pendingCompletion = { doorNum, time: now.getTime() };
+            document.getElementById('hour-attribution-modal').style.display = 'flex';
+        } else {
+            finalizeCompletion(doorNum, now.getTime(), 0);
+        }
+    }
+
+    function resolveAttribution(choice) {
+        let offset = 0;
+        if(choice === 'Previous') {
+            offset = (new Date(pendingCompletion.time).getMinutes() + 1) * 60000;
+        }
+        finalizeCompletion(pendingCompletion.doorNum, pendingCompletion.time, offset);
+        closeModal('hour-attribution-modal');
+    }
+
+    function finalizeCompletion(doorNum, end, offset) {
+        const d = doors[doorNum];
+        historyLog.unshift({ ...d, end: end, offset: offset });
+        doors[doorNum] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false, lastCompletionTime: end };
+        saveData();
+        renderDashboard();
+        updateTabBadges();
+    }
+
+    // --- STAFFING ---
+    function openAddStaffModal() {
+        const name = prompt("Enter Staff Name:");
+        if(name) {
+            staffing.push({ id: Date.now(), name: name, start: Date.now(), role: 'Unloader', status: 'active', accumulated: 0 });
+            saveData(); renderStaffingView();
+        }
+    }
+
+    function renderStaffingView() {
+        const list = document.getElementById('staff-list-active');
+        list.innerHTML = '';
+        staffing.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'staff-card';
+            div.innerHTML = `<div><strong>${s.name}</strong><br><small>${s.role}</small></div><div class="staff-hours" id="hr-${s.id}">0.00h</div>`;
+            list.appendChild(div);
         });
     }
 
+    function updateStaffingTimers() {
+        let total = 0;
+        staffing.forEach(s => {
+            let ms = s.accumulated + (Date.now() - s.start);
+            let hrs = ms / 3600000;
+            const el = document.getElementById(`hr-${s.id}`);
+            if(el) el.innerText = hrs.toFixed(2) + 'h';
+            if(s.role === 'Unloader') total += hrs;
+        });
+        document.getElementById('staff-total-hours').innerText = total.toFixed(2);
+    }
+
+    // --- LOGS ---
+    function renderLogs() {
+        const list = document.getElementById('logs-list');
+        list.innerHTML = historyLog.length ? '' : '<p style="text-align:center; color:#999;">No logs found</p>';
+        historyLog.forEach(l => {
+            const div = document.createElement('div');
+            div.className = 'active-card';
+            div.innerHTML = `<div><span class="door-pill">Door ${l.door}</span> <strong>${l.id}</strong><br><small>${l.unloader} • ${l.type}</small></div><div style="font-size:12px; text-align:right;">${new Date(l.end).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
+            list.appendChild(div);
+        });
+    }
+
+    // --- SLIDER LOGIC ---
+    function setupSlider() {
+        const thumb = document.getElementById('slider-thumb');
+        const track = thumb.parentElement;
+        let dragging = false;
+        const update = (clientX) => {
+            const rect = track.getBoundingClientRect();
+            let p = ((clientX - rect.left) / rect.width) * 100;
+            p = Math.max(0, Math.min(100, p));
+            attributionConfig.minutesAfterHour = Math.round((p / 100) * 10);
+            updateAttributionUI();
+        };
+        thumb.addEventListener('touchstart', (e) => { dragging = true; e.preventDefault(); });
+        document.addEventListener('touchmove', (e) => { if(dragging) update(e.touches[0].clientX); });
+        document.addEventListener('touchend', () => { dragging = false; saveData(); });
+    }
+
+    function updateAttributionUI() {
+        const p = (attributionConfig.minutesAfterHour / 10) * 100;
+        document.getElementById('slider-fill').style.width = p + '%';
+        document.getElementById('slider-thumb').style.left = p + '%';
+        document.getElementById('attr-val-display').innerText = attributionConfig.minutesAfterHour + 'm';
+        document.getElementById('attr-text').innerText = `Window: 0 to ${attributionConfig.minutesAfterHour} minutes after hour mark`;
+        
+        const toggle = document.getElementById('switch-dis-window');
+        if(!attributionConfig.enabled) toggle.classList.add('checked');
+        else toggle.classList.remove('checked');
+    }
+
+    // --- UTILS ---
+    function updateTabBadges() {
+        let active = 0;
+        for(let i=DOORS_START; i<=DOORS_END; i++) if(doors[i].status === 'active') active++;
+        document.getElementById('badge-active').innerText = active;
+        document.getElementById('badge-active').style.display = active > 0 ? 'flex' : 'none';
+    }
+    function toggleSwitch(id) {
+        const el = document.getElementById('switch-' + id);
+        el.classList.toggle('checked');
+        if(id === 'dis-window') attributionConfig.enabled = !el.classList.contains('checked');
+        saveData();
+    }
+    function saveShiftStart(v) { localStorage.setItem('ps9_shift_start', v); }
     function saveData() {
         localStorage.setItem('ps9_doors', JSON.stringify(doors));
         localStorage.setItem('ps9_history', JSON.stringify(historyLog));
-        localStorage.setItem('ps9_team', JSON.stringify(teamNames));
-        localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
         localStorage.setItem('ps9_staffing', JSON.stringify(staffing));
+        localStorage.setItem('ps9_attribution_config', JSON.stringify(attributionConfig));
+    }
+    function resetData() { if(confirm("Clear all data?")) { localStorage.clear(); location.reload(); } }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function calculatePPH() {
+        const v = parseFloat(document.getElementById('pph-vol').value) || 0;
+        const h = parseFloat(document.getElementById('pph-hrs').value) || 0;
+        document.getElementById('pph-result').innerText = h > 0 ? Math.round(v/h) : 0;
     }
 
     init();
