@@ -841,7 +841,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.9</div>
+            <div class="app-version">Version 3.10</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1427,7 +1427,7 @@
     let hourlyVisible = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.9';
+    const APP_VERSION = '3.10';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
@@ -1988,19 +1988,28 @@
         }
     }
     
-    function getTopThreeStaff() {
+    // --- HELPER FOR ACCURATE TIME CALC ---
+    function calculateTotalHours(s) {
         const now = Date.now();
+        let totalMs = (s.accumulated || 0);
+        if (s.status === 'active' && s.start) {
+            totalMs += (now - s.start);
+        }
+        // Round to nearest minute first
+        const totalMinutes = Math.round(totalMs / 60000);
+        // Then convert to hours
+        return totalMinutes / 60;
+    }
+    
+    function getTopThreeStaff() {
         const allStaffWithHours = staffing.map(s => {
-            let totalMs = s.accumulated || 0;
-            if (s.status === 'active' && s.start) {
-                totalMs += (now - s.start);
-            }
-            return { ...s, totalHours: totalMs / 3600000 };
+            return { ...s, totalHours: calculateTotalHours(s) };
         });
         
         // Sort by total hours descending
         allStaffWithHours.sort((a, b) => b.totalHours - a.totalHours);
         
+        // Return top 3
         return allStaffWithHours.slice(0, 3);
     }
     
@@ -2014,23 +2023,20 @@
         const topThree = getTopThreeStaff();
         const topThreeIds = topThree.map(s => s.id);
         
-        // Sorting logic
-        const now = Date.now();
+        // Sorting logic for active list
         const activeStaff = staffing.filter(s => s.status === 'active' || s.status === 'paused');
-        activeStaff.sort((a,b) => {
-            const durA = (a.accumulated || 0) + (a.status === 'active' ? (now - a.start) : 0);
-            const durB = (b.accumulated || 0) + (b.status === 'active' ? (now - b.start) : 0);
-            return durB - durA;
-        });
+        activeStaff.sort((a,b) => calculateTotalHours(b) - calculateTotalHours(a));
 
         // Build Active List
         activeStaff.forEach(s => {
-             // Determine emoji based on position in top three
+             // Dynamic Role Icons Logic
              let suggestionBadge = '';
+             // Check rank in the GLOBAL list (including cut staff if they have high hours)
+             // But usually we compare against the global top 3
              if (topThreeIds.includes(s.id)) {
                  const position = topThreeIds.indexOf(s.id);
-                 if (position === 0) suggestionBadge = '👑';
-                 else if (position === 1 || position === 2) suggestionBadge = '🧹';
+                 if (position === 0) suggestionBadge = '👑'; // #1 Belt Tender
+                 else if (position === 1 || position === 2) suggestionBadge = '🧹'; // #2/#3 Bulk Sweep
              }
              
              const isPaused = s.status === 'paused';
@@ -2043,9 +2049,8 @@
              // Time string logic
              const timeStr = isPaused ? 'Paused' : 'Started: ' + new Date(s.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
              
-             // Calculate total hours for this staff member
-             const totalMs = (s.accumulated || 0) + (s.status === 'active' && s.start ? (now - s.start) : 0);
-             const totalHours = totalMs / 3600000;
+             // Calculate total hours
+             const totalHours = calculateTotalHours(s);
              
              // Determine role-specific display color
              let roleColor = '#000';
@@ -2058,7 +2063,7 @@
              div.innerHTML = `
                 <div style="width:100%">
                     <div class="staff-top-row">
-                        <div class="staff-name">${s.name} ${suggestionBadge} ${badgeText}</div>
+                        <div class="staff-name">${s.name} <span style="margin-left:5px; font-size:18px;">${suggestionBadge}</span> ${badgeText}</div>
                         <div style="display:flex; gap:8px;">
                             <button class="icon-btn" onclick="${pauseBtnAction}" style="width:32px; height:32px; font-size:16px; ${pauseStyle}"><i class="ph ${pauseBtnIcon}"></i></button>
                             <button class="icon-btn" onclick="openEditStaffModal(${s.id})" style="width:32px; height:32px; font-size:16px;"><i class="ph ph-pencil-simple"></i></button>
@@ -2084,11 +2089,13 @@
 
         // Build Cut List
         const cutStaffList = staffing.filter(s => s.status === 'cut');
+        // Sort cut list by hours too for better visibility
+        cutStaffList.sort((a,b) => calculateTotalHours(b) - calculateTotalHours(a));
+        
         cutStaffList.forEach(s => {
-             const totalMs = (s.accumulated || 0); 
-             const hrs = totalMs / 3600000;
+             const hrs = calculateTotalHours(s);
              
-             // Check if cut staff is in top three
+             // Check if cut staff is still in top three (they retain rank until surpassed)
              let suggestionBadge = '';
              if (topThreeIds.includes(s.id)) {
                  const position = topThreeIds.indexOf(s.id);
@@ -2100,7 +2107,7 @@
              div.className = 'staff-card cut';
              div.innerHTML = `
                 <div>
-                    <div class="staff-name">${s.name} ${suggestionBadge} • ${s.role}</div>
+                    <div class="staff-name">${s.name} <span style="margin-left:5px; font-size:18px;">${suggestionBadge}</span> • ${s.role}</div>
                     <div class="staff-time">Ended: ${new Date(s.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -2132,18 +2139,14 @@
             
             if(s.status === 'active' || s.status === 'paused') {
                 onClockCount++;
-                let currentTotalMs = (s.accumulated || 0);
-                if (s.status === 'active' && s.start) {
-                    currentTotalMs += (now - s.start);
-                }
-                hrs = currentTotalMs / 3600000;
+                hrs = calculateTotalHours(s);
                 
                 // Update DOM element directly
                 const el = document.getElementById(`staff-hours-${s.id}`);
                 if(el) el.innerText = hrs.toFixed(2) + 'h';
             } else if(s.status === 'cut') {
                 offClockCount++;
-                hrs = (s.accumulated || 0) / 3600000;
+                hrs = calculateTotalHours(s);
             }
             
             // Accumulate hours by CURRENT role
@@ -3158,7 +3161,7 @@
         closeModal('export-modal');
         let csv = "Type,ID,Account,Door,Unloader,Duration(mins),StartTime,EndTime,StartHour,EndHour,Duplicate,Hour\n";
         historyLog.forEach(l => {
-             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.round(l.duration/60000)},${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${new Date(l.start).getHours()},${new Date(l.end).getHours()},${l.duplicate ? 'Yes' : 'No'},${l.completionHour}\n`;
+             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.floor(l.duration/60000)},${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${new Date(l.start).getHours()},${new Date(l.end).getHours()},${l.duplicate ? 'Yes' : 'No'},${l.completionHour}\n`;
         });
         const blob = new Blob([csv], {type:'text/csv'});
         const url = window.URL.createObjectURL(blob);
@@ -3231,7 +3234,7 @@
                 l.type + (l.duplicate ? ' (DUP)' : ''),
                 l.id,
                 l.unloader,
-                Math.round(l.duration/60000) + "m",
+                Math.floor(l.duration/60000) + "m",
                 getHourText(l.completionHour)
             ]);
             
