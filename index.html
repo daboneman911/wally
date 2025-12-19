@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- iOS Web App Capability -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WallyTracker">
@@ -13,10 +12,8 @@
     
     <title>Wally Dashboard</title>
     
-    <!-- Using Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <!-- PDF Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     
@@ -830,7 +827,6 @@
 
 <div class="app-container">
     
-    <!-- === TAB 1: DASHBOARD === -->
     <div id="tab-dashboard" class="tab-content active">
         
         <div class="top-actions">
@@ -878,7 +874,6 @@
     </div>
 
 
-    <!-- === TAB 2: ACTIVE (List) === -->
     <div id="tab-active" class="tab-content">
         <div class="header-bar">
             <h1>Active Details</h1>
@@ -886,11 +881,9 @@
         <div id="active-tab-list" class="active-tab-list"></div>
     </div>
 
-    <!-- === TAB 3: LOGS === -->
     <div id="tab-logs" class="tab-content">
         <div class="header-bar">
             <h1>Logs</h1>
-            <!-- Filter Icon and Export Icon -->
             <div class="header-right">
                 <button class="filter-icon-btn" onclick="openFilterModal()">
                     <i class="ph ph-faders"></i>
@@ -901,13 +894,11 @@
             </div>
         </div>
         
-        <!-- Stats Toggle -->
         <button class="stats-collapse-btn" onclick="toggleStats('unloader')">
             Unloader Statistics
             <i class="ph ph-caret-down" id="stats-caret"></i>
         </button>
         
-        <!-- Stats Content -->
         <div id="stats-content" class="stats-content-area">
             <table class="stats-table">
                 <thead>
@@ -922,13 +913,11 @@
             </table>
         </div>
         
-        <!-- Hourly Toggle -->
         <button class="stats-collapse-btn" onclick="toggleStats('hourly')">
             Hourly Breakdown
             <i class="ph ph-caret-down" id="hourly-caret"></i>
         </button>
         
-        <!-- Hourly Content -->
         <div id="hourly-content" class="stats-content-area">
             <table class="stats-table">
                 <thead>
@@ -941,7 +930,6 @@
             </table>
         </div>
         
-        <!-- Active Filter Indicator -->
         <div id="active-filter-display" class="active-filter-display" style="display:none;">
             <span>Filtering: <span id="filter-text-display"></span></span>
             <i class="ph ph-x" style="cursor:pointer" onclick="clearLogFilter()"></i>
@@ -950,7 +938,6 @@
         <div id="logs-list" class="logs-list"></div>
     </div>
     
-    <!-- === TAB 4: STAFFING === -->
     <div id="tab-staffing" class="tab-content">
         <div class="header-bar">
             <h1>Staffing</h1>
@@ -961,7 +948,6 @@
             </div>
         </div>
         
-        <!-- DOP Selector -->
         <div class="dop-container">
             <span class="dop-label">Daily Operating Plan</span>
             <select id="dop-select" class="dop-select" onchange="saveDOP(this.value)">
@@ -1001,14 +987,12 @@
         <div id="staff-list-cut"></div>
     </div>
     
-    <!-- === TAB 5: TOOLS === -->
     <div id="tab-tools" class="tab-content" style="background:#f2f2f7;">
         <div style="background:white; padding: 20px 20px 10px 20px; border-bottom:1px solid #e5e5ea; margin: -20px -20px 20px -20px;">
              <div class="header-bar" style="margin:0;"><h1>Tools</h1></div>
         </div>
         
         <div class="tools-grid">
-            <!-- PPH Calculator -->
             <div class="tool-card" onclick="openPPHModal()">
                 <div class="tool-icon-wrapper"><i class="ph ph-calculator"></i></div>
                 <div class="tool-title">PPH Calculator</div>
@@ -1026,9 +1010,7 @@
         </div>
     </div>
     
-    <!-- === TAB 6: SETTINGS === -->
     <div id="tab-settings" class="tab-content" style="background:#f2f2f7; padding:0;">
-        <!-- Header -->
         <div style="background:white; padding: 20px 20px 10px 20px; border-bottom:1px solid #e5e5ea;">
             <div class="header-bar" style="margin:0;">
                 <h1>Settings</h1>
@@ -1037,16 +1019,13 @@
 
         <div style="padding: 20px 20px 120px 20px;">
             
-            <!-- SHIFT CONFIGURATION (Top) -->
             <div class="settings-header">Shift Configuration</div>
             <div class="settings-group">
-                <!-- Shift Start -->
                 <div class="settings-row">
                     <span class="settings-label">Shift Start Time</span>
                     <input type="time" id="setting-shift-start" class="settings-input-inline" onchange="saveShiftStart(this.value)">
                 </div>
 
-                <!-- Attribution Slider -->
                 <div class="settings-slider-container" style="border-top:1px solid #f2f2f7;">
                     <div class="slider-header">
                         <span class="settings-label">Attribution Window</span>
@@ -1058,7 +1037,6 @@
                         <div class="slider-fill" id="slider-fill"></div>
                         <div class="slider-thumb" id="slider-thumb"></div>
                         
-                        <!-- Ticks: 0, 5, 10 -->
                         <div class="slider-ticks">
                             <div class="slider-tick" style="left: 0%"><div class="slider-tick-label">0</div></div>
                             <div class="slider-tick" style="left: 50%"><div class="slider-tick-label">5</div></div>
@@ -1071,8 +1049,7 @@
                     </div>
                 </div>
 
-                <!-- Window Toggles -->
-                 <div class="settings-row">
+                <div class="settings-row">
                     <span class="settings-label">Simulate Window (Test)</span>
                     <div class="toggle-switch" id="switch-sim-window" onclick="toggleSwitch('sim-window')"></div>
                 </div>
@@ -1082,7 +1059,6 @@
                 </div>
             </div>
 
-            <!-- Saved Accounts Section -->
             <div class="settings-header">Saved Accounts</div>
             <div class="settings-group">
                 <div class="settings-row">
@@ -1094,7 +1070,6 @@
                 </div>
             </div>
 
-            <!-- Demo Section -->
             <div class="settings-header">Demo</div>
             <div class="settings-group">
                 <div class="settings-row">
@@ -1149,7 +1124,6 @@
 
 </div>
 
-<!-- === BOTTOM NAVIGATION === -->
 <nav class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('dashboard', this)" id="tab-btn-dashboard">
         <i class="ph ph-chart-pie-slice"></i>
@@ -1181,9 +1155,6 @@
     </button>
 </nav>
 
-<!-- === MODALS === -->
-
-<!-- PPH MODAL -->
 <div class="modal-overlay" id="pph-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">PPH Calculator</h2>
@@ -1213,7 +1184,6 @@
     </div>
 </div>
 
-<!-- ADD STAFF MODAL -->
 <div class="modal-overlay" id="add-staff-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Clock In Staff</h2>
@@ -1231,7 +1201,6 @@
     </div>
 </div>
 
-<!-- EDIT STAFF MODAL -->
 <div class="modal-overlay" id="edit-staff-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Staff</h2>
@@ -1245,7 +1214,6 @@
     </div>
 </div>
 
-<!-- EXPORT MODAL -->
 <div class="modal-overlay" id="export-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Export Data</h2>
@@ -1255,7 +1223,6 @@
     </div>
 </div>
 
-<!-- ATTRIBUTION MODAL (Custom Window) -->
 <div class="modal-overlay" id="hour-attribution-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Attribute Completion</h2>
@@ -1267,21 +1234,18 @@
     </div>
 </div>
 
-<!-- FILTER MODAL -->
 <div class="modal-overlay" id="filter-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Filter by Door</h2>
         
         <div class="filter-grid" id="filter-grid">
-            <!-- JS Populated -->
-        </div>
+            </div>
         
         <button class="btn-primary" onclick="applyFilter('All')">Show All</button>
         <button class="btn-cancel" onclick="closeModal('filter-modal')">Cancel</button>
     </div>
 </div>
 
-<!-- DUPLICATE WALLY MODAL -->
 <div class="modal-overlay" id="duplicate-wally-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Duplicate Wally Detected</h2>
@@ -1293,7 +1257,6 @@
     </div>
 </div>
 
-<!-- INBOUND FORM -->
 <div class="modal-overlay" id="input-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Onboard Door <span id="modal-door-num"></span></h2>
@@ -1348,7 +1311,6 @@
     </div>
 </div>
 
-<!-- ACTIVE DETAIL MODAL - REMOVED AVAILABILITY BUTTON -->
 <div class="modal-overlay" id="active-detail-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Active Door <span id="detail-door-num"></span></h2>
@@ -2389,6 +2351,10 @@
     
     function confirmAddUnloader() { 
         const input=document.getElementById('input-new-unloader-name'); 
+        
+        // --- FIX: Dismiss keyboard explicitly ---
+        if(input) input.blur();
+
         const val=input.value.trim(); 
         if(val){ 
             // Capitalize first letter of each word
@@ -2428,6 +2394,11 @@
     function closeModal(id) { 
         const modal = document.getElementById(id);
         if(modal) modal.style.display='none'; 
+        
+        // --- FIX FOR IPHONE 16 DYNAMIC ISLAND ---
+        // Force the viewport to snap back to the top
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
     }
 
     // --- COMPLETION LOGIC WITH CONFIGURABLE ATTRIBUTION WINDOW ---
