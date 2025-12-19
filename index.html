@@ -1235,6 +1235,7 @@
     </div>
 </div>
 
+<!-- ACTIVE DETAIL MODAL - REMOVED AVAILABILITY BUTTON -->
 <div class="modal-overlay" id="active-detail-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Active Door <span id="detail-door-num"></span></h2>
@@ -1267,11 +1268,6 @@
         </div>
 
         <button class="btn-primary btn-danger" onclick="confirmCompleteDoor()">Complete Unload</button>
-        
-        <button class="btn-primary" onclick="toggleDoorAvailability(detailDoor); closeModal('active-detail-modal');" style="background:#000; color:#fff; margin-top:10px;">
-            <i class="ph ph-power" style="margin-right:8px;"></i> 
-            <span id="availability-btn-text">Mark Unavailable</span>
-        </button>
         
         <div class="modal-actions-row">
             <button class="modal-icon-btn" onclick="openEditActiveModalFromDetail()" style="flex:1"><i class="ph ph-pencil-simple"></i></button>
@@ -1347,13 +1343,14 @@
     let demoActive = false;
     let duplicateWallyFlag = false;
     let pendingWallyDuplicate = null;
-    let touchStartTime = {};
-    let touchTimeout = {};
-
-    document.addEventListener('DOMContentLoaded', () => {
-        init();
-    });
-
+    let currentDoor = null;
+    let currentType = 'Wally';
+    let detailDoor = null;
+    let currentLogFilter = 'All'; 
+    let activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' };
+    let statsVisible = false;
+    let hourlyVisible = false;
+    
     // --- CONFIG ---
     const APP_VERSION = '3.5';
     const DOORS_START = 9;
@@ -1368,14 +1365,6 @@
     let staffing = [];
     let currentDOP = '5-2';
 
-    let currentDoor = null;
-    let currentType = 'Wally';
-    let detailDoor = null;
-    let currentLogFilter = 'All'; 
-    let activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' };
-    let statsVisible = false;
-    let hourlyVisible = false;
-    
     // Config State
     let config = {
         replenish: false,
@@ -1544,49 +1533,21 @@
         }
     }
     
-    // --- DOOR UNAVAILABLE LOGIC ---
-    function setupTouchHandlers() {
-        for(let i=DOORS_START; i<=DOORS_END; i++) {
-            const doorEl = document.querySelector(`.bay-circle[data-door="${i}"]`);
-            if(doorEl) {
-                // Clear any existing listeners
-                doorEl.removeEventListener('touchstart', touchStartTime[i]);
-                doorEl.removeEventListener('touchend', touchTimeout[i]);
-                
-                // Add new listeners
-                doorEl.addEventListener('touchstart', (e) => {
-                    touchStartTime[i] = Date.now();
-                    touchTimeout[i] = setTimeout(() => {
-                        toggleDoorAvailability(i);
-                    }, 800);
-                });
-                
-                doorEl.addEventListener('touchend', () => {
-                    if (touchTimeout[i]) {
-                        clearTimeout(touchTimeout[i]);
-                    }
-                });
-                
-                doorEl.addEventListener('touchmove', () => {
-                    if (touchTimeout[i]) {
-                        clearTimeout(touchTimeout[i]);
-                    }
-                });
-            }
-        }
-    }
-    
+    // --- DOOR UNAVAILABLE LOGIC - ONLY FOR OPEN BAYS ---
     function toggleDoorAvailability(doorNum) {
-        if (doors[doorNum].status === 'active') {
+        const door = doors[doorNum];
+        
+        // Only allow toggling for empty bays (open bays)
+        if (door.status === 'active') {
             alert("Cannot mark an active bay as unavailable. Complete the trailer first.");
             return;
         }
         
-        doors[doorNum].unavailable = !doors[doorNum].unavailable;
+        door.unavailable = !door.unavailable;
         saveData();
         renderDashboard();
         
-        if (doors[doorNum].unavailable) {
+        if (door.unavailable) {
             alert(`Door ${doorNum} marked as unavailable for maintenance.`);
         } else {
             alert(`Door ${doorNum} is now available.`);
@@ -2428,6 +2389,7 @@
                     btn.appendChild(timer);
                 }
                 
+                // Regular click for opening arrival modal
                 btn.onclick = () => {
                     if (d.unavailable) {
                         alert(`Door ${i} is currently unavailable for maintenance.`);
@@ -2435,15 +2397,33 @@
                         openArrivalModal(i);
                     }
                 };
+                
+                // Long-press for toggling availability (only for open bays)
+                let touchTimer;
+                btn.addEventListener('touchstart', (e) => {
+                    touchTimer = setTimeout(() => {
+                        toggleDoorAvailability(i);
+                    }, 800);
+                });
+                
+                btn.addEventListener('touchend', () => {
+                    if (touchTimer) {
+                        clearTimeout(touchTimer);
+                    }
+                });
+                
+                btn.addEventListener('touchmove', () => {
+                    if (touchTimer) {
+                        clearTimeout(touchTimer);
+                    }
+                });
+                
                 openBaysGrid.appendChild(btn);
             }
         }
         
         if(!hasOpen) openBaysGrid.innerHTML = '<div class="empty-state-text">All bays full.</div>';
         if(!hasActive) activeTrailersGrid.innerHTML = '<div class="empty-state-text">No active trailers.</div>';
-        
-        // Setup touch handlers for long press
-        setupTouchHandlers();
     }
 
     function renderActiveTab() {
@@ -2475,12 +2455,6 @@
         const durationMs = Date.now() - d.start;
         const durationMinutes = Math.floor(durationMs / 60000);
         document.getElementById('detail-duration').innerText = `${durationMinutes}m`;
-        
-        // Update availability button text
-        const availBtn = document.getElementById('availability-btn-text');
-        if (availBtn) {
-            availBtn.textContent = d.unavailable ? "Mark Available" : "Mark Unavailable";
-        }
         
         const acctRow = document.getElementById('row-account');
         if (d.account) { 
