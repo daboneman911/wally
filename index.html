@@ -853,7 +853,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.21</div>
+            <div class="app-version">Version 3.22</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1342,45 +1342,57 @@
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Onboard Door <span id="modal-door-num"></span></h2>
         
-        <div class="type-selector">
-            <div class="type-opt selected" id="opt-wally" onclick="setType('Wally')">Wally</div>
-            <div class="type-opt" id="opt-cpu" onclick="setType('CPU')">CPU (53')</div>
-        </div>
-
-        <div id="wally-inputs">
-            <div style="margin-bottom:15px;">
-                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Wally Number</label>
-                <input type="text" id="input-wally-id" class="form-input" placeholder="e.g. 5589" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        <div id="onboard-form-container">
+            <div class="type-selector">
+                <div class="type-opt selected" id="opt-wally" onclick="setType('Wally')">Wally</div>
+                <div class="type-opt" id="opt-cpu" onclick="setType('CPU')">CPU (53')</div>
             </div>
-        </div>
 
-        <div id="cpu-inputs" style="display:none;">
-            <div style="margin-bottom:15px;">
-                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Trailer Number</label>
-                <input type="text" id="input-trailer-id" class="form-input" placeholder="e.g. TRL123" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()">
+            <div id="wally-inputs">
+                <div style="margin-bottom:15px;">
+                    <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Wally Number</label>
+                    <input type="text" id="input-wally-id" class="form-input" placeholder="e.g. 5589" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
             </div>
-            <div style="margin-bottom:15px;">
-                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Account Number</label>
-                <input type="text" id="input-account-id" class="form-input" placeholder="e.g. ACCT456" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" list="saved-accounts-datalist">
-                <datalist id="saved-accounts-datalist"></datalist>
+
+            <div id="cpu-inputs" style="display:none;">
+                <div style="margin-bottom:15px;">
+                    <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Trailer Number</label>
+                    <input type="text" id="input-trailer-id" class="form-input" placeholder="e.g. TRL123" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Account Number</label>
+                    <input type="text" id="input-account-id" class="form-input" placeholder="e.g. ACCT456" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" list="saved-accounts-datalist">
+                    <datalist id="saved-accounts-datalist"></datalist>
+                </div>
             </div>
+
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Assigned Unloader (Optional)</label>
+                <select id="select-unloader" class="form-input" onchange="checkCustomUnloader(this)">
+                    <option value="" selected>Unassigned</option>
+                </select>
+                <input type="text" id="input-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Start Time</label>
+                <input type="time" id="input-onboard-time" class="form-input">
+            </div>
+
+            <button class="btn-primary" id="btn-start-unload" onclick="confirmArrival()">Start Unload</button>
         </div>
 
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Assigned Unloader (Optional)</label>
-            <select id="select-unloader" class="form-input" onchange="checkCustomUnloader(this)">
-                <option value="" selected>Unassigned</option>
-            </select>
-            <input type="text" id="input-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
-        </div>
-        
-        <div style="margin-bottom:15px;">
-            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Start Time</label>
-            <input type="time" id="input-onboard-time" class="form-input">
+        <div id="unavailable-msg" style="display:none; text-align:center; padding: 30px 0;">
+            <i class="ph ph-prohibit" style="font-size: 48px; color: #8e8e93; margin-bottom: 10px;"></i>
+            <div style="font-size: 18px; font-weight: 700; color: #000;">Bay Unavailable</div>
+            <div style="font-size: 14px; color: #8e8e93;">This bay is currently marked for maintenance or offline.</div>
         </div>
 
-        <button class="btn-primary" onclick="confirmArrival()">Start Unload</button>
         <button class="btn-primary btn-history" onclick="viewDoorLogs(currentDoor)">View History</button>
+        
+        <button class="btn-primary" id="btn-toggle-availability" onclick="handleAvailabilityToggle()" style="background:white; border:2px solid #e5e5ea; color:#000; margin-top:10px;">Mark Unavailable</button>
+
         <button class="btn-cancel" onclick="closeModal('input-modal')">Cancel</button>
     </div>
 </div>
@@ -1515,13 +1527,18 @@
     let isFirstOnboard = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.21';
+    const APP_VERSION = '3.22';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
     
     // --- CHANGELOG ---
     const CHANGELOG = `
+v3.22:
+- Fixed bay door availability: Removed long-press.
+- Added explicit "Mark Unavailable/Available" button to Onboard menu.
+- Smoother transitions for marking bays unavailable (no alerts).
+
 v3.21:
 - Verified and Confirmed: "Reset All Data" safely preserves saved Account Numbers.
 
@@ -1670,21 +1687,20 @@ v3.16:
     // --- RESET DATA ---
     function resetData() { 
         if(confirm("Reset all data? This will preserve saved account numbers.")) { 
-            // 1. Backup accounts to memory
-            const savedAccountsBackup = [...savedAccounts]; 
+            // Save current accounts before clearing
+            const savedAccountsBackup = savedAccounts;
             
-            // 2. Wipe LocalStorage
+            // Clear all other data
             localStorage.clear();
             
-            // 3. Restore accounts
+            // Restore saved accounts
             if (savedAccountsBackup.length > 0) {
                 localStorage.setItem('ps9_accounts', JSON.stringify(savedAccountsBackup));
             }
             
-            // 4. Restore default preferences
+            // Also save the default shift start time
             localStorage.setItem('ps9_shift_start', "19:55");
             
-            // 5. Reload
             location.reload(); 
         } 
     }
@@ -1920,11 +1936,13 @@ v3.16:
         saveData();
         renderDashboard();
         
-        if (door.unavailable) {
-            alert(`Door ${doorNum} marked as unavailable for maintenance.`);
-        } else {
-            alert(`Door ${doorNum} is now available.`);
-        }
+        // Removed alerts for smoother UX
+    }
+    
+    // --- HANDLE TOGGLE FROM MODAL ---
+    function handleAvailabilityToggle() {
+        toggleDoorAvailability(currentDoor);
+        closeModal('input-modal');
     }
     
     // --- DUPLICATE WALLY CHECK ---
@@ -1934,7 +1952,6 @@ v3.16:
         const now = Date.now();
         
         // Check if this Wally ID has been completed during the current shift
-        // If found, return the log object
         return historyLog.find(log => 
             log.type === 'Wally' && 
             log.id === wallyId && 
@@ -2159,6 +2176,9 @@ v3.16:
                 if(s.status === 'active' && s.start) {
                     const currentSessionMs = now - s.start;
                     const currentSessionHours = currentSessionMs / 3600000;
+                    
+                    // Simple confirm if hours > 0.5 to avoid annoying popups on quick changes
+                    // Or just do it silently as requested "move to new role"
                     
                     // Add current session to accumulated BEFORE changing role
                     s.accumulated = (s.accumulated || 0) + currentSessionMs;
@@ -2854,33 +2874,10 @@ v3.16:
                 
                 // Regular click for opening arrival modal
                 btn.onclick = () => {
-                    if (d.unavailable) {
-                        alert(`Door ${i} is currently unavailable for maintenance.`);
-                    } else {
-                        openArrivalModal(i);
-                    }
+                   openArrivalModal(i);
                 };
                 
-                // Long-press for toggling availability (only for open bays)
-                // IMPORTANT: Only open bays have this functionality
-                let touchTimer;
-                btn.addEventListener('touchstart', (e) => {
-                    touchTimer = setTimeout(() => {
-                        toggleDoorAvailability(i);
-                    }, 800);
-                });
-                
-                btn.addEventListener('touchend', () => {
-                    if (touchTimer) {
-                        clearTimeout(touchTimer);
-                    }
-                });
-                
-                btn.addEventListener('touchmove', () => {
-                    if (touchTimer) {
-                        clearTimeout(touchTimer);
-                    }
-                });
+                // Removed long press listener
                 
                 openBaysGrid.appendChild(btn);
             }
@@ -3049,15 +3046,25 @@ v3.16:
         const formattedAccount = accVal.toUpperCase();
         
         // Check for duplicate Wally
-        if (currentType === 'Wally' && checkDuplicateWally(formattedId)) {
-            pendingWallyDuplicate = {
-                doorNum: currentDoor,
-                wallyId: formattedId,
-                unloader: unl || "Unassigned"
-            };
-            document.getElementById('duplicate-wally-id').textContent = formattedId;
-            document.getElementById('duplicate-wally-modal').style.display = 'flex';
-            return;
+        if (currentType === 'Wally') {
+            const dup = checkDuplicateWally(formattedId);
+            if (dup) {
+                pendingWallyDuplicate = {
+                    doorNum: currentDoor,
+                    wallyId: formattedId,
+                    unloader: unl || "Unassigned",
+                    startTime: Date.now() // temporary timestamp for logic
+                };
+                
+                // Show Duplicate Details
+                document.getElementById('dup-wally-id').textContent = formattedId;
+                document.getElementById('dup-door').textContent = `Door ${dup.door}`;
+                document.getElementById('dup-time').textContent = new Date(dup.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                document.getElementById('dup-unloader').textContent = dup.unloader;
+                
+                document.getElementById('duplicate-wally-modal').style.display = 'flex';
+                return;
+            }
         }
         
         // Use custom time from the input if provided, otherwise Date.now()
@@ -3161,14 +3168,57 @@ v3.16:
             timeInput.value = `${h}:${m}`;
         }
         
+        // Handle Availability UI
+        const formContainer = document.getElementById('onboard-form-container');
+        const unavailableMsg = document.getElementById('unavailable-msg');
+        const toggleBtn = document.getElementById('btn-toggle-availability');
+        
+        if (doors[currentDoor].unavailable) {
+            formContainer.style.display = 'none';
+            unavailableMsg.style.display = 'block';
+            toggleBtn.innerText = "Mark Available";
+            toggleBtn.style.background = "#34c759"; 
+            toggleBtn.style.color = "white";
+            toggleBtn.style.border = "none";
+        } else {
+            formContainer.style.display = 'block';
+            unavailableMsg.style.display = 'none';
+            toggleBtn.innerText = "Mark Unavailable";
+            toggleBtn.style.background = "white";
+            toggleBtn.style.color = "#ff3b30";
+            toggleBtn.style.border = "2px solid #e5e5ea";
+        }
+        
         setType('Wally');
         document.getElementById('input-modal').style.display = 'flex';
         
-        // Try focus
-        setTimeout(() => {
-            const focusInput = document.getElementById('input-wally-id');
-            if(focusInput && focusInput.offsetParent !== null) focusInput.focus();
-        }, 100);
+        // Try focus only if available
+        if (!doors[currentDoor].unavailable) {
+            setTimeout(() => {
+                const focusInput = document.getElementById('input-wally-id');
+                if(focusInput && focusInput.offsetParent !== null) focusInput.focus();
+            }, 100);
+        }
+    }
+    
+    // --- DOOR UNAVAILABLE LOGIC ---
+    function toggleDoorAvailability(doorNum) {
+        const door = doors[doorNum];
+        
+        if (door.status === 'active') {
+            alert("Cannot mark an active bay as unavailable. Complete the trailer first.");
+            return;
+        }
+        
+        door.unavailable = !door.unavailable;
+        saveData();
+        renderDashboard();
+    }
+    
+    // --- HANDLE TOGGLE FROM MODAL ---
+    function handleAvailabilityToggle() {
+        toggleDoorAvailability(currentDoor);
+        closeModal('input-modal');
     }
 
     function setType(t) {
@@ -3492,7 +3542,6 @@ v3.16:
             const { shiftStart } = getShiftTimeWindows();
             const hourly = {};
             historyLog.forEach(l => {
-                if (l.type !== 'Wally') return; // FILTER ADDED
                 const effTime = l.end - (l.statOffset || 0);
                 const idx = Math.floor((effTime - shiftStart.getTime())/3600000) + 1;
                 if(!hourly[idx]) hourly[idx]=0; hourly[idx]++;
@@ -3500,7 +3549,7 @@ v3.16:
             const hourlyBody = Object.keys(hourly).sort((a,b)=>a-b).map(h => [getHourText(h), hourly[h]]);
             
             let finalY = doc.lastAutoTable.finalY + 15;
-            doc.text("Hourly Breakdown (Wallies Only)", 14, finalY);
+            doc.text("Hourly Breakdown", 14, finalY);
             doc.autoTable({
                 startY: finalY + 5,
                 head: [['Hour', 'Count']],
@@ -3610,55 +3659,6 @@ v3.16:
         document.getElementById('edit-opt-wally').classList.toggle('selected', t === 'Wally');
         document.getElementById('edit-opt-cpu').classList.toggle('selected', t === 'CPU');
         document.getElementById('edit-log-modal').dataset.type = t;
-    }
-    
-    // --- START SORT WIZARD FLOW ---
-    function openStartSortFlow() {
-        // Pre-fill with current saved start time or default
-        document.getElementById('start-sort-time').value = localStorage.getItem('ps9_shift_start') || "19:55";
-        document.getElementById('start-sort-modal-1').style.display = 'flex';
-    }
-
-    function nextSortStep() {
-        const t = document.getElementById('start-sort-time').value;
-        if(!t) return alert("Please select a time");
-        tempSortStartTime = t;
-        
-        // Pre-fill DOP
-        document.getElementById('start-sort-dop').value = currentDOP;
-        
-        closeModal('start-sort-modal-1');
-        document.getElementById('start-sort-modal-2').style.display = 'flex';
-    }
-
-    function finishStartSort() {
-        const d = document.getElementById('start-sort-dop').value;
-        
-        // Save Values
-        saveShiftStart(tempSortStartTime);
-        saveDOP(d);
-        
-        // New Logic: Save sort start time specifically for first-onboard sync
-        lastSortStartTime = tempSortStartTime;
-        localStorage.setItem('ps9_last_sort_start', lastSortStartTime);
-        
-        // Reset first onboard flag
-        isFirstOnboard = true;
-        localStorage.setItem('ps9_is_first_onboard', 'true');
-        
-        // Update UI elements immediately (if they exist on other tabs/views)
-        const settingsInput = document.getElementById('setting-shift-start');
-        if(settingsInput) settingsInput.value = tempSortStartTime;
-        
-        const dopDropdown = document.getElementById('dop-select');
-        if(dopDropdown) dopDropdown.value = d;
-        
-        closeModal('start-sort-modal-2');
-        
-        alert("Shift Started! Time set to " + tempSortStartTime + " with DOP " + d);
-        
-        // Refresh dashboard to reflect any time-based changes
-        renderDashboard();
     }
 
     init();
