@@ -841,7 +841,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.13</div>
+            <div class="app-version">Version 3.14</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1427,7 +1427,7 @@
     let hourlyVisible = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.13';
+    const APP_VERSION = '3.14';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
@@ -1918,75 +1918,46 @@
             
             // Only proceed if role is actually changing
             if(oldRole !== newRole) {
-                // --- LIMIT ENFORCEMENT LOGIC ---
-                // If setting to Belt Tender, enforce Max 1
-                if (newRole === 'Belt Tender') {
-                    // Find existing Belt Tender and demote them
-                    staffing.forEach(other => {
-                        if (other.id !== s.id && other.role === 'Belt Tender') {
-                            // Demote Logic (replicate time tracking logic)
-                            if (other.status === 'active' && other.start) {
-                                const ms = now - other.start;
-                                other.accumulated = (other.accumulated || 0) + ms;
-                                other.start = now;
-                            }
-                            other.role = 'Unloader';
-                            limitChanged = true;
-                        }
-                    });
-                }
-                
-                // If setting to Bulk Sweep, enforce Max 2
-                if (newRole === 'Bulk Sweep') {
-                    const sweeps = staffing.filter(other => other.id !== s.id && other.role === 'Bulk Sweep');
-                    if (sweeps.length >= 2) {
-                        // Find the one with lowest hours to kick out
-                        sweeps.sort((a,b) => calculateTotalHours(a) - calculateTotalHours(b));
-                        const toDemote = sweeps[0]; // Lowest hours
-                        
-                        // Demote Logic
-                        if (toDemote.status === 'active' && toDemote.start) {
-                            const ms = now - toDemote.start;
-                            toDemote.accumulated = (toDemote.accumulated || 0) + ms;
-                            toDemote.start = now;
-                        }
-                        toDemote.role = 'Unloader';
-                        limitChanged = true;
-                    }
-                }
-                
-                // Now change the actual person's role
-                
                 // If staff is currently active, calculate current session hours
                 if(s.status === 'active' && s.start) {
                     const currentSessionMs = now - s.start;
                     const currentSessionHours = currentSessionMs / 3600000;
                     
-                    // Simple confirm if hours > 0.5 to avoid annoying popups on quick changes
-                    // Or just do it silently as requested "move to new role"
-                    
-                    // Add current session to accumulated BEFORE changing role
-                    s.accumulated = (s.accumulated || 0) + currentSessionMs;
-                    // Reset start time for the new role session
-                    s.start = now;
-                    s.role = newRole;
-                    
-                    saveData();
-                    renderStaffingView();
-                    if(limitChanged) alert("Role limits enforced: Previous holder(s) moved to Unloader.");
-                    
+                    if(confirm(`${s.name} has ${currentSessionHours.toFixed(2)} hours in this session. Moving from ${oldRole} to ${newRole} will transfer these hours to the new role. Continue?`)) {
+                        // Add current session to accumulated BEFORE changing role
+                        s.accumulated = (s.accumulated || 0) + currentSessionMs;
+                        // Reset start time for the new role session
+                        s.start = now;
+                        s.role = newRole;
+                        
+                        saveData();
+                        renderStaffingView();
+                    } else {
+                        // User cancelled, revert the select to original value
+                        setTimeout(() => {
+                            const select = document.querySelector(`select[onchange*="${id}"]`);
+                            if(select) select.value = oldRole;
+                        }, 100);
+                        return;
+                    }
                 } else if(s.status === 'paused') {
                     // For paused staff, the hours are already in accumulated
-                    s.role = newRole;
-                    saveData();
-                    renderStaffingView();
-                    if(limitChanged) alert("Role limits enforced.");
+                    if(confirm(`Change ${s.name}'s role from ${oldRole} to ${newRole}? Their ${(s.accumulated/3600000).toFixed(2)} accumulated hours will now count towards ${newRole}.`)) {
+                        s.role = newRole;
+                        saveData();
+                        renderStaffingView();
+                    } else {
+                        setTimeout(() => {
+                            const select = document.querySelector(`select[onchange*="${id}"]`);
+                            if(select) select.value = oldRole;
+                        }, 100);
+                        return;
+                    }
                 } else {
                     // For cut staff or other status, just change the role
                     s.role = newRole;
                     saveData();
                     renderStaffingView();
-                    if(limitChanged) alert("Role limits enforced.");
                 }
             }
         }
@@ -2051,7 +2022,48 @@
         const topThree = getTopThreeStaff();
         const topThreeIds = topThree.map(s => s.id);
         
-        // 2. Render the UI
+        // 2. Perform Auto-Role Assignment Logic
+        const now = Date.now();
+        let needsSave = false;
+        
+        staffing.forEach(s => {
+            let targetRole = 'Unloader'; // Default
+            
+            // Check if this person is in the top 3
+            const rankIndex = topThreeIds.indexOf(s.id);
+            
+            if (rankIndex === 0) {
+                targetRole = 'Belt Tender';
+            } else if (rankIndex === 1 || rankIndex === 2) {
+                targetRole = 'Bulk Sweep';
+            } else {
+                // If they were previously assigned a special role but lost rank, revert to Unloader
+                if (s.role === 'Belt Tender' || s.role === 'Bulk Sweep') {
+                    targetRole = 'Unloader';
+                } else {
+                    targetRole = s.role; // Keep existing role (e.g. if they were manually set to something else but not a special role?)
+                    // Actually, if we want strict auto-assignment for Top 3, we force it.
+                    // If they are NOT Top 3, we default to Unloader unless we want to allow manual assignment for non-top 3.
+                    // Given "Smart Limit Enforcement", we should allow them to be Unloader.
+                }
+            }
+            
+            // If role needs changing, do it properly with time tracking
+            if (s.role !== targetRole) {
+                // If active, accumulating time for the old role needs to be saved
+                if (s.status === 'active' && s.start) {
+                    const currentSessionMs = now - s.start;
+                    s.accumulated = (s.accumulated || 0) + currentSessionMs;
+                    s.start = now; // Restart clock for new role
+                }
+                s.role = targetRole;
+                needsSave = true;
+            }
+        });
+        
+        if(needsSave) saveData();
+        
+        // 3. Now Render the UI with updated roles
         
         // Sorting logic for active list (Highest hours first)
         const activeStaff = staffing.filter(s => s.status === 'active' || s.status === 'paused');
