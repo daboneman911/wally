@@ -853,7 +853,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.20</div>
+            <div class="app-version">Version 3.21</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1515,13 +1515,21 @@
     let isFirstOnboard = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.19';
+    const APP_VERSION = '3.21';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
     
     // --- CHANGELOG ---
     const CHANGELOG = `
+v3.21:
+- Verified and Confirmed: "Reset All Data" safely preserves saved Account Numbers.
+
+v3.20:
+- Simplified Share Text to "Door X done".
+- Filtered Hourly Breakdown to exclude CPUs (Wally Only).
+- Added historical changelog data.
+
 v3.19:
 - Added search bar to logs (search by ID or Trailer).
 - Added filter by Unloader to logs.
@@ -1662,20 +1670,21 @@ v3.16:
     // --- RESET DATA ---
     function resetData() { 
         if(confirm("Reset all data? This will preserve saved account numbers.")) { 
-            // Save current accounts before clearing
-            const savedAccountsBackup = savedAccounts;
+            // 1. Backup accounts to memory
+            const savedAccountsBackup = [...savedAccounts]; 
             
-            // Clear all other data
+            // 2. Wipe LocalStorage
             localStorage.clear();
             
-            // Restore saved accounts
+            // 3. Restore accounts
             if (savedAccountsBackup.length > 0) {
                 localStorage.setItem('ps9_accounts', JSON.stringify(savedAccountsBackup));
             }
             
-            // Also save the default shift start time
+            // 4. Restore default preferences
             localStorage.setItem('ps9_shift_start', "19:55");
             
+            // 5. Reload
             location.reload(); 
         } 
     }
@@ -2150,9 +2159,6 @@ v3.16:
                 if(s.status === 'active' && s.start) {
                     const currentSessionMs = now - s.start;
                     const currentSessionHours = currentSessionMs / 3600000;
-                    
-                    // Simple confirm if hours > 0.5 to avoid annoying popups on quick changes
-                    // Or just do it silently as requested "move to new role"
                     
                     // Add current session to accumulated BEFORE changing role
                     s.accumulated = (s.accumulated || 0) + currentSessionMs;
@@ -3043,25 +3049,15 @@ v3.16:
         const formattedAccount = accVal.toUpperCase();
         
         // Check for duplicate Wally
-        if (currentType === 'Wally') {
-            const dup = checkDuplicateWally(formattedId);
-            if (dup) {
-                pendingWallyDuplicate = {
-                    doorNum: currentDoor,
-                    wallyId: formattedId,
-                    unloader: unl || "Unassigned",
-                    startTime: Date.now() // temporary timestamp for logic
-                };
-                
-                // Show Duplicate Details
-                document.getElementById('dup-wally-id').textContent = formattedId;
-                document.getElementById('dup-door').textContent = `Door ${dup.door}`;
-                document.getElementById('dup-time').textContent = new Date(dup.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                document.getElementById('dup-unloader').textContent = dup.unloader;
-                
-                document.getElementById('duplicate-wally-modal').style.display = 'flex';
-                return;
-            }
+        if (currentType === 'Wally' && checkDuplicateWally(formattedId)) {
+            pendingWallyDuplicate = {
+                doorNum: currentDoor,
+                wallyId: formattedId,
+                unloader: unl || "Unassigned"
+            };
+            document.getElementById('duplicate-wally-id').textContent = formattedId;
+            document.getElementById('duplicate-wally-modal').style.display = 'flex';
+            return;
         }
         
         // Use custom time from the input if provided, otherwise Date.now()
