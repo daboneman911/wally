@@ -1085,4 +1085,2494 @@
                     <div class="toggle-switch" id="switch-disable-times" onclick="toggleSwitch('disable-times')"></div>
                 </div>
                 
-                <div class="
+                <div class="settings-row">
+                    <span class="settings-label">Randomize History (Demo)</span>
+                    <div class="toggle-switch" id="switch-demo-random" onclick="toggleSwitch('demo-random')"></div>
+                </div>
+                
+                <div class="settings-row">
+                    <span class="settings-label">Auto re-onboard (Demo)</span>
+                    <div class="toggle-switch" id="switch-demo-replenish" onclick="toggleSwitch('demo-replenish')"></div>
+                </div>
+                
+                <div class="settings-row">
+                    <span class="settings-label">Number of Doors</span>
+                    <div class="stepper">
+                        <button class="stepper-btn" onclick="stepDoor(-1)">−</button>
+                        <span class="stepper-val" id="demo-door-val">2</span>
+                        <button class="stepper-btn" onclick="stepDoor(1)">+</button>
+                    </div>
+                </div>
+                
+                <div class="settings-row">
+                    <span class="settings-label">Mixed Types (Wally + CPU)</span>
+                    <div class="toggle-switch" id="switch-mixed-types" onclick="toggleSwitch('mixed-types')"></div>
+                </div>
+                
+                <div class="settings-row" style="justify-content:center; background:#f9f9f9;">
+                    <div class="segment-control">
+                        <div class="segment-opt selected" id="seg-wally" onclick="setDemoType('Wally')">Wally</div>
+                        <div class="segment-opt" id="seg-cpu" onclick="setDemoType('CPU')">CPU</div>
+                    </div>
+                </div>
+                
+                <div style="padding:15px;">
+                     <button class="btn-primary" style="background:#000; color:#fff;" onclick="startDemo()">Auto-Onboard</button>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="resetData()" style="background:#ff3b30; margin-bottom:100px;">Reset All Data</button>
+        </div>
+    </div>
+
+</div>
+
+<nav class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('dashboard', this)" id="tab-btn-dashboard">
+        <i class="ph ph-chart-pie-slice"></i>
+        <span>Home</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('active', this)" id="tab-btn-active">
+        <i class="ph ph-truck-trailer"></i>
+        <span>Active</span>
+        <span class="tab-badge" id="badge-active">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('logs', this)" id="tab-btn-logs">
+        <i class="ph ph-list-dashes"></i>
+        <span>Logs</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('staffing', this)" id="tab-btn-staffing">
+        <i class="ph ph-users"></i>
+        <span>Staffing</span>
+        <span class="tab-badge" id="badge-staffing">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('tools', this)" id="tab-btn-tools">
+        <i class="ph ph-toolbox"></i>
+        <span>Tools</span>
+        <span class="tab-badge" id="badge-tools">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('settings', this)" id="tab-btn-settings">
+        <i class="ph ph-gear"></i>
+        <span>Settings</span>
+        <span class="tab-badge" id="badge-settings">0</span>
+    </button>
+</nav>
+
+<div class="modal-overlay" id="start-sort-modal-1">
+    <div class="modal-sheet">
+        <h2 style="text-align:center; margin-bottom:20px;">Start Sort (1/2)</h2>
+        <div style="margin-bottom:20px;">
+            <label class="settings-label" style="display:block; margin-bottom:10px;">Shift Start Time</label>
+            <input type="time" id="start-sort-time" class="form-input" value="19:55">
+        </div>
+        <button class="btn-primary" onclick="nextSortStep()">Next</button>
+        <button class="btn-cancel" onclick="closeModal('start-sort-modal-1')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="start-sort-modal-2">
+    <div class="modal-sheet">
+        <h2 style="text-align:center; margin-bottom:20px;">Start Sort (2/2)</h2>
+        <div style="margin-bottom:20px;">
+            <label class="settings-label" style="display:block; margin-bottom:10px;">Daily Operating Plan</label>
+            <select id="start-sort-dop" class="form-input">
+                <option value="5-2">5-2</option>
+                <option value="6-2">6-2</option>
+                <option value="7-2">7-2</option>
+                <option value="8-2">8-2</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="finishStartSort()">Start Shift</button>
+        <button class="btn-cancel" onclick="closeModal('start-sort-modal-2')">Back</button> 
+    </div>
+</div>
+
+<div class="modal-overlay" id="pph-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">PPH Calculator</h2>
+        
+        <div style="background:#f2f2f7; border-radius:16px; padding:20px; margin-bottom:20px; text-align:center;">
+            <div style="font-size:13px; color:#757575; font-weight:700; letter-spacing:0.5px; margin-bottom:5px;">TOTAL UNLOADER HOURS</div>
+            <input type="number" id="pph-unloader-hours-input" class="form-input" 
+                   style="font-size:32px; font-weight:800; color:#000; text-align:center; background:transparent; border:none; width:100%; padding:0; margin:0;" 
+                   oninput="calculatePPH()" placeholder="0.00">
+            <div style="font-size:12px; color:#757575; margin-top:4px;">Excludes Belt Tenders & Sweeps</div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Total Volume</label>
+            <input type="number" id="pph-volume-input" class="form-input" placeholder="Enter package count" oninput="calculatePPH()">
+        </div>
+        
+        <div style="text-align:center; margin-bottom:30px;">
+            <div style="font-size:14px; color:var(--text-sub); font-weight:700;">CURRENT PPH</div>
+            <div style="font-size:60px; font-weight:900; color:#000; letter-spacing:-2px;" id="pph-result">0</div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button class="btn-primary" onclick="resetPPH()" style="background:#e5e5ea; color:#000; flex:1;">Reset</button>
+            <button class="btn-cancel" onclick="closeModal('pph-modal')" style="flex:1; margin-top:0; border: 1px solid #e5e5ea; border-radius:16px; padding:18px;">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="add-staff-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Clock In Staff</h2>
+        <div style="margin-bottom:15px;">
+             <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Select Employees</label>
+             <div id="staff-checkbox-list" class="staff-checkbox-list"></div>
+        </div>
+        <div style="margin-bottom:15px;">
+             <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Start Time Override (Optional)</label>
+             <input type="time" id="staff-input-time" class="form-input">
+             <div style="font-size:12px; color:#8e8e93; margin-top:4px;">Leave blank for current shift start time</div>
+        </div>
+        <button class="btn-primary" onclick="confirmAddStaff()">Clock In</button>
+        <button class="btn-cancel" onclick="closeModal('add-staff-modal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="edit-staff-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Staff</h2>
+        <input type="hidden" id="edit-staff-id">
+        <div style="margin-bottom:15px;">
+             <label class="settings-label">Start Time</label>
+             <input type="time" id="edit-staff-time" class="form-input">
+        </div>
+        <button class="btn-primary" onclick="saveStaffEdit()">Save Changes</button>
+        <button class="btn-cancel" onclick="closeModal('edit-staff-modal')">Discard</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="export-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Export Data</h2>
+        <button class="btn-primary" onclick="exportLogsCSV()">Export CSV (Spreadsheet)</button>
+        <button class="btn-primary" onclick="exportLogsPDF()" style="margin-top:10px; background:#e5e5ea; color:#000;">Export PDF (Report)</button>
+        <button class="btn-cancel" onclick="closeModal('export-modal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="hour-attribution-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Attribute Completion</h2>
+        <p style="text-align:center; color:#757575; margin-bottom:25px; padding: 0 10px;">
+            This trailer was completed during the shift transition window (<span id="attribution-window-text">00-05</span>).
+        </p>
+        <button class="btn-primary" onclick="resolveAttribution('Previous')">Previous Hour</button>
+        <button class="btn-primary" onclick="resolveAttribution('Current')" style="background:#f2f2f7; color:#000; margin-top:10px;">Current Hour</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="filter-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Filter by Door</h2>
+        
+        <div class="filter-grid" id="filter-grid">
+            </div>
+        
+        <button class="btn-primary" onclick="applyFilter('All')">Show All</button>
+        <button class="btn-cancel" onclick="closeModal('filter-modal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="duplicate-wally-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Duplicate Wally Detected</h2>
+        <p style="text-align:center; color:#757575; margin-bottom:25px; padding: 0 10px;">
+            Wally <span id="duplicate-wally-id"></span> has already been completed during this shift. This will be marked as a duplicate in the logs.
+        </p>
+        <button class="btn-primary" onclick="continueWithDuplicate()">Continue Anyway</button>
+        <button class="btn-cancel" onclick="closeModal('duplicate-wally-modal')" style="margin-top:10px;">Cancel</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="input-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Onboard Door <span id="modal-door-num"></span></h2>
+        
+        <div class="type-selector">
+            <div class="type-opt selected" id="opt-wally" onclick="setType('Wally')">Wally</div>
+            <div class="type-opt" id="opt-cpu" onclick="setType('CPU')">CPU (53')</div>
+        </div>
+
+        <div id="wally-inputs">
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Wally Number</label>
+                <input type="text" id="input-wally-id" class="form-input" placeholder="e.g. 5589" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+        </div>
+
+        <div id="cpu-inputs" style="display:none;">
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Trailer Number</label>
+                <input type="text" id="input-trailer-id" class="form-input" placeholder="e.g. TRL123" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Account Number</label>
+                <input type="text" id="input-account-id" class="form-input" placeholder="e.g. ACCT456" autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" list="saved-accounts-datalist">
+                <datalist id="saved-accounts-datalist"></datalist>
+            </div>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Assigned Unloader (Optional)</label>
+            <select id="select-unloader" class="form-input" onchange="checkCustomUnloader(this)">
+                <option value="" selected>Unassigned</option>
+            </select>
+            <input type="text" id="input-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
+        </div>
+        
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Start Time</label>
+            <input type="time" id="input-onboard-time" class="form-input">
+        </div>
+
+        <button class="btn-primary" onclick="confirmArrival()">Start Unload</button>
+        <button class="btn-primary btn-history" onclick="viewDoorLogs(currentDoor)">View History</button>
+        <button class="btn-cancel" onclick="closeModal('input-modal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="add-unloader-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Add New Unloader</h2>
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Unloader Name</label>
+            <input type="text" id="input-new-unloader-name" class="form-input" placeholder="e.g. John Doe" autocapitalize="words">
+        </div>
+        <button class="btn-primary" onclick="confirmAddUnloader()">Add Name</button>
+        <button class="btn-cancel" onclick="closeModal('add-unloader-modal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="active-detail-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Active Door <span id="detail-door-num"></span></h2>
+        
+        <div style="margin-bottom: 25px;">
+            <div class="detail-row">
+                <span class="detail-label">Type</span>
+                <span class="detail-value" id="detail-type"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">ID #</span>
+                <span class="detail-value" id="detail-id"></span>
+            </div>
+            <div class="detail-row" id="row-account" style="display:none;">
+                <span class="detail-label">Account #</span>
+                <span class="detail-value" id="detail-account"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Unloader</span>
+                <span class="detail-value" id="detail-unloader"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Start Time</span>
+                <span class="detail-value" id="detail-time"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Duration</span>
+                <span class="detail-value" id="detail-duration">0m</span>
+            </div>
+        </div>
+
+        <button class="btn-primary btn-danger" onclick="confirmCompleteDoor()">Complete Unload</button>
+        
+        <div class="modal-actions-row">
+            <button class="modal-icon-btn" onclick="openEditActiveModalFromDetail()" style="flex:1"><i class="ph ph-pencil-simple"></i></button>
+            <button class="btn-primary btn-history" onclick="viewDoorLogs(detailDoor)" style="flex:3; margin:0;">View History</button>
+        </div>
+        <button class="btn-cancel" onclick="closeModal('active-detail-modal')">Close</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="edit-active-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Active Bay</h2>
+        <input type="hidden" id="edit-active-original-door">
+        
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Bay Number</label>
+            <select id="edit-active-door-select" class="form-input"></select>
+        </div>
+
+        <div class="type-selector">
+            <div class="type-opt selected" id="active-opt-wally" onclick="setEditActiveType('Wally')">Wally</div>
+            <div class="type-opt" id="active-opt-cpu" onclick="setEditActiveType('CPU')">CPU</div>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">ID / Trailer #</label>
+            <input type="text" id="edit-active-id" class="form-input" oninput="this.value = this.value.toUpperCase()">
+        </div>
+        
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Account # (CPU only)</label>
+            <input type="text" id="edit-active-account" class="form-input" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Unloader</label>
+            <select id="edit-active-unloader" class="form-input" onchange="checkActiveCustomUnloader(this)"></select>
+            <input type="text" id="edit-active-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
+        </div>
+
+        <button class="btn-primary" onclick="saveActiveEdit()">Save Changes</button>
+        <button class="btn-cancel" onclick="closeModal('edit-active-modal')">Discard</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="edit-log-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Edit Log Entry</h2>
+        <input type="hidden" id="edit-log-index">
+        
+        <div class="type-selector">
+            <div class="type-opt selected" id="edit-opt-wally" onclick="setEditType('Wally')">Wally</div>
+            <div class="type-opt" id="edit-opt-cpu" onclick="setEditType('CPU')">CPU (53')</div>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">ID / Trailer #</label>
+            <input type="text" id="edit-input-id" class="form-input" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Unloader</label>
+            <select id="edit-select-unloader" class="form-input"></select>
+        </div>
+
+        <button class="btn-primary" onclick="confirmLogEdit()">Save Changes</button>
+        <button class="btn-cancel" onclick="closeModal('edit-log-modal')">Discard</button>
+    </div>
+</div>
+
+<script>
+    // --- GLOBAL VARIABLES ---
+    let demoActive = false;
+    let duplicateWallyFlag = false;
+    let pendingWallyDuplicate = null;
+    let currentDoor = null;
+    let currentType = 'Wally';
+    let detailDoor = null;
+    let currentLogFilter = 'All'; 
+    let activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' };
+    let statsVisible = false;
+    let hourlyVisible = false;
+    let lastSortStartTime = null; 
+    let isFirstOnboard = false;
+    
+    // --- CONFIG ---
+    const APP_VERSION = '3.17';
+    const DOORS_START = 9;
+    const DOORS_END = 16;
+    const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
+    
+    // --- STATE ---
+    let doors = {};
+    let historyLog = [];
+    let teamNames = [];
+    let savedAccounts = [];
+    let staffing = [];
+    let currentDOP = '5-2';
+
+    // Config State
+    let config = {
+        replenish: false,
+        randomHistory: false,
+        doorCount: 2,
+        mixedTypes: false,
+        demoType: 'Wally',
+        disableTimes: false,
+        simulateWindow: false,
+        disableWindow: false
+    };
+
+    // Attribution window configuration (0-10 minutes after hour)
+    let attributionConfig = {
+        minutes: 5,  // Default 5 minutes after hour
+        enabled: true
+    };
+
+    // Staging for Attribution
+    let pendingCompletion = null;
+    
+    // Staging for Start Sort Wizard
+    let tempSortStartTime = "";
+
+    // --- HELPER FUNCTIONS ---
+    function getHourText(hour) {
+        if (hour === 1) return "1st Hour";
+        if (hour === 2) return "2nd Hour";
+        if (hour === 3) return "3rd Hour";
+        if (hour === 4) return "4th Hour";
+        if (hour === 5) return "5th Hour";
+        if (hour === 6) return "6th Hour";
+        if (hour === 7) return "7th Hour";
+        if (hour === 8) return "8th Hour";
+        if (hour === 9) return "9th Hour";
+        if (hour === 10) return "10th Hour";
+        if (hour === 11) return "11th Hour";
+        if (hour === 12) return "12th Hour";
+        return `${hour}th Hour`;
+    }
+
+    // --- INIT ---
+    function init() {
+        console.log(`Wally Dashboard v${APP_VERSION} initialized`);
+        
+        // Load saved accounts first
+        const sAccts = localStorage.getItem('ps9_accounts');
+        if (sAccts) savedAccounts = JSON.parse(sAccts);
+        
+        // Load attribution config
+        initAttributionSettings();
+        
+        // Load other data
+        const sDoors = localStorage.getItem('ps9_doors');
+        const sHistory = localStorage.getItem('ps9_history');
+        const sTeam = localStorage.getItem('ps9_team');
+        const sStaff = localStorage.getItem('ps9_staffing');
+        const sDop = localStorage.getItem('ps9_dop');
+        const shiftStart = localStorage.getItem('ps9_shift_start') || "19:55";
+        
+        // Load sort-specific state
+        lastSortStartTime = localStorage.getItem('ps9_last_sort_start');
+        const firstOnboardState = localStorage.getItem('ps9_is_first_onboard');
+        isFirstOnboard = firstOnboardState === 'true';
+
+        if (sDoors) doors = JSON.parse(sDoors);
+        else {
+            for(let i=DOORS_START; i<=DOORS_END; i++) {
+                doors[i] = { status: 'empty', start: 0, id: '', type: '', unloader: '', unavailable: false, lastCompletionTime: null };
+            }
+        }
+
+        if (sHistory) historyLog = JSON.parse(sHistory);
+        if (sTeam) teamNames = JSON.parse(sTeam); else teamNames = [...DEFAULT_TEAM];
+        if (sStaff) staffing = JSON.parse(sStaff);
+        if (sDop) currentDOP = sDop;
+        
+        // Initialize role for existing staff if not set
+        staffing.forEach(s => {
+            if (!s.role) s.role = 'Unloader';
+            if (!s.accumulated) s.accumulated = 0;
+        });
+        
+        // Init settings inputs
+        const startInput = document.getElementById('setting-shift-start');
+        if(startInput) startInput.value = shiftStart;
+        
+        const dopSelect = document.getElementById('dop-select');
+        if(dopSelect) dopSelect.value = currentDOP;
+
+        renderSavedAccounts();
+        updateAccountDatalist();
+        populateUnloaderSelect();
+        renderDashboard();
+        
+        // Initialize UI after everything is loaded
+        setTimeout(() => {
+            updateAttributionUI();
+            setupAttributionSlider();
+        }, 100);
+        
+        // Staffing Loop (1s)
+        setInterval(updateStaffingTimers, 1000);
+        // Update tab badges every 2 seconds
+        setInterval(updateTabBadges, 2000);
+        // Initial badge update
+        updateTabBadges();
+    }
+    
+    // --- RESET DATA ---
+    function resetData() { 
+        if(confirm("Reset all data? This will preserve saved account numbers.")) { 
+            // Save current accounts before clearing
+            const savedAccountsBackup = savedAccounts;
+            
+            // Clear all other data
+            localStorage.clear();
+            
+            // Restore saved accounts
+            if (savedAccountsBackup.length > 0) {
+                localStorage.setItem('ps9_accounts', JSON.stringify(savedAccountsBackup));
+            }
+            
+            // Also save the default shift start time
+            localStorage.setItem('ps9_shift_start', "19:55");
+            
+            location.reload(); 
+        } 
+    }
+    
+    // --- START SORT WIZARD FLOW ---
+    function openStartSortFlow() {
+        // Pre-fill with current saved start time or default
+        document.getElementById('start-sort-time').value = localStorage.getItem('ps9_shift_start') || "19:55";
+        document.getElementById('start-sort-modal-1').style.display = 'flex';
+    }
+
+    function nextSortStep() {
+        const t = document.getElementById('start-sort-time').value;
+        if(!t) return alert("Please select a time");
+        tempSortStartTime = t;
+        
+        // Pre-fill DOP
+        document.getElementById('start-sort-dop').value = currentDOP;
+        
+        closeModal('start-sort-modal-1');
+        document.getElementById('start-sort-modal-2').style.display = 'flex';
+    }
+
+    function finishStartSort() {
+        const d = document.getElementById('start-sort-dop').value;
+        
+        // Save Values
+        saveShiftStart(tempSortStartTime);
+        saveDOP(d);
+        
+        // New Logic: Save sort start time specifically for first-onboard sync
+        lastSortStartTime = tempSortStartTime;
+        localStorage.setItem('ps9_last_sort_start', lastSortStartTime);
+        
+        // Reset first onboard flag
+        isFirstOnboard = true;
+        localStorage.setItem('ps9_is_first_onboard', 'true');
+        
+        // Update UI elements immediately (if they exist on other tabs/views)
+        const settingsInput = document.getElementById('setting-shift-start');
+        if(settingsInput) settingsInput.value = tempSortStartTime;
+        
+        const dopDropdown = document.getElementById('dop-select');
+        if(dopDropdown) dopDropdown.value = d;
+        
+        closeModal('start-sort-modal-2');
+        
+        alert("Shift Started! Time set to " + tempSortStartTime + " with DOP " + d);
+        
+        // Refresh dashboard to reflect any time-based changes
+        renderDashboard();
+    }
+    
+    // --- ATTRIBUTION WINDOW FUNCTIONS ---
+    function initAttributionSettings() {
+        const saved = localStorage.getItem('ps9_attribution_config_v2');
+        if (saved) {
+            attributionConfig = JSON.parse(saved);
+        }
+        updateAttributionUI();
+    }
+
+    function updateAttributionUI() {
+        const valueEl = document.getElementById('attribution-value');
+        const noteVal = document.getElementById('attr-note-val');
+        const fillEl = document.getElementById('slider-fill');
+        const thumbEl = document.getElementById('slider-thumb');
+        
+        if (!valueEl || !fillEl || !thumbEl) return;
+        
+        // Convert minutes (0-10) to percentage (0-100)
+        const val = attributionConfig.minutes;
+        const percentage = (val / 10) * 100;
+        
+        // Update UI
+        valueEl.textContent = val + "m";
+        if(noteVal) noteVal.textContent = val;
+        fillEl.style.width = `${percentage}%`;
+        thumbEl.style.left = `${percentage}%`;
+    }
+
+    function saveAttributionSetting() {
+        localStorage.setItem('ps9_attribution_config_v2', JSON.stringify(attributionConfig));
+        // alert('Attribution window saved!'); // Removed alert for smoother UX
+    }
+
+    function resetAttributionSetting() {
+        attributionConfig.minutes = 5;
+        updateAttributionUI();
+        saveAttributionSetting();
+    }
+
+    function setupAttributionSlider() {
+        const sliderTrack = document.querySelector('.slider-track');
+        const sliderThumb = document.getElementById('slider-thumb');
+        
+        if (!sliderTrack || !sliderThumb) return;
+        
+        let isDragging = false;
+        
+        function updateSlider(clientX) {
+            const rect = sliderTrack.getBoundingClientRect();
+            let percentage = ((clientX - rect.left) / rect.width) * 100;
+            
+            // Clamp between 0 and 100
+            percentage = Math.max(0, Math.min(100, percentage));
+            
+            // Map 0-100% to 0-10 integer
+            const minuteValue = Math.round((percentage / 100) * 10);
+            
+            // Update configuration
+            attributionConfig.minutes = minuteValue;
+            
+            // Update UI
+            updateAttributionUI();
+            saveAttributionSetting(); // Auto-save on drag
+        }
+        
+        // Mouse events
+        sliderThumb.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            updateSlider(e.clientX);
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        // Touch events for mobile
+        sliderThumb.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            updateSlider(e.touches[0].clientX);
+        });
+        
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+        
+        // Click on track to jump
+        sliderTrack.addEventListener('click', (e) => {
+            updateSlider(e.clientX);
+        });
+    }
+    
+    // --- TAB BADGE FUNCTIONALITY ---
+    function updateTabBadges() {
+        // Active tab badge: Active trailers count
+        let activeTrailersCount = 0;
+        for(let i = DOORS_START; i <= DOORS_END; i++) {
+            if(doors[i].status === 'active') activeTrailersCount++;
+        }
+        
+        updateBadge('active', activeTrailersCount, 'activeTrailers');
+        
+        // Staffing badge: Active staff count
+        let activeStaffCount = staffing.filter(s => s.status === 'active' || s.status === 'paused').length;
+        updateBadge('staffing', activeStaffCount, 'activeStaff');
+        
+        // Tools badge: Always 0
+        updateBadge('tools', 0, 'default');
+        
+        // Settings badge: Show if demo mode is active
+        let settingsBadgeCount = demoActive ? 1 : 0;
+        updateBadge('settings', settingsBadgeCount, 'demo');
+    }
+    
+    function updateBadge(tabId, count, type) {
+        const badge = document.getElementById(`badge-${tabId}`);
+        if (!badge) return;
+        
+        // For logs tab, always hide the badge
+        if (tabId === 'logs') {
+            badge.style.display = 'none';
+            return;
+        }
+        
+        // Update badge text for other tabs
+        if (count === 0) {
+            badge.textContent = '0';
+            badge.classList.add('zero');
+            badge.classList.remove('warning', 'success');
+            badge.style.display = 'none';
+        } else {
+            badge.textContent = count > 99 ? '99+' : count.toString();
+            badge.classList.remove('zero');
+            
+            // Apply color coding based on type and thresholds
+            if (type === 'activeTrailers') {
+                if (count >= 6) badge.classList.add('warning');
+                else if (count >= 3) badge.classList.add('success');
+                else badge.classList.remove('warning', 'success');
+            } else if (type === 'activeStaff') {
+                if (count >= 8) badge.classList.add('warning');
+                else if (count >= 4) badge.classList.add('success');
+                else badge.classList.remove('warning', 'success');
+            } else if (type === 'demo') {
+                badge.classList.add('warning');
+            } else {
+                badge.classList.remove('warning', 'success');
+            }
+            
+            badge.style.display = 'flex';
+        }
+    }
+    
+    // --- DOOR UNAVAILABLE LOGIC - ONLY FOR OPEN BAYS ---
+    function toggleDoorAvailability(doorNum) {
+        const door = doors[doorNum];
+        
+        // Only allow toggling for empty bays (open bays)
+        if (door.status === 'active') {
+            alert("Cannot mark an active bay as unavailable. Complete the trailer first.");
+            return;
+        }
+        
+        door.unavailable = !door.unavailable;
+        saveData();
+        renderDashboard();
+        
+        if (door.unavailable) {
+            alert(`Door ${doorNum} marked as unavailable for maintenance.`);
+        } else {
+            alert(`Door ${doorNum} is now available.`);
+        }
+    }
+    
+    // --- DUPLICATE WALLY CHECK ---
+    function checkDuplicateWally(wallyId) {
+        const { shiftStart } = getShiftTimeWindows();
+        const shiftStartTime = shiftStart.getTime();
+        const now = Date.now();
+        
+        // Check if this Wally ID has been completed during the current shift
+        return historyLog.some(log => 
+            log.type === 'Wally' && 
+            log.id === wallyId && 
+            log.end >= shiftStartTime &&
+            log.end <= now
+        );
+    }
+    
+    function continueWithDuplicate() {
+        closeModal('duplicate-wally-modal');
+        if (pendingWallyDuplicate) {
+            const { doorNum, wallyId, unloader } = pendingWallyDuplicate;
+            doors[doorNum] = {
+                status: 'active', 
+                start: Date.now(), 
+                id: wallyId, 
+                account: "", 
+                type: 'Wally', 
+                unloader: unloader || "Unassigned",
+                isDuplicate: true,
+                unavailable: false
+            };
+            saveData(); 
+            closeModal('input-modal'); 
+            renderDashboard();
+            updateTabBadges();
+            pendingWallyDuplicate = null;
+        }
+    }
+    
+    // --- STAFFING LOGIC ---
+    function saveDOP(val) {
+        currentDOP = val;
+        localStorage.setItem('ps9_dop', currentDOP);
+    }
+    
+    function openAddStaffModal() {
+        const container = document.getElementById('staff-checkbox-list');
+        container.innerHTML = '';
+        
+        [...teamNames].sort().forEach(n => {
+            // Only show if not currently active
+            const isActive = staffing.find(s => s.name === n && (s.status === 'active' || s.status === 'paused'));
+            if(!isActive) {
+                const item = document.createElement('label');
+                item.className = 'staff-checkbox-item';
+                item.innerHTML = `<input type="checkbox" value="${n}" class="staff-checkbox"><span>${n}</span>`;
+                container.appendChild(item);
+            }
+        });
+        document.getElementById('staff-input-time').value = ''; 
+        document.getElementById('add-staff-modal').style.display = 'flex';
+    }
+    
+    function confirmAddStaff() {
+        const checkboxes = document.querySelectorAll('.staff-checkbox:checked');
+        const timeInput = document.getElementById('staff-input-time').value;
+        
+        if(checkboxes.length === 0) return alert("Select at least one employee");
+        
+        let startTime;
+        if(timeInput) {
+            // Manual override logic
+            const now = new Date();
+            const [h, m] = timeInput.split(':').map(Number);
+            const d = new Date(now);
+            d.setHours(h, m, 0, 0);
+            // If user picks 20:00 and it's 01:00, assume yesterday
+            if(d > now) d.setDate(d.getDate() - 1);
+            startTime = d.getTime();
+        } else {
+            // Default shift start logic
+            const { shiftStart } = getShiftTimeWindows();
+            startTime = shiftStart.getTime();
+        }
+        
+        checkboxes.forEach(cb => {
+            staffing.push({
+                id: Date.now() + Math.random(),
+                name: cb.value,
+                start: startTime,
+                end: null,
+                status: 'active',
+                role: 'Unloader',
+                accumulated: 0
+            });
+        });
+        
+        saveData();
+        closeModal('add-staff-modal');
+        renderStaffingView();
+        updateTabBadges();
+    }
+    
+    function cutStaff(id) {
+        const s = staffing.find(x => x.id === id);
+        if(s) {
+            s.status = 'cut';
+            s.end = Date.now();
+            // If active when cut, add current session to accumulated
+            if (s.start !== null) {
+                s.accumulated = (s.accumulated || 0) + (Date.now() - s.start);
+            }
+            s.start = null; // No active session
+            
+            // IMPORTANT: If they held a special role, strip it so the next person can take it
+            if(s.role === 'Belt Tender' || s.role === 'Bulk Sweep') {
+                s.role = 'Unloader';
+            }
+            
+            saveData();
+            renderStaffingView();
+            updateTabBadges();
+        }
+    }
+    
+    function removeStaff(id) {
+        if(confirm("Delete this employee record? This cannot be undone.")) {
+            staffing = staffing.filter(s => s.id !== id);
+            saveData();
+            renderStaffingView();
+            updateTabBadges();
+        }
+    }
+    
+    function openEditStaffModal(id) {
+        const s = staffing.find(x => x.id === id);
+        if(!s) return;
+        document.getElementById('edit-staff-id').value = id;
+        
+        // Format time for input
+        const date = new Date(s.start || Date.now());
+        const h = date.getHours().toString().padStart(2,'0');
+        const m = date.getMinutes().toString().padStart(2,'0');
+        document.getElementById('edit-staff-time').value = `${h}:${m}`;
+        
+        document.getElementById('edit-staff-modal').style.display = 'flex';
+    }
+
+    function saveStaffEdit() {
+        const id = parseFloat(document.getElementById('edit-staff-id').value);
+        const timeInput = document.getElementById('edit-staff-time').value;
+        const s = staffing.find(x => x.id === id);
+        
+        if(s && timeInput) {
+            const [h, m] = timeInput.split(':').map(Number);
+            const originalDate = new Date(s.start || Date.now());
+            // Create new date using original day but new time
+            const newDate = new Date(originalDate);
+            newDate.setHours(h, m);
+            
+            // Handle midnight crossover adjustment heuristic
+            const diff = newDate.getTime() - originalDate.getTime();
+            if(diff < -12 * 3600000) newDate.setDate(newDate.getDate() + 1);
+            if(diff > 12 * 3600000) newDate.setDate(newDate.getDate() - 1);
+            
+            s.start = newDate.getTime();
+            saveData();
+            renderStaffingView();
+            closeModal('edit-staff-modal');
+        }
+    }
+
+    function saveStaffRole(id, newRole) {
+        const s = staffing.find(x => x.id === id);
+        if(s) {
+            const oldRole = s.role;
+            const now = Date.now();
+            let limitChanged = false;
+            
+            // Only proceed if role is actually changing
+            if(oldRole !== newRole) {
+                // If staff is currently active, calculate current session hours
+                if(s.status === 'active' && s.start) {
+                    const currentSessionMs = now - s.start;
+                    const currentSessionHours = currentSessionMs / 3600000;
+                    
+                    if(confirm(`${s.name} has ${currentSessionHours.toFixed(2)} hours in this session. Moving from ${oldRole} to ${newRole} will transfer these hours to the new role. Continue?`)) {
+                        // Add current session to accumulated BEFORE changing role
+                        s.accumulated = (s.accumulated || 0) + currentSessionMs;
+                        // Reset start time for the new role session
+                        s.start = now;
+                        s.role = newRole;
+                        
+                        saveData();
+                        renderStaffingView();
+                    } else {
+                        // User cancelled, revert the select to original value
+                        setTimeout(() => {
+                            const select = document.querySelector(`select[onchange*="${id}"]`);
+                            if(select) select.value = oldRole;
+                        }, 100);
+                        return;
+                    }
+                } else if(s.status === 'paused') {
+                    // For paused staff, the hours are already in accumulated
+                    if(confirm(`Change ${s.name}'s role from ${oldRole} to ${newRole}? Their ${(s.accumulated/3600000).toFixed(2)} accumulated hours will now count towards ${newRole}.`)) {
+                        s.role = newRole;
+                        saveData();
+                        renderStaffingView();
+                    } else {
+                        setTimeout(() => {
+                            const select = document.querySelector(`select[onchange*="${id}"]`);
+                            if(select) select.value = oldRole;
+                        }, 100);
+                        return;
+                    }
+                } else {
+                    // For cut staff or other status, just change the role
+                    s.role = newRole;
+                    saveData();
+                    renderStaffingView();
+                }
+            }
+        }
+    }
+
+    // PAUSE / RESUME LOGIC
+    function pauseStaff(id) {
+        const s = staffing.find(x => x.id === id);
+        if (s && s.status === 'active') {
+            s.status = 'paused';
+            s.accumulated = (s.accumulated || 0) + (Date.now() - s.start);
+            s.start = null;
+            saveData();
+            renderStaffingView();
+            updateTabBadges();
+        }
+    }
+
+    function resumeStaff(id) {
+        const s = staffing.find(x => x.id === id);
+        if (s && s.status === 'paused') {
+            s.status = 'active';
+            s.start = Date.now();
+            saveData();
+            renderStaffingView();
+            updateTabBadges();
+        }
+    }
+    
+    // --- HELPER FOR ACCURATE TIME CALC ---
+    function calculateTotalHours(s) {
+        const now = Date.now();
+        let totalMs = (s.accumulated || 0);
+        if (s.status === 'active' && s.start) {
+            totalMs += (now - s.start);
+        }
+        // Round to nearest minute first
+        const totalMinutes = Math.round(totalMs / 60000);
+        // Then convert to hours
+        return totalMinutes / 60;
+    }
+    
+    function getTopThreeStaff() {
+        // Filter only ACTIVE (or paused) staff for role assignment
+        // This ensures cut employees surrender their spot
+        const activeOnly = staffing.filter(s => s.status !== 'cut');
+        
+        const withHours = activeOnly.map(s => {
+            return { ...s, totalHours: calculateTotalHours(s) };
+        });
+        
+        // Sort by total hours descending
+        withHours.sort((a, b) => b.totalHours - a.totalHours);
+        
+        // Return top 3
+        return withHours.slice(0, 3);
+    }
+    
+    function renderStaffingView() {
+        const activeList = document.getElementById('staff-list-active');
+        const cutList = document.getElementById('staff-list-cut');
+        activeList.innerHTML = '';
+        cutList.innerHTML = '';
+        
+        // 1. Calculate top three globally first to know who gets what badge
+        const topThree = getTopThreeStaff();
+        const topThreeIds = topThree.map(s => s.id);
+        
+        // 2. Perform Auto-Role Assignment Logic
+        const now = Date.now();
+        let needsSave = false;
+        
+        staffing.forEach(s => {
+            let targetRole = 'Unloader'; // Default
+            
+            // Check if this person is in the top 3
+            const rankIndex = topThreeIds.indexOf(s.id);
+            
+            if (rankIndex === 0) {
+                targetRole = 'Belt Tender';
+            } else if (rankIndex === 1 || rankIndex === 2) {
+                targetRole = 'Bulk Sweep';
+            } else {
+                // If they were previously assigned a special role but lost rank, revert to Unloader
+                // (Unless manual override flag exists - for now we assume strict auto-assignment for simplicity)
+                // To prevent overwriting manual non-special roles, we only force Unloader if they held a special role previously
+                if (s.role === 'Belt Tender' || s.role === 'Bulk Sweep') {
+                    targetRole = 'Unloader';
+                } else {
+                    targetRole = s.role; // Keep existing role
+                }
+            }
+            
+            // If role needs changing, do it properly with time tracking
+            if (s.role !== targetRole) {
+                // If active, accumulating time for the old role needs to be saved
+                if (s.status === 'active' && s.start) {
+                    const currentSessionMs = now - s.start;
+                    s.accumulated = (s.accumulated || 0) + currentSessionMs;
+                    s.start = now; // Restart clock for new role
+                }
+                s.role = targetRole;
+                needsSave = true;
+            }
+        });
+        
+        if(needsSave) saveData();
+        
+        // 3. Now Render the UI with updated roles
+        
+        // Sorting logic for active list (Highest hours first)
+        const activeStaff = staffing.filter(s => s.status === 'active' || s.status === 'paused');
+        activeStaff.sort((a,b) => calculateTotalHours(b) - calculateTotalHours(a));
+
+        // Build Active List
+        activeStaff.forEach(s => {
+             // Dynamic Role Icons Logic
+             let suggestionBadge = '';
+             let isSystemAssigned = false;
+             
+             if (topThreeIds.includes(s.id)) {
+                 const position = topThreeIds.indexOf(s.id);
+                 if (position === 0) {
+                     suggestionBadge = '👑'; // #1 Belt Tender
+                     isSystemAssigned = true;
+                 }
+                 else if (position === 1 || position === 2) {
+                     suggestionBadge = '🧹'; // #2/#3 Bulk Sweep
+                     isSystemAssigned = true;
+                 }
+             }
+             
+             const isPaused = s.status === 'paused';
+             const pauseBtnIcon = isPaused ? 'ph-play' : 'ph-pause';
+             const pauseBtnAction = isPaused ? `resumeStaff(${s.id})` : `pauseStaff(${s.id})`;
+             const pauseStyle = isPaused ? 'background:#e5e5ea; color:#000;' : 'background:#e5e5ea; color:#000;';
+             const cardStyle = isPaused ? 'opacity:0.7; border:1px dashed #ccc;' : '';
+             const badgeText = isPaused ? '<span style="background:#ffcc00; color:#000; font-size:10px; padding:2px 4px; border-radius:4px; font-weight:700; margin-left:5px;">PAUSED</span>' : '';
+             
+             // Time string logic
+             const timeStr = isPaused ? 'Paused' : 'Started: ' + new Date(s.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+             
+             // Calculate total hours
+             const totalHours = calculateTotalHours(s);
+             
+             // Determine role-specific display color
+             let roleColor = '#000';
+             if (s.role === 'Belt Tender') roleColor = '#ff9500';
+             if (s.role === 'Bulk Sweep') roleColor = '#34c759';
+             
+             const div = document.createElement('div');
+             div.className = 'staff-card';
+             if(isPaused) div.style.cssText = cardStyle;
+             
+             // If system assigned, we still allow unlocking but it will refresh
+             const disabledAttr = ''; // Unlocked as requested
+             
+             div.innerHTML = `
+                <div style="width:100%">
+                    <div class="staff-top-row">
+                        <div class="staff-name">${s.name} <span style="margin-left:5px; font-size:18px;">${suggestionBadge}</span> ${badgeText}</div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="icon-btn" onclick="${pauseBtnAction}" style="width:32px; height:32px; font-size:16px; ${pauseStyle}"><i class="ph ${pauseBtnIcon}"></i></button>
+                            <button class="icon-btn" onclick="openEditStaffModal(${s.id})" style="width:32px; height:32px; font-size:16px;"><i class="ph ph-pencil-simple"></i></button>
+                            <button class="staff-action-btn" onclick="cutStaff(${s.id})">CUT</button>
+                            <button class="icon-btn" onclick="removeStaff(${s.id})" style="width:32px; height:32px; font-size:16px; color:#ff3b30;"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="staff-time">${timeStr} • ${s.role}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                        <div class="staff-hours" id="staff-hours-${s.id}" style="color:${roleColor}">${totalHours.toFixed(2)}h</div>
+                        <div style="width:50%">
+                            <select class="role-select" onchange="saveStaffRole(${s.id}, this.value)" ${disabledAttr}>
+                                <option value="Unloader" ${s.role === 'Unloader' ? 'selected' : ''}>Unloader</option>
+                                <option value="Belt Tender" ${s.role === 'Belt Tender' ? 'selected' : ''}>Belt Tender</option>
+                                <option value="Bulk Sweep" ${s.role === 'Bulk Sweep' ? 'selected' : ''}>Bulk Sweep</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+             `;
+             activeList.appendChild(div);
+        });
+
+        // Build Cut List
+        const cutStaffList = staffing.filter(s => s.status === 'cut');
+        // Sort cut list by hours too for better visibility
+        cutStaffList.sort((a,b) => calculateTotalHours(b) - calculateTotalHours(a));
+        
+        cutStaffList.forEach(s => {
+             const hrs = calculateTotalHours(s);
+             
+             // Check if cut staff is still in top three (they retain rank until surpassed)
+             let suggestionBadge = '';
+             if (topThreeIds.includes(s.id)) {
+                 const position = topThreeIds.indexOf(s.id);
+                 if (position === 0) suggestionBadge = '👑';
+                 else if (position === 1 || position === 2) suggestionBadge = '🧹';
+             }
+             
+             const div = document.createElement('div');
+             div.className = 'staff-card cut';
+             div.innerHTML = `
+                <div>
+                    <div class="staff-name">${s.name} <span style="margin-left:5px; font-size:18px;">${suggestionBadge}</span> • ${s.role}</div>
+                    <div class="staff-time">Ended: ${new Date(s.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="staff-hours">${hrs.toFixed(2)}h</div>
+                    <button class="icon-btn" onclick="removeStaff(${s.id})" style="width:32px; height:32px; font-size:16px; color:#ff3b30; background:transparent;"><i class="ph ph-trash"></i></button>
+                </div>
+             `;
+             cutList.appendChild(div);
+        });
+        
+        // Update counts
+        document.getElementById('badge-on-clock').innerText = activeStaff.length;
+        document.getElementById('badge-off-clock').innerText = cutStaffList.length;
+        updateStaffingTimers();
+    }
+    
+    function updateStaffingTimers() {
+        if(!document.getElementById('tab-staffing').classList.contains('active')) return;
+        
+        const now = Date.now();
+        let onClockCount = 0;
+        let offClockCount = 0;
+        let totalUnloaderHours = 0;
+        let beltHours = 0;
+        let sweepHours = 0;
+        
+        staffing.forEach(s => {
+            let hrs = 0;
+            
+            if(s.status === 'active' || s.status === 'paused') {
+                onClockCount++;
+                hrs = calculateTotalHours(s);
+                
+                // Update DOM element directly
+                const el = document.getElementById(`staff-hours-${s.id}`);
+                if(el) el.innerText = hrs.toFixed(2) + 'h';
+            } else if(s.status === 'cut') {
+                offClockCount++;
+                hrs = calculateTotalHours(s);
+            }
+            
+            // Accumulate hours by CURRENT role
+            if (s.role === 'Unloader') {
+                totalUnloaderHours += hrs;
+            } else if (s.role === 'Belt Tender') {
+                beltHours += hrs;
+            } else if (s.role === 'Bulk Sweep') {
+                sweepHours += hrs;
+            }
+        });
+        
+        document.getElementById('staff-active-count').innerText = onClockCount;
+        document.getElementById('staff-total-hours').innerText = totalUnloaderHours.toFixed(2);
+        document.getElementById('staff-belt-hours').innerText = beltHours.toFixed(2);
+        document.getElementById('staff-sweep-hours').innerText = sweepHours.toFixed(2);
+    }
+
+    // --- SAVED ACCOUNTS LOGIC ---
+    function addSavedAccount() {
+        const input = document.getElementById('new-account-input');
+        const val = input.value.trim().toUpperCase();
+        if(val && !savedAccounts.includes(val)) {
+            savedAccounts.push(val);
+            localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
+            renderSavedAccounts();
+            updateAccountDatalist();
+            input.value = '';
+        }
+    }
+    
+    function removeAccount(acct) {
+        savedAccounts = savedAccounts.filter(a => a !== acct);
+        localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
+        renderSavedAccounts();
+        updateAccountDatalist();
+    }
+    
+    function renderSavedAccounts() {
+        const list = document.getElementById('saved-accounts-list');
+        if(!list) return;
+        list.innerHTML = '';
+        if(savedAccounts.length === 0) {
+            list.innerHTML = '<div style="padding:15px 0; color:#8e8e93; text-align:center;">No saved accounts</div>';
+            return;
+        }
+        savedAccounts.forEach(acct => {
+            const div = document.createElement('div');
+            div.className = 'saved-acct-item';
+            div.innerHTML = `
+                <span>${acct}</span>
+                <i class="ph ph-minus-circle delete-acct-btn" onclick="removeAccount('${acct}')"></i>
+            `;
+            list.appendChild(div);
+        });
+    }
+    
+    function updateAccountDatalist() {
+        const dl = document.getElementById('saved-accounts-datalist');
+        if (!dl) return; 
+        dl.innerHTML = '';
+        savedAccounts.forEach(acct => {
+            const opt = document.createElement('option');
+            opt.value = acct;
+            dl.appendChild(opt);
+        });
+    }
+    
+    // --- SETTINGS LOGIC ---
+    function toggleSwitch(id) {
+        const el = document.getElementById('switch-' + id);
+        el.classList.toggle('checked');
+        const checked = el.classList.contains('checked');
+        
+        if(id === 'demo-mode') { 
+            demoActive = checked;
+            updateTabBadges();
+        }
+        if(id === 'demo-replenish') config.replenish = checked;
+        if(id === 'demo-random') config.randomHistory = checked;
+        if(id === 'mixed-types') config.mixedTypes = checked;
+        if(id === 'disable-times') config.disableTimes = checked;
+        if(id === 'sim-window') config.simulateWindow = checked;
+        if(id === 'dis-window') {
+            config.disableWindow = checked;
+            attributionConfig.enabled = !checked;
+        }
+        
+        renderDashboard();
+    }
+    
+    function stepDoor(delta) {
+        let val = parseInt(document.getElementById('demo-door-val').innerText);
+        val += delta;
+        if(val < 1) val = 1; if(val > 8) val = 8;
+        document.getElementById('demo-door-val').innerText = val;
+        config.doorCount = val;
+    }
+    
+    function setDemoType(type) {
+        config.demoType = type;
+        document.getElementById('seg-wally').classList.toggle('selected', type === 'Wally');
+        document.getElementById('seg-cpu').classList.toggle('selected', type === 'CPU');
+    }
+    
+    function startDemo() {
+        const count = config.doorCount;
+        demoActive = true; 
+        for(let i=DOORS_START; i<=DOORS_END; i++) {
+            if(doors[i].status === 'empty' && (i - DOORS_START) < count) {
+                randomArrival(i);
+            }
+        }
+        alert("Demo Started: " + count + " doors filled.");
+        switchTab('dashboard'); 
+        updateTabBadges();
+    }
+    
+    function randomArrival(doorNum) {
+        let type = config.demoType;
+        if(config.mixedTypes) type = Math.random() > 0.5 ? 'Wally' : 'CPU';
+        const id = Math.floor(1000 + Math.random() * 9000).toString();
+        const unloader = teamNames[Math.floor(Math.random() * teamNames.length)];
+        let account = "";
+        if(type === 'CPU') account = savedAccounts.length > 0 ? savedAccounts[Math.floor(Math.random() * savedAccounts.length)] : "ACC" + Math.floor(100 + Math.random() * 900);
+        doors[doorNum] = { status: 'active', start: Date.now(), id: id.toUpperCase(), account: account.toUpperCase(), type: type, unloader: unloader, unavailable: false, lastCompletionTime: null };
+        renderDashboard();
+        updateTabBadges();
+    }
+    
+    // --- SHIFT & TIME ---
+    function getShiftStartTime() {
+        return localStorage.getItem('ps9_shift_start') || "19:55";
+    }
+    
+    function saveShiftStart(val) {
+        localStorage.setItem('ps9_shift_start', val);
+        renderDashboard(); 
+    }
+
+    function getShiftTimeWindows() {
+        if (config.disableTimes) {
+             // Basic hardcoded logic fallback
+             const now = new Date();
+             const h = now.getHours();
+             const thisHourStart = new Date(now); thisHourStart.setMinutes(0,0,0);
+             const thisHourEnd = new Date(thisHourStart.getTime() + 3600000);
+             const lastHourStart = new Date(thisHourStart.getTime() - 3600000);
+             const lastHourEnd = thisHourStart;
+             return { thisHourStart, thisHourEnd, lastHourStart, lastHourEnd, shiftStart: new Date(now.setHours(20,0,0,0)) };
+        }
+        
+        const startStr = getShiftStartTime();
+        const [h, m] = startStr.split(':').map(Number);
+        const now = new Date();
+        let start = new Date(now);
+        start.setHours(h, m, 0, 0);
+        if (now < start) start.setDate(start.getDate() - 1);
+        
+        const diffMs = now - start;
+        const hoursElapsed = Math.floor(diffMs / (60 * 60 * 1000));
+        
+        const thisHourStart = new Date(start.getTime() + (hoursElapsed * 3600000));
+        const thisHourEnd = new Date(thisHourStart.getTime() + 3600000);
+        
+        const lastHourStart = new Date(thisHourStart.getTime() - 3600000);
+        const lastHourEnd = thisHourStart;
+        
+        return { thisHourStart, thisHourEnd, lastHourStart, lastHourEnd, shiftStart: start };
+    }
+    
+    // --- HOUR CALCULATION FOR LOGS ---
+    function getCompletionHour(completionTime) {
+        const { shiftStart } = getShiftTimeWindows();
+        const shiftStartTime = shiftStart.getTime();
+        
+        // Calculate which hour of the shift this completion belongs to
+        const hoursSinceShiftStart = Math.floor((completionTime - shiftStartTime) / 3600000);
+        return hoursSinceShiftStart + 1;
+    }
+
+    // --- LOGIC ---
+    function populateUnloaderSelect() {
+        const ids = ['select-unloader', 'edit-select-unloader', 'edit-active-unloader'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.innerHTML = '<option value="" selected>Unassigned</option>';
+                [...teamNames].sort().forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name; opt.innerText = name;
+                    el.appendChild(opt);
+                });
+                const cust = document.createElement('option');
+                cust.value = "Custom"; cust.innerText = "Custom / Other";
+                el.appendChild(cust);
+            }
+        });
+    }
+
+    function openAddUnloaderModal() { 
+        document.getElementById('input-new-unloader-name').value=''; 
+        document.getElementById('add-unloader-modal').style.display='flex'; 
+    }
+    
+    function confirmAddUnloader() { 
+        const input=document.getElementById('input-new-unloader-name'); 
+        
+        // --- FIX: Dismiss keyboard explicitly ---
+        if(input) input.blur();
+
+        const val=input.value.trim(); 
+        if(val){ 
+            // Capitalize first letter of each word
+            const capitalized = val.toLowerCase().split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+            
+            if(!teamNames.includes(capitalized)){
+                teamNames.push(capitalized); 
+                localStorage.setItem('ps9_team',JSON.stringify(teamNames)); 
+                populateUnloaderSelect();
+            } 
+            closeModal('add-unloader-modal'); 
+        } 
+    }
+    
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        else if(tabId) {
+             const icons=document.querySelectorAll('.tab-btn');
+             if(tabId==='dashboard') icons[0].classList.add('active');
+             if(tabId==='active') icons[1].classList.add('active');
+             if(tabId==='logs') icons[2].classList.add('active');
+             if(tabId==='staffing') icons[3].classList.add('active');
+             if(tabId==='tools') icons[4].classList.add('active');
+             if(tabId==='settings') icons[5].classList.add('active');
+        }
+        if(tabId==='dashboard') renderDashboard();
+        if(tabId==='active') renderActiveTab();
+        if(tabId==='logs') renderLogs();
+        if(tabId==='staffing') renderStaffingView();
+    }
+    
+    function closeModal(id) { 
+        const modal = document.getElementById(id);
+        if(modal) modal.style.display='none'; 
+        
+        // --- FIX FOR IPHONE 16 DYNAMIC ISLAND ---
+        // Force the viewport to snap back to the top
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+    }
+
+    // --- COMPLETION LOGIC WITH CONFIGURABLE ATTRIBUTION WINDOW ---
+    function initiateCompleteDoor() {
+        if (!detailDoor) return;
+        confirmCompleteDoor();
+    }
+
+    function confirmCompleteDoor() {
+        if(!detailDoor) return;
+        completeDoor(detailDoor);
+    }
+
+    function completeDoor(doorNum) {
+        // Check for configurable attribution window
+        const now = new Date();
+        const mins = now.getMinutes();
+        
+        const { shiftStart } = getShiftTimeWindows();
+        const isPastFirstHour = (now - shiftStart) > 3600000;
+        
+        // Determine if we're in the attribution window
+        // Window is 0 to X minutes past the hour
+        // AND attribution is enabled
+        // AND we are past the first hour of the shift
+        
+        const windowLimit = attributionConfig.minutes; // 0-10
+        const inWindow = mins <= windowLimit;
+        
+        const shouldCheckAttribution = !config.disableWindow && isPastFirstHour && attributionConfig.enabled && windowLimit > 0 && (inWindow || config.simulateWindow);
+
+        if (shouldCheckAttribution) {
+            // Update modal text
+            const paddedLimit = windowLimit.toString().padStart(2, '0');
+            document.getElementById('attribution-window-text').textContent = `00-${paddedLimit}`;
+            
+            // Pause and ask
+            pendingCompletion = { doorNum, time: now.getTime() };
+            document.getElementById('hour-attribution-modal').style.display = 'flex';
+        } else {
+            // Proceed normally
+            finalizeCompletion(doorNum, now.getTime(), 0);
+        }
+    }
+    
+    function resolveAttribution(choice) {
+        closeModal('hour-attribution-modal');
+        if (!pendingCompletion) return;
+        
+        let offset = 0;
+        if (choice === 'Previous') {
+            const d = new Date(pendingCompletion.time);
+            const mins = d.getMinutes();
+            // Offset enough to push it back to the :59 mark of the previous hour
+            offset = (mins + 1) * 60000; 
+        }
+        
+        finalizeCompletion(pendingCompletion.doorNum, pendingCompletion.time, offset);
+        pendingCompletion = null;
+    }
+
+    function finalizeCompletion(doorNum, actualEndTime, statOffset) {
+        const d = doors[doorNum];
+        let end = actualEndTime;
+        let start = d.start;
+        
+        // Calculate duration in minutes
+        const durationMinutes = Math.round((end - start) / 60000);
+        
+        // Random History Logic for Demo
+        if (config.randomHistory && demoActive) {
+             const { shiftStart } = getShiftTimeWindows();
+             const earliest = shiftStart.getTime();
+             end = Math.floor(Math.random() * (Date.now() - earliest) + earliest);
+             start = end - (Math.floor(Math.random() * 30 + 15) * 60000);
+             statOffset = 0;
+        }
+        
+        // Auto Save Account (if not already saved)
+        if (d.type === 'CPU' && d.account && d.account.trim() !== "") {
+            const accountUpper = d.account.trim().toUpperCase();
+            if(!savedAccounts.includes(accountUpper)) {
+                savedAccounts.push(accountUpper);
+                localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
+                updateAccountDatalist();
+                renderSavedAccounts();
+            }
+        }
+        
+        // Calculate completion hour
+        const completionHour = getCompletionHour(end - statOffset);
+
+        historyLog.unshift({
+            door: doorNum,
+            id: d.id,
+            account: d.account || "", 
+            type: d.type,
+            unloader: d.unloader,
+            start: start,
+            end: end,
+            duration: end - start,
+            durationMinutes: durationMinutes,
+            statOffset: statOffset,
+            logId: Date.now() + Math.random().toString(36).substring(2, 9),
+            duplicate: d.isDuplicate || false,
+            completionHour: completionHour
+        });
+
+        if (d.type === 'Wally' && navigator.share && !demoActive) {
+             navigator.share({ 
+                 text: `Door ${doorNum} completed: ${d.type} ${d.id} | Duration: ${durationMinutes}m | ${new Date(end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`
+             }).then(() => {
+                 // Auto-close the modal after sharing
+                 closeModal('active-detail-modal');
+             }).catch(err => console.log(err));
+        } else {
+            // Auto-close if no share or not Wally
+            closeModal('active-detail-modal');
+        }
+
+        doors[doorNum] = { 
+            status: 'empty', 
+            start: 0, 
+            id: '', 
+            type: '', 
+            unloader: '', 
+            unavailable: false,
+            lastCompletionTime: end // Store completion time for this door
+        };
+        
+        saveData();
+        renderDashboard();
+        renderActiveTab();
+        updateTabBadges();
+        
+        if (demoActive && config.replenish) {
+            setTimeout(() => { if (doors[doorNum].status === 'empty') randomArrival(doorNum); }, 7000);
+        }
+    }
+
+    // --- STATS UPDATE ---
+    function updateStats() {
+        const { thisHourStart, thisHourEnd, lastHourStart, lastHourEnd } = getShiftTimeWindows();
+
+        let totalWally = 0, totalCPU = 0, hourWally = 0, lastHourWally = 0;
+
+        historyLog.forEach(log => {
+            const effectiveTime = log.end - (log.statOffset || 0);
+            
+            if (log.type === 'Wally') {
+                totalWally++;
+                if (effectiveTime >= thisHourStart.getTime() && effectiveTime < thisHourEnd.getTime()) {
+                    hourWally++;
+                } else if (effectiveTime >= lastHourStart.getTime() && effectiveTime < lastHourEnd.getTime()) {
+                    lastHourWally++;
+                }
+            } else if (log.type === 'CPU') {
+                totalCPU++;
+            }
+        });
+
+        document.getElementById('stat-total-wally').innerText = totalWally;
+        document.getElementById('stat-total-cpu').innerText = totalCPU;
+        document.getElementById('stat-hour-wally').innerText = hourWally;
+        document.getElementById('stat-last-wally').innerText = lastHourWally;
+    }
+    
+    function renderDashboard() {
+        updateStats();
+        const openBaysGrid = document.getElementById('open-bays-grid');
+        const activeTrailersGrid = document.getElementById('active-trailers-grid');
+        openBaysGrid.innerHTML = ''; activeTrailersGrid.innerHTML = '';
+        let hasOpen = false, hasActive = false;
+
+        for(let i=DOORS_START; i<=DOORS_END; i++) {
+            const d = doors[i];
+            if (d.status === 'active') {
+                hasActive = true;
+                const btn = document.createElement('div');
+                btn.className = `bay-circle bay-${i} ${d.unavailable ? 'unavailable' : ''}`;
+                btn.setAttribute('data-door', i);
+                btn.innerHTML = `${i}`;
+                const badge = document.createElement('div');
+                badge.className = d.type === 'Wally' ? 'type-badge badge-w' : 'type-badge badge-c';
+                badge.innerText = d.type === 'Wally' ? 'W' : 'C';
+                btn.appendChild(badge);
+                btn.onclick = () => openActiveDetails(i);
+                activeTrailersGrid.appendChild(btn);
+            } else {
+                hasOpen = true;
+                const btn = document.createElement('div');
+                btn.className = `bay-circle bay-${i} ${d.unavailable ? 'unavailable' : ''}`;
+                btn.setAttribute('data-door', i);
+                btn.innerText = i;
+                
+                // Add idle timer only for doors that have been completed before
+                if (d.lastCompletionTime && d.status === 'empty' && !d.unavailable) {
+                    const idleTimeMs = Date.now() - d.lastCompletionTime;
+                    const idleMinutes = Math.floor(idleTimeMs / 60000);
+                    const timer = document.createElement('div');
+                    timer.className = 'bay-timer';
+                    timer.textContent = `${idleMinutes}m`;
+                    btn.appendChild(timer);
+                }
+                
+                // Regular click for opening arrival modal
+                btn.onclick = () => {
+                    if (d.unavailable) {
+                        alert(`Door ${i} is currently unavailable for maintenance.`);
+                    } else {
+                        openArrivalModal(i);
+                    }
+                };
+                
+                // Long-press for toggling availability (only for open bays)
+                // IMPORTANT: Only open bays have this functionality
+                let touchTimer;
+                btn.addEventListener('touchstart', (e) => {
+                    touchTimer = setTimeout(() => {
+                        toggleDoorAvailability(i);
+                    }, 800);
+                });
+                
+                btn.addEventListener('touchend', () => {
+                    if (touchTimer) {
+                        clearTimeout(touchTimer);
+                    }
+                });
+                
+                btn.addEventListener('touchmove', () => {
+                    if (touchTimer) {
+                        clearTimeout(touchTimer);
+                    }
+                });
+                
+                openBaysGrid.appendChild(btn);
+            }
+        }
+        
+        if(!hasOpen) openBaysGrid.innerHTML = '<div class="empty-state-text">All bays full.</div>';
+        if(!hasActive) activeTrailersGrid.innerHTML = '<div class="empty-state-text">No active trailers.</div>';
+    }
+
+    function renderActiveTab() {
+        const list = document.getElementById('active-tab-list');
+        list.innerHTML = '';
+        let hasActive = false;
+        for(let i=DOORS_START; i<=DOORS_END; i++) {
+            if(doors[i].status === 'active') {
+                hasActive = true;
+                const d = doors[i];
+                const startTime = new Date(d.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const acctInfo = d.account ? ` | Acct: ${d.account}` : '';
+                list.innerHTML += `<div class="active-card"><div class="active-card-info"><div class="active-card-header"><span class="door-pill">Door ${i}</span><span class="active-card-title">${d.type} ${d.id}</span></div><div class="active-card-details">${d.unloader}${acctInfo}</div><div class="active-card-time">Started: ${startTime}</div></div><div class="active-card-actions"><button class="icon-btn" onclick="openEditActiveModal(${i})"><i class="ph ph-pencil-simple"></i></button><button class="btn-primary" style="width:auto; padding:10px 16px; margin:0;" onclick="completeDoor(${i})">Finish</button></div></div>`;
+            }
+        }
+        if(!hasActive) list.innerHTML = '<div style="text-align:center; color:#999; margin-top:40px;">No active trailers</div>';
+    }
+
+    function openActiveDetails(doorNum) {
+        detailDoor = doorNum;
+        const d = doors[doorNum];
+        document.getElementById('detail-door-num').innerText = doorNum;
+        document.getElementById('detail-type').innerText = d.type;
+        document.getElementById('detail-id').innerText = d.id;
+        document.getElementById('detail-unloader').innerText = d.unloader || "Unassigned";
+        document.getElementById('detail-time').innerText = new Date(d.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Calculate and show duration
+        const durationMs = Date.now() - d.start;
+        const durationMinutes = Math.floor(durationMs / 60000);
+        document.getElementById('detail-duration').innerText = `${durationMinutes}m`;
+        
+        const acctRow = document.getElementById('row-account');
+        if (d.account) { 
+            acctRow.style.display = 'flex'; 
+            document.getElementById('detail-account').innerText = d.account; 
+        } else { 
+            acctRow.style.display = 'none'; 
+        }
+        document.getElementById('active-detail-modal').style.display = 'flex';
+    }
+    
+    function openEditActiveModalFromDetail() { 
+        closeModal('active-detail-modal'); 
+        openEditActiveModal(detailDoor); 
+    }
+
+    function openEditActiveModal(doorNum) {
+        const d = doors[doorNum];
+        document.getElementById('edit-active-original-door').value = doorNum;
+        document.getElementById('edit-active-id').value = d.id;
+        document.getElementById('edit-active-account').value = d.account || "";
+        
+        // Pre-select unloader
+        const unloaderSelect = document.getElementById('edit-active-unloader');
+        unloaderSelect.value = d.unloader || "";
+        if(unloaderSelect.selectedIndex === -1) {
+             unloaderSelect.value = 'Custom';
+             checkActiveCustomUnloader(unloaderSelect);
+             document.getElementById('edit-active-custom-unloader').value = d.unloader;
+        } else {
+             checkActiveCustomUnloader(unloaderSelect);
+        }
+
+        setEditActiveType(d.type);
+        
+        // Populate bay select
+        const sel = document.getElementById('edit-active-door-select');
+        sel.innerHTML = '';
+        for(let i=DOORS_START; i<=DOORS_END; i++) {
+            if(i===doorNum || doors[i].status==='empty') {
+                const opt = document.createElement('option'); 
+                opt.value = i; 
+                opt.innerText = `Bay ${i}`; 
+                if(i===doorNum) opt.selected=true; 
+                sel.appendChild(opt);
+            }
+        }
+        document.getElementById('edit-active-modal').style.display = 'flex';
+    }
+    
+    function setEditActiveType(t) {
+        document.getElementById('active-opt-wally').classList.toggle('selected', t === 'Wally');
+        document.getElementById('active-opt-cpu').classList.toggle('selected', t === 'CPU');
+        document.getElementById('edit-active-modal').dataset.type = t;
+    }
+    
+    function checkActiveCustomUnloader(select) {
+         const input = document.getElementById('edit-active-custom-unloader');
+         input.style.display = select.value === 'Custom' ? 'block' : 'none';
+    }
+    
+    function saveActiveEdit() {
+        const orig = parseInt(document.getElementById('edit-active-original-door').value);
+        const dest = parseInt(document.getElementById('edit-active-door-select').value);
+        
+        let unl = document.getElementById('edit-active-unloader').value;
+        if(unl === 'Custom') unl = document.getElementById('edit-active-custom-unloader').value.trim();
+        if (!unl) unl = "Unassigned";
+        
+        // Capitalize custom names
+        if (unl !== "Unassigned" && unl === document.getElementById('edit-active-custom-unloader').value.trim()) {
+            unl = unl.toLowerCase().split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+        
+        const data = {
+            status: 'active', 
+            start: doors[orig].start,
+            id: document.getElementById('edit-active-id').value.trim().toUpperCase(),
+            account: document.getElementById('edit-active-account').value.trim().toUpperCase(),
+            type: document.getElementById('edit-active-modal').dataset.type,
+            unloader: unl,
+            unavailable: false,
+            lastCompletionTime: doors[orig].lastCompletionTime
+        };
+        
+        if(dest !== orig) { 
+            doors[dest] = data; 
+            doors[orig] = {status:'empty', start:0, id:'', type:'', unloader:'', unavailable: false, lastCompletionTime: doors[orig].lastCompletionTime}; 
+        } else { 
+            doors[orig] = data; 
+        }
+        
+        saveData(); 
+        closeModal('edit-active-modal'); 
+        renderActiveTab(); 
+        renderDashboard();
+        updateTabBadges();
+    }
+
+    function checkCustomUnloader(select) {
+        const input = document.getElementById('input-custom-unloader');
+        input.style.display = select.value === 'Custom' ? 'block' : 'none';
+    }
+    
+    function confirmArrival() {
+        const idVal = currentType === 'Wally' ? document.getElementById('input-wally-id').value : document.getElementById('input-trailer-id').value;
+        const accVal = currentType === 'CPU' ? document.getElementById('input-account-id').value : "";
+        const sel = document.getElementById('select-unloader');
+        let unl = sel.value; 
+        
+        if(unl === 'Custom') {
+            unl = document.getElementById('input-custom-unloader').value;
+            // Capitalize first letter of each word for custom names
+            if (unl) {
+                unl = unl.toLowerCase().split(' ').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+            }
+        }
+        
+        // Remove unloader requirement
+        if(!idVal) return alert("Missing Wally/Trailer ID");
+        
+        // Auto-capitalize account and trailer numbers
+        const formattedId = idVal.toUpperCase();
+        const formattedAccount = accVal.toUpperCase();
+        
+        // Check for duplicate Wally
+        if (currentType === 'Wally' && checkDuplicateWally(formattedId)) {
+            pendingWallyDuplicate = {
+                doorNum: currentDoor,
+                wallyId: formattedId,
+                unloader: unl || "Unassigned"
+            };
+            document.getElementById('duplicate-wally-id').textContent = formattedId;
+            document.getElementById('duplicate-wally-modal').style.display = 'flex';
+            return;
+        }
+        
+        // Use custom time from the input if provided, otherwise Date.now()
+        // If it's the first onboard, we already pre-filled the input with sort start time, so just reading the input is sufficient
+        let startTime = Date.now();
+        const customTimeInput = document.getElementById('input-onboard-time').value;
+        
+        if (customTimeInput) {
+            // Parse custom time
+            const now = new Date();
+            const [h, m] = customTimeInput.split(':').map(Number);
+            const d = new Date(now);
+            d.setHours(h, m, 0, 0);
+            
+            // Basic logic: if user sets 23:00 and it's currently 00:05, assume yesterday
+            if (d > now) d.setDate(d.getDate() - 1);
+            
+            startTime = d.getTime();
+        }
+        
+        doors[currentDoor] = {
+            status: 'active', 
+            start: startTime, 
+            id: formattedId, 
+            account: formattedAccount, 
+            type: currentType, 
+            unloader: unl || "Unassigned",
+            isDuplicate: false,
+            unavailable: false,
+            lastCompletionTime: null
+        };
+        
+        // Reset first onboard flag since we just completed it
+        if (isFirstOnboard) {
+            isFirstOnboard = false;
+            localStorage.setItem('ps9_is_first_onboard', 'false');
+        }
+        
+        saveData(); 
+        closeModal('input-modal'); 
+        renderDashboard();
+        updateTabBadges();
+    }
+    
+    function openArrivalModal(specificDoor = null) {
+        if (specificDoor) {
+            currentDoor = specificDoor;
+        } else {
+            // Find first empty door
+            for(let i=DOORS_START; i<=DOORS_END; i++) {
+                if(doors[i].status === 'empty' && !doors[i].unavailable) {
+                    currentDoor = i;
+                    break;
+                }
+            }
+        }
+
+        // Check again if currentDoor is valid empty door if not passed specifically
+        if (!specificDoor && (!currentDoor || doors[currentDoor].status !== 'empty' || doors[currentDoor].unavailable)) {
+             // Reset search
+             currentDoor = null;
+             for(let i=DOORS_START; i<=DOORS_END; i++) {
+                if(doors[i].status === 'empty' && !doors[i].unavailable) {
+                    currentDoor = i;
+                    break;
+                }
+            }
+        }
+
+        if(!currentDoor) return alert("No bays available!");
+
+        document.getElementById('modal-door-num').innerText = currentDoor;
+        
+        // Reset Inputs
+        const wId = document.getElementById('input-wally-id');
+        if(wId) wId.value = '';
+        const tId = document.getElementById('input-trailer-id');
+        if(tId) tId.value = '';
+        const aId = document.getElementById('input-account-id');
+        if(aId) aId.value = '';
+        
+        const sel = document.getElementById('select-unloader');
+        if(sel) sel.value = "";
+        
+        const cust = document.getElementById('input-custom-unloader');
+        if(cust) {
+            cust.style.display = 'none';
+            cust.value = '';
+        }
+        
+        // Set up the time input
+        const timeInput = document.getElementById('input-onboard-time');
+        
+        if (isFirstOnboard && lastSortStartTime) {
+            timeInput.value = lastSortStartTime;
+        } else {
+            // Default to current time
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            timeInput.value = `${h}:${m}`;
+        }
+        
+        setType('Wally');
+        document.getElementById('input-modal').style.display = 'flex';
+        
+        // Try focus
+        setTimeout(() => {
+            const focusInput = document.getElementById('input-wally-id');
+            if(focusInput && focusInput.offsetParent !== null) focusInput.focus();
+        }, 100);
+    }
+
+    function setType(t) {
+        currentType = t;
+        const optWally = document.getElementById('opt-wally');
+        const optCpu = document.getElementById('opt-cpu');
+        const wallyInputs = document.getElementById('wally-inputs');
+        const cpuInputs = document.getElementById('cpu-inputs');
+
+        if(optWally) optWally.classList.toggle('selected', t === 'Wally');
+        if(optCpu) optCpu.classList.toggle('selected', t === 'CPU');
+        
+        if (t === 'Wally') {
+            if(wallyInputs) wallyInputs.style.display = 'block';
+            if(cpuInputs) cpuInputs.style.display = 'none';
+        } else {
+            if(wallyInputs) wallyInputs.style.display = 'none';
+            if(cpuInputs) cpuInputs.style.display = 'block';
+        }
+    }
+    
+    function viewStatLogs(type) {
+        // Reset everything
+        closeModal('input-modal');
+        closeModal('active-detail-modal');
+        
+        // Define filters based on click type
+        activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' };
+        
+        if (type === 'Wally') {
+            activeLogFilter.type = 'Wally';
+        } else if (type === 'CPU') {
+            activeLogFilter.type = 'CPU';
+        } else if (type === 'Hour-0') {
+            activeLogFilter.timeRange = 'ThisHour';
+            activeLogFilter.type = 'Wally';
+        } else if (type === 'Hour-1') {
+            activeLogFilter.timeRange = 'LastHour';
+            activeLogFilter.type = 'Wally';
+        }
+        
+        // Switch tab and render
+        switchTab('logs');
+    }
+    
+    function viewDoorLogs(doorNum) { 
+        closeModal('input-modal'); 
+        closeModal('active-detail-modal'); 
+        setLogFilter(doorNum); 
+        switchTab('logs'); 
+    }
+    
+    function openFilterModal() {
+        const g = document.getElementById('filter-grid');
+        g.innerHTML = `<div class="filter-btn ${currentLogFilter==='All'?'active':''}" onclick="applyFilter('All')">All</div>`;
+        for(let i=DOORS_START; i<=DOORS_END; i++) g.innerHTML += `<div class="filter-btn ${currentLogFilter==i?'active':''}" onclick="applyFilter(${i})">Door ${i}</div>`;
+        document.getElementById('filter-modal').style.display='flex';
+    }
+    
+    function applyFilter(v) { 
+        currentLogFilter = v; 
+        activeLogFilter.door = v; 
+        closeModal('filter-modal'); 
+        renderLogs(); 
+    }
+    
+    function clearLogFilter() { 
+        currentLogFilter = 'All'; 
+        activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' }; 
+        renderLogs(); 
+    }
+    
+    function setLogFilter(v) { 
+        currentLogFilter = v; 
+        activeLogFilter.door = v; 
+        renderLogs(); 
+    }
+    
+    function toggleStats(section) {
+        const c = document.getElementById(section === 'unloader' ? 'stats-content' : 'hourly-content');
+        const i = document.getElementById(section === 'unloader' ? 'stats-caret' : 'hourly-caret');
+        const show = c.style.display !== 'block';
+        c.style.display = show ? 'block' : 'none';
+        i.className = show ? 'ph ph-caret-up' : 'ph ph-caret-down';
+        if(show) { 
+            if(section==='unloader') calculateAndRenderStats(); 
+            else calculateAndRenderHourlyStats(); 
+        }
+    }
+    
+    function calculateAndRenderStats() {
+         const stats = {};
+         historyLog.forEach(l => {
+             const n = l.unloader; if(!stats[n]) stats[n]={w:0,c:0,t:0};
+             if(l.type==='Wally') stats[n].w++; else stats[n].c++; stats[n].t++;
+         });
+         const tbody = document.getElementById('unloader-stats-body'); tbody.innerHTML='';
+         Object.entries(stats).sort((a,b)=>b[1].t-a[1].t).forEach(([n,d]) => {
+             tbody.innerHTML += `<tr><td>${n}</td><td style="text-align:center">${d.w}</td><td style="text-align:center">${d.c}</td><td style="text-align:right">${d.t}</td></tr>`;
+         });
+    }
+    
+    function calculateAndRenderHourlyStats() {
+        const { shiftStart } = getShiftTimeWindows();
+        const hourly = {};
+        historyLog.forEach(l => {
+            const effTime = l.end - (l.statOffset || 0);
+            const idx = Math.floor((effTime - shiftStart.getTime())/3600000) + 1;
+            if(!hourly[idx]) hourly[idx]=0; hourly[idx]++;
+        });
+        const tbody = document.getElementById('hourly-stats-body'); tbody.innerHTML='';
+        Object.keys(hourly).sort((a,b)=>a-b).forEach(h => {
+             tbody.innerHTML += `<tr><td>${getHourText(h)}</td><td style="text-align:center">${hourly[h]}</td></tr>`;
+        });
+    }
+
+    function renderLogs() {
+        const list = document.getElementById('logs-list');
+        const filterDisplay = document.getElementById('active-filter-display');
+        const filterText = document.getElementById('filter-text-display');
+        const now = Date.now();
+        list.innerHTML = '';
+        
+        // Use activeLogFilter state to decide if filtering
+        const isFiltering = activeLogFilter.door !== 'All' || activeLogFilter.type !== 'All' || activeLogFilter.timeRange !== 'All';
+        
+        if (isFiltering) { 
+            filterDisplay.style.display = 'flex'; 
+            let text = [];
+            if(activeLogFilter.door !== 'All') text.push(`Door ${activeLogFilter.door}`);
+            if(activeLogFilter.type !== 'All') text.push(`${activeLogFilter.type}`);
+            if(activeLogFilter.timeRange === 'ThisHour') text.push(`This Hour`);
+            if(activeLogFilter.timeRange === 'LastHour') text.push(`Last Hour`);
+            filterText.innerText = text.join(' + ');
+        } else { 
+            filterDisplay.style.display = 'none'; 
+        }
+        
+        const { thisHourStart, thisHourEnd, lastHourStart, lastHourEnd } = getShiftTimeWindows();
+        
+        // Advanced filtering handling
+        let filtered = historyLog.map((l,i)=>({l,i}));
+        
+        filtered = filtered.filter(({l}) => {
+             // Door Filter
+             if (activeLogFilter.door !== 'All' && l.door != activeLogFilter.door) return false;
+             // Type Filter
+             if (activeLogFilter.type !== 'All' && l.type !== activeLogFilter.type) return false;
+             // Time Filter
+             if (activeLogFilter.timeRange !== 'All') {
+                 const endTime = l.end - (l.statOffset || 0);
+                 if (activeLogFilter.timeRange === 'ThisHour') {
+                     if (endTime < thisHourStart.getTime() || endTime >= thisHourEnd.getTime()) return false;
+                 } else if (activeLogFilter.timeRange === 'LastHour') {
+                     if (endTime < lastHourStart.getTime() || endTime >= lastHourEnd.getTime()) return false;
+                 }
+             }
+             return true;
+        });
+
+        if(filtered.length === 0) { 
+            list.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">No logs found.</div>'; 
+            return; 
+        }
+        
+        filtered.forEach(({l, i}) => {
+             const acctInfo = l.account ? ` <span style="color:#8e8e93; font-weight:400">(${l.account})</span>` : '';
+             const revertable = (now - l.end) < (120000);
+             const duplicateBadge = l.duplicate ? '<span class="log-type-pill" style="background:#ff3b30; color:#fff; margin-left:6px;">DUP</span>' : '';
+             const hourBadge = `<span class="log-type-pill" style="background:#000; color:#fff; margin-left:6px;">${getHourText(l.completionHour)}</span>`;
+             
+             // Format times clearly
+             const startTimeStr = new Date(l.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+             const endTimeStr = new Date(l.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+             
+             list.innerHTML += `
+                <div class="log-card">
+                    <div class="log-info">
+                        <div class="active-card-header">
+                            <span class="log-door-pill" onclick="viewDoorLogs(${l.door})">Door ${l.door}</span>
+                            <span class="log-type-pill" style="background:#000; color:#fff">${l.type}</span>
+                            ${duplicateBadge}
+                            ${hourBadge}
+                        </div>
+                        <div class="log-title">${l.id}${acctInfo}</div>
+                        
+                        <div class="log-details" style="display:flex; justify-content:space-between; margin-top:4px;">
+                            <span>👤 ${l.unloader}</span>
+                            <span style="font-weight:700; color:#000;">Duration: <span style="font-weight:800; color:#000;">${l.durationMinutes || Math.round(l.duration/60000)}m</span></span>
+                        </div>
+                        
+                        <div class="log-timestamp" style="margin-top:6px; color:#555;">
+                            ${startTimeStr} - ${endTimeStr}
+                        </div>
+                    </div>
+                    <div class="log-actions">
+                         ${revertable ? `<button class="log-action-btn log-revert-btn" onclick="revertLog(${i})" style="color:#000; border:1px solid #000;"><i class="ph ph-arrow-u-up-left"></i> Revert</button>` : ''}
+                         <button class="log-action-btn" onclick="openEditLogModal(${i})" style="color:#000; border:1px solid #000;"><i class="ph ph-pencil-simple"></i> Edit</button>
+                    </div>
+                </div>
+             `;
+        });
+        if(statsVisible) calculateAndRenderStats();
+        if(hourlyVisible) calculateAndRenderHourlyStats();
+    }
+
+    function revertLog(index) {
+        const log = historyLog[index];
+        if(!log) return;
+        if(Date.now() - log.end > 120000 && !demoActive) return alert("Time expired");
+        if(doors[log.door].status !== 'empty') return alert("Door occupied");
+        
+        doors[log.door] = { 
+            status: 'active', 
+            start: log.start, 
+            id: log.id, 
+            account: log.account, 
+            type: log.type, 
+            unloader: log.unloader, 
+            unavailable: false,
+            lastCompletionTime: null
+        };
+        historyLog.splice(index, 1);
+        saveData(); 
+        renderDashboard(); 
+        renderLogs();
+        updateTabBadges();
+    }
+    
+    function openEditLogModal(i) {
+        const l = historyLog[i]; 
+        document.getElementById('edit-log-index').value = i;
+        document.getElementById('edit-input-id').value = l.id;
+        
+        const sel = document.getElementById('edit-select-unloader'); 
+        sel.innerHTML='<option value="">Unassigned</option>';
+        teamNames.sort().forEach(n => {
+            const o=document.createElement('option'); 
+            o.value=n; 
+            o.innerText=n; 
+            sel.appendChild(o);
+        });
+        sel.value = l.unloader;
+        
+        // Type toggle
+        document.getElementById('edit-opt-wally').classList.toggle('selected', l.type === 'Wally');
+        document.getElementById('edit-opt-cpu').classList.toggle('selected', l.type === 'CPU');
+        document.getElementById('edit-log-modal').dataset.type = l.type;
+        
+        document.getElementById('edit-log-modal').style.display='flex';
+    }
+    
+    function confirmLogEdit() {
+        const idx = parseInt(document.getElementById('edit-log-index').value);
+        const newId = document.getElementById('edit-input-id').value.toUpperCase();
+        const newUnloader = document.getElementById('edit-select-unloader').value;
+        
+        historyLog[idx].id = newId;
+        historyLog[idx].unloader = newUnloader;
+        historyLog[idx].type = document.getElementById('edit-log-modal').dataset.type;
+        // Recalculate completion hour when editing
+        historyLog[idx].completionHour = getCompletionHour(historyLog[idx].end - (historyLog[idx].statOffset || 0));
+        saveData(); 
+        closeModal('edit-log-modal'); 
+        renderLogs();
+    }
+    
+    function openExportModal() {
+        document.getElementById('export-modal').style.display = 'flex';
+    }
+    
+    function exportLogsCSV() {
+        closeModal('export-modal');
+        let csv = "Type,ID,Account,Door,Unloader,Duration(mins),StartTime,EndTime,StartHour,EndHour,Duplicate,Hour\n";
+        historyLog.forEach(l => {
+             csv += `${l.type},${l.id},${l.account||''},${l.door},${l.unloader},${Math.round(l.duration/60000)},${new Date(l.start).toLocaleString()},${new Date(l.end).toLocaleString()},${new Date(l.start).getHours()},${new Date(l.end).getHours()},${l.duplicate ? 'Yes' : 'No'},${l.completionHour}\n`;
+        });
+        const blob = new Blob([csv], {type:'text/csv'});
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='wally-logs.csv'; a.click();
+    }
+    
+    function exportLogsPDF() {
+        closeModal('export-modal');
+        try {
+            if (!window.jspdf) throw new Error("PDF library not loaded");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add date to title
+            const now = new Date();
+            const dateString = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            doc.setFontSize(18);
+            doc.text(`PS9 Wally Tracker Report - ${dateString}`, 14, 20);
+            doc.setFontSize(12);
+            doc.text(`Generated: ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`, 14, 30);
+            
+            // 1. Unloader Stats Table
+            const stats = {};
+            historyLog.forEach(l => {
+                 const n = l.unloader; if(!stats[n]) stats[n]={w:0,c:0,t:0};
+                 if(l.type==='Wally') stats[n].w++; else stats[n].c++; stats[n].t++;
+            });
+            const statsBody = Object.entries(stats).sort((a,b)=>b[1].t-a[1].t).map(([n,d]) => [n, d.w, d.c, d.t]);
+            
+            doc.text("Unloader Statistics", 14, 45);
+            doc.autoTable({
+                startY: 50,
+                head: [['Name', 'Wally', 'CPU', 'Total']],
+                body: statsBody,
+                theme: 'striped'
+            });
+            
+            // 2. Hourly Breakdown
+            const { shiftStart } = getShiftTimeWindows();
+            const hourly = {};
+            historyLog.forEach(l => {
+                const effTime = l.end - (l.statOffset || 0);
+                const idx = Math.floor((effTime - shiftStart.getTime())/3600000) + 1;
+                if(!hourly[idx]) hourly[idx]=0; hourly[idx]++;
+            });
+            const hourlyBody = Object.keys(hourly).sort((a,b)=>a-b).map(h => [getHourText(h), hourly[h]]);
+            
+            let finalY = doc.lastAutoTable.finalY + 15;
+            doc.text("Hourly Breakdown", 14, finalY);
+            doc.autoTable({
+                startY: finalY + 5,
+                head: [['Hour', 'Count']],
+                body: hourlyBody,
+                theme: 'striped'
+            });
+            
+            // 3. Detailed Logs
+            finalY = doc.lastAutoTable.finalY + 15;
+            doc.text("Detailed Logs", 14, finalY);
+            
+            const logsBody = historyLog.map(l => [
+                new Date(l.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                l.door,
+                l.type + (l.duplicate ? ' (DUP)' : ''),
+                l.id,
+                l.unloader,
+                Math.round(l.duration/60000) + "m",
+                getHourText(l.completionHour)
+            ]);
+            
+            doc.autoTable({
+                startY: finalY + 5,
+                head: [['Time', 'Door', 'Type', 'ID', 'Unloader', 'Duration', 'Hour']],
+                body: logsBody,
+                theme: 'striped'
+            });
+            
+            doc.save(`wally-report-${now.toISOString().split('T')[0]}.pdf`);
+        } catch (e) {
+            alert("Error generating PDF. Please ensure internet connection is active to load PDF libraries.");
+            console.error(e);
+        }
+    }
+    
+    function saveData() {
+        localStorage.setItem('ps9_doors', JSON.stringify(doors));
+        localStorage.setItem('ps9_history', JSON.stringify(historyLog));
+        localStorage.setItem('ps9_team', JSON.stringify(teamNames));
+        localStorage.setItem('ps9_accounts', JSON.stringify(savedAccounts));
+        localStorage.setItem('ps9_staffing', JSON.stringify(staffing));
+        localStorage.setItem('ps9_dop', currentDOP);
+    }
+    
+    // --- PPH CALCULATOR FUNCTIONS ---
+    function openPPHModal() {
+        const hours = calculateUnloaderHours();
+        const input = document.getElementById('pph-unloader-hours-input');
+        input.value = hours > 0 ? hours.toFixed(2) : '';
+        
+        document.getElementById('pph-volume-input').value = '';
+        document.getElementById('pph-result').innerText = '0';
+        document.getElementById('pph-modal').style.display = 'flex';
+        
+        if (hours > 0) {
+            setTimeout(() => document.getElementById('pph-volume-input').focus(), 100);
+        } else {
+            setTimeout(() => input.focus(), 100);
+        }
+    }
+    
+    function resetPPH() {
+        const hours = calculateUnloaderHours();
+        const input = document.getElementById('pph-unloader-hours-input');
+        input.value = hours > 0 ? hours.toFixed(2) : '';
+        
+        document.getElementById('pph-volume-input').value = '';
+        document.getElementById('pph-result').innerText = '0';
+        
+        if (hours === 0) input.focus();
+        else document.getElementById('pph-volume-input').focus();
+    }
+
+    function calculateUnloaderHours() {
+        const now = Date.now();
+        let totalMs = 0;
+        
+        staffing.forEach(s => {
+            if (s.role === 'Unloader') {
+                let ms = (s.accumulated || 0);
+                
+                if (s.status === 'active' && s.start) {
+                    ms += (now - s.start);
+                }
+                
+                totalMs += ms;
+            }
+        });
+        
+        return totalMs / 3600000;
+    }
+    
+    function calculatePPH() {
+        const vol = parseFloat(document.getElementById('pph-volume-input').value) || 0;
+        const hours = parseFloat(document.getElementById('pph-unloader-hours-input').value) || 0;
+        
+        if (hours === 0) {
+            document.getElementById('pph-result').innerText = "0";
+            return;
+        }
+        
+        const pph = Math.round(vol / hours);
+        document.getElementById('pph-result').innerText = pph.toLocaleString();
+    }
+
+    function setEditType(t) {
+        document.getElementById('edit-opt-wally').classList.toggle('selected', t === 'Wally');
+        document.getElementById('edit-opt-cpu').classList.toggle('selected', t === 'CPU');
+        document.getElementById('edit-log-modal').dataset.type = t;
+    }
+    
+    // --- START SORT WIZARD FLOW ---
+    function openStartSortFlow() {
+        // Pre-fill with current saved start time or default
+        document.getElementById('start-sort-time').value = localStorage.getItem('ps9_shift_start') || "19:55";
+        document.getElementById('start-sort-modal-1').style.display = 'flex';
+    }
+
+    function nextSortStep() {
+        const t = document.getElementById('start-sort-time').value;
+        if(!t) return alert("Please select a time");
+        tempSortStartTime = t;
+        
+        // Pre-fill DOP
+        document.getElementById('start-sort-dop').value = currentDOP;
+        
+        closeModal('start-sort-modal-1');
+        document.getElementById('start-sort-modal-2').style.display = 'flex';
+    }
+
+    function finishStartSort() {
+        const d = document.getElementById('start-sort-dop').value;
+        
+        // Save Values
+        saveShiftStart(tempSortStartTime);
+        saveDOP(d);
+        
+        // New Logic: Save sort start time specifically for first-onboard sync
+        lastSortStartTime = tempSortStartTime;
+        localStorage.setItem('ps9_last_sort_start', lastSortStartTime);
+        
+        // Reset first onboard flag
+        isFirstOnboard = true;
+        localStorage.setItem('ps9_is_first_onboard', 'true');
+        
+        // Update UI elements immediately (if they exist on other tabs/views)
+        const settingsInput = document.getElementById('setting-shift-start');
+        if(settingsInput) settingsInput.value = tempSortStartTime;
+        
+        const dopDropdown = document.getElementById('dop-select');
+        if(dopDropdown) dopDropdown.value = d;
+        
+        closeModal('start-sort-modal-2');
+        
+        alert("Shift Started! Time set to " + tempSortStartTime + " with DOP " + d);
+        
+        // Refresh dashboard to reflect any time-based changes
+        renderDashboard();
+    }
+
+    init();
+</script>
+</body>
+</html>
