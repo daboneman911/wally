@@ -76,10 +76,9 @@
         /* --- BUTTONS & ACTIONS --- */
         .top-actions {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             padding: 15px 0 20px 0;
             justify-content: center;
-            flex-wrap: wrap;
         }
 
         .action-btn {
@@ -87,12 +86,12 @@
             color: white;
             border: none;
             border-radius: 30px;
-            padding: 12px 20px;
-            font-size: 15px;
+            padding: 12px 24px;
+            font-size: 16px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
@@ -845,7 +844,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.15</div>
+            <div class="app-version">Version 3.16</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1325,6 +1324,11 @@
             </select>
             <input type="text" id="input-custom-unloader" class="form-input" style="display:none; margin-top:10px;" placeholder="Enter Name" autocapitalize="words">
         </div>
+        
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; margin-left:4px; margin-bottom:4px; display:block;">Start Time</label>
+            <input type="time" id="input-onboard-time" class="form-input">
+        </div>
 
         <button class="btn-primary" onclick="confirmArrival()">Start Unload</button>
         <button class="btn-primary btn-history" onclick="viewDoorLogs(currentDoor)">View History</button>
@@ -1458,9 +1462,11 @@
     let activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' };
     let statsVisible = false;
     let hourlyVisible = false;
+    let lastSortStartTime = null; 
+    let isFirstOnboard = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.15';
+    const APP_VERSION = '3.16';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
@@ -1532,6 +1538,11 @@
         const sStaff = localStorage.getItem('ps9_staffing');
         const sDop = localStorage.getItem('ps9_dop');
         const shiftStart = localStorage.getItem('ps9_shift_start') || "19:55";
+        
+        // Load sort-specific state
+        lastSortStartTime = localStorage.getItem('ps9_last_sort_start');
+        const firstOnboardState = localStorage.getItem('ps9_is_first_onboard');
+        isFirstOnboard = firstOnboardState === 'true';
 
         if (sDoors) doors = JSON.parse(sDoors);
         else {
@@ -1623,6 +1634,14 @@
         // Save Values
         saveShiftStart(tempSortStartTime);
         saveDOP(d);
+        
+        // New Logic: Save sort start time specifically for first-onboard sync
+        lastSortStartTime = tempSortStartTime;
+        localStorage.setItem('ps9_last_sort_start', lastSortStartTime);
+        
+        // Reset first onboard flag
+        isFirstOnboard = true;
+        localStorage.setItem('ps9_is_first_onboard', 'true');
         
         // Update UI elements immediately (if they exist on other tabs/views)
         const settingsInput = document.getElementById('setting-shift-start');
@@ -2923,9 +2942,27 @@
             return;
         }
         
+        // Use custom time from the input if provided, otherwise Date.now()
+        // If it's the first onboard, we already pre-filled the input with sort start time, so just reading the input is sufficient
+        let startTime = Date.now();
+        const customTimeInput = document.getElementById('input-onboard-time').value;
+        
+        if (customTimeInput) {
+            // Parse custom time
+            const now = new Date();
+            const [h, m] = customTimeInput.split(':').map(Number);
+            const d = new Date(now);
+            d.setHours(h, m, 0, 0);
+            
+            // Basic logic: if user sets 23:00 and it's currently 00:05, assume yesterday
+            if (d > now) d.setDate(d.getDate() - 1);
+            
+            startTime = d.getTime();
+        }
+        
         doors[currentDoor] = {
             status: 'active', 
-            start: Date.now(), 
+            start: startTime, 
             id: formattedId, 
             account: formattedAccount, 
             type: currentType, 
@@ -2934,6 +2971,13 @@
             unavailable: false,
             lastCompletionTime: null
         };
+        
+        // Reset first onboard flag since we just completed it
+        if (isFirstOnboard) {
+            isFirstOnboard = false;
+            localStorage.setItem('ps9_is_first_onboard', 'false');
+        }
+        
         saveData(); 
         closeModal('input-modal'); 
         renderDashboard();
@@ -2984,6 +3028,19 @@
         if(cust) {
             cust.style.display = 'none';
             cust.value = '';
+        }
+        
+        // Set up the time input
+        const timeInput = document.getElementById('input-onboard-time');
+        
+        if (isFirstOnboard && lastSortStartTime) {
+            timeInput.value = lastSortStartTime;
+        } else {
+            // Default to current time
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            timeInput.value = `${h}:${m}`;
         }
         
         setType('Wally');
@@ -3461,6 +3518,14 @@
         // Save Values
         saveShiftStart(tempSortStartTime);
         saveDOP(d);
+        
+        // New Logic: Save sort start time specifically for first-onboard sync
+        lastSortStartTime = tempSortStartTime;
+        localStorage.setItem('ps9_last_sort_start', lastSortStartTime);
+        
+        // Reset first onboard flag
+        isFirstOnboard = true;
+        localStorage.setItem('ps9_is_first_onboard', 'true');
         
         // Update UI elements immediately (if they exist on other tabs/views)
         const settingsInput = document.getElementById('setting-shift-start');
