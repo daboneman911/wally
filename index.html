@@ -76,9 +76,10 @@
         /* --- BUTTONS & ACTIONS --- */
         .top-actions {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             padding: 15px 0 20px 0;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .action-btn {
@@ -86,12 +87,12 @@
             color: white;
             border: none;
             border-radius: 30px;
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 15px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
@@ -830,6 +831,9 @@
     <div id="tab-dashboard" class="tab-content active">
         
         <div class="top-actions">
+            <button class="action-btn" onclick="openStartSortFlow()">
+                <i class="ph ph-play-circle"></i> Start Sort
+            </button>
             <button class="action-btn" onclick="openAddUnloaderModal()">
                 <i class="ph ph-user-plus"></i> Add Unloader
             </button>
@@ -841,7 +845,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.14</div>
+            <div class="app-version">Version 3.15</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1155,6 +1159,35 @@
     </button>
 </nav>
 
+<div class="modal-overlay" id="start-sort-modal-1">
+    <div class="modal-sheet">
+        <h2 style="text-align:center; margin-bottom:20px;">Start Sort (1/2)</h2>
+        <div style="margin-bottom:20px;">
+            <label class="settings-label" style="display:block; margin-bottom:10px;">Shift Start Time</label>
+            <input type="time" id="start-sort-time" class="form-input" value="19:55">
+        </div>
+        <button class="btn-primary" onclick="nextSortStep()">Next</button>
+        <button class="btn-cancel" onclick="closeModal('start-sort-modal-1')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="start-sort-modal-2">
+    <div class="modal-sheet">
+        <h2 style="text-align:center; margin-bottom:20px;">Start Sort (2/2)</h2>
+        <div style="margin-bottom:20px;">
+            <label class="settings-label" style="display:block; margin-bottom:10px;">Daily Operating Plan</label>
+            <select id="start-sort-dop" class="form-input">
+                <option value="5-2">5-2</option>
+                <option value="6-2">6-2</option>
+                <option value="7-2">7-2</option>
+                <option value="8-2">8-2</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="finishStartSort()">Start Shift</button>
+        <button class="btn-cancel" onclick="closeModal('start-sort-modal-2')">Back</button> 
+    </div>
+</div>
+
 <div class="modal-overlay" id="pph-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">PPH Calculator</h2>
@@ -1427,7 +1460,7 @@
     let hourlyVisible = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.14';
+    const APP_VERSION = '3.15';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
@@ -1460,6 +1493,9 @@
 
     // Staging for Attribution
     let pendingCompletion = null;
+    
+    // Staging for Start Sort Wizard
+    let tempSortStartTime = "";
 
     // --- HELPER FUNCTIONS ---
     function getHourText(hour) {
@@ -1560,6 +1596,47 @@
             
             location.reload(); 
         } 
+    }
+    
+    // --- START SORT WIZARD FLOW ---
+    function openStartSortFlow() {
+        // Pre-fill with current saved start time or default
+        document.getElementById('start-sort-time').value = localStorage.getItem('ps9_shift_start') || "19:55";
+        document.getElementById('start-sort-modal-1').style.display = 'flex';
+    }
+
+    function nextSortStep() {
+        const t = document.getElementById('start-sort-time').value;
+        if(!t) return alert("Please select a time");
+        tempSortStartTime = t;
+        
+        // Pre-fill DOP
+        document.getElementById('start-sort-dop').value = currentDOP;
+        
+        closeModal('start-sort-modal-1');
+        document.getElementById('start-sort-modal-2').style.display = 'flex';
+    }
+
+    function finishStartSort() {
+        const d = document.getElementById('start-sort-dop').value;
+        
+        // Save Values
+        saveShiftStart(tempSortStartTime);
+        saveDOP(d);
+        
+        // Update UI elements immediately (if they exist on other tabs/views)
+        const settingsInput = document.getElementById('setting-shift-start');
+        if(settingsInput) settingsInput.value = tempSortStartTime;
+        
+        const dopDropdown = document.getElementById('dop-select');
+        if(dopDropdown) dopDropdown.value = d;
+        
+        closeModal('start-sort-modal-2');
+        
+        alert("Shift Started! Time set to " + tempSortStartTime + " with DOP " + d);
+        
+        // Refresh dashboard to reflect any time-based changes
+        renderDashboard();
     }
     
     // --- ATTRIBUTION WINDOW FUNCTIONS ---
@@ -1918,46 +1995,72 @@
             
             // Only proceed if role is actually changing
             if(oldRole !== newRole) {
+                // --- LIMIT ENFORCEMENT LOGIC ---
+                // If setting to Belt Tender, enforce Max 1
+                if (newRole === 'Belt Tender') {
+                    // Find existing Belt Tender and demote them
+                    staffing.forEach(other => {
+                        if (other.id !== s.id && other.role === 'Belt Tender') {
+                            // Demote Logic (replicate time tracking logic)
+                            if (other.status === 'active' && other.start) {
+                                const ms = now - other.start;
+                                other.accumulated = (other.accumulated || 0) + ms;
+                                other.start = now;
+                            }
+                            other.role = 'Unloader';
+                            limitChanged = true;
+                        }
+                    });
+                }
+                
+                // If setting to Bulk Sweep, enforce Max 2
+                if (newRole === 'Bulk Sweep') {
+                    const sweeps = staffing.filter(other => other.id !== s.id && other.role === 'Bulk Sweep');
+                    if (sweeps.length >= 2) {
+                        // Find the one with lowest hours to kick out
+                        sweeps.sort((a,b) => calculateTotalHours(a) - calculateTotalHours(b));
+                        const toDemote = sweeps[0]; // Lowest hours
+                        
+                        // Demote Logic
+                        if (toDemote.status === 'active' && toDemote.start) {
+                            const ms = now - toDemote.start;
+                            toDemote.accumulated = (toDemote.accumulated || 0) + ms;
+                            toDemote.start = now;
+                        }
+                        toDemote.role = 'Unloader';
+                        limitChanged = true;
+                    }
+                }
+                
+                // Now change the actual person's role
+                
                 // If staff is currently active, calculate current session hours
                 if(s.status === 'active' && s.start) {
                     const currentSessionMs = now - s.start;
                     const currentSessionHours = currentSessionMs / 3600000;
                     
-                    if(confirm(`${s.name} has ${currentSessionHours.toFixed(2)} hours in this session. Moving from ${oldRole} to ${newRole} will transfer these hours to the new role. Continue?`)) {
-                        // Add current session to accumulated BEFORE changing role
-                        s.accumulated = (s.accumulated || 0) + currentSessionMs;
-                        // Reset start time for the new role session
-                        s.start = now;
-                        s.role = newRole;
-                        
-                        saveData();
-                        renderStaffingView();
-                    } else {
-                        // User cancelled, revert the select to original value
-                        setTimeout(() => {
-                            const select = document.querySelector(`select[onchange*="${id}"]`);
-                            if(select) select.value = oldRole;
-                        }, 100);
-                        return;
-                    }
+                    // Add current session to accumulated BEFORE changing role
+                    s.accumulated = (s.accumulated || 0) + currentSessionMs;
+                    // Reset start time for the new role session
+                    s.start = now;
+                    s.role = newRole;
+                    
+                    saveData();
+                    renderStaffingView();
+                    if(limitChanged) alert("Role limits enforced: Previous holder(s) moved to Unloader.");
+                    
                 } else if(s.status === 'paused') {
                     // For paused staff, the hours are already in accumulated
-                    if(confirm(`Change ${s.name}'s role from ${oldRole} to ${newRole}? Their ${(s.accumulated/3600000).toFixed(2)} accumulated hours will now count towards ${newRole}.`)) {
-                        s.role = newRole;
-                        saveData();
-                        renderStaffingView();
-                    } else {
-                        setTimeout(() => {
-                            const select = document.querySelector(`select[onchange*="${id}"]`);
-                            if(select) select.value = oldRole;
-                        }, 100);
-                        return;
-                    }
+                    s.role = newRole;
+                    saveData();
+                    renderStaffingView();
+                    if(limitChanged) alert("Role limits enforced.");
                 } else {
                     // For cut staff or other status, just change the role
                     s.role = newRole;
                     saveData();
                     renderStaffingView();
+                    if(limitChanged) alert("Role limits enforced.");
                 }
             }
         }
@@ -2022,48 +2125,7 @@
         const topThree = getTopThreeStaff();
         const topThreeIds = topThree.map(s => s.id);
         
-        // 2. Perform Auto-Role Assignment Logic
-        const now = Date.now();
-        let needsSave = false;
-        
-        staffing.forEach(s => {
-            let targetRole = 'Unloader'; // Default
-            
-            // Check if this person is in the top 3
-            const rankIndex = topThreeIds.indexOf(s.id);
-            
-            if (rankIndex === 0) {
-                targetRole = 'Belt Tender';
-            } else if (rankIndex === 1 || rankIndex === 2) {
-                targetRole = 'Bulk Sweep';
-            } else {
-                // If they were previously assigned a special role but lost rank, revert to Unloader
-                if (s.role === 'Belt Tender' || s.role === 'Bulk Sweep') {
-                    targetRole = 'Unloader';
-                } else {
-                    targetRole = s.role; // Keep existing role (e.g. if they were manually set to something else but not a special role?)
-                    // Actually, if we want strict auto-assignment for Top 3, we force it.
-                    // If they are NOT Top 3, we default to Unloader unless we want to allow manual assignment for non-top 3.
-                    // Given "Smart Limit Enforcement", we should allow them to be Unloader.
-                }
-            }
-            
-            // If role needs changing, do it properly with time tracking
-            if (s.role !== targetRole) {
-                // If active, accumulating time for the old role needs to be saved
-                if (s.status === 'active' && s.start) {
-                    const currentSessionMs = now - s.start;
-                    s.accumulated = (s.accumulated || 0) + currentSessionMs;
-                    s.start = now; // Restart clock for new role
-                }
-                s.role = targetRole;
-                needsSave = true;
-            }
-        });
-        
-        if(needsSave) saveData();
-        
-        // 3. Now Render the UI with updated roles
+        // 2. Render the UI
         
         // Sorting logic for active list (Highest hours first)
         const activeStaff = staffing.filter(s => s.status === 'active' || s.status === 'paused');
@@ -3372,6 +3434,47 @@
         document.getElementById('edit-opt-wally').classList.toggle('selected', t === 'Wally');
         document.getElementById('edit-opt-cpu').classList.toggle('selected', t === 'CPU');
         document.getElementById('edit-log-modal').dataset.type = t;
+    }
+    
+    // --- START SORT WIZARD FLOW ---
+    function openStartSortFlow() {
+        // Pre-fill with current saved start time or default
+        document.getElementById('start-sort-time').value = localStorage.getItem('ps9_shift_start') || "19:55";
+        document.getElementById('start-sort-modal-1').style.display = 'flex';
+    }
+
+    function nextSortStep() {
+        const t = document.getElementById('start-sort-time').value;
+        if(!t) return alert("Please select a time");
+        tempSortStartTime = t;
+        
+        // Pre-fill DOP
+        document.getElementById('start-sort-dop').value = currentDOP;
+        
+        closeModal('start-sort-modal-1');
+        document.getElementById('start-sort-modal-2').style.display = 'flex';
+    }
+
+    function finishStartSort() {
+        const d = document.getElementById('start-sort-dop').value;
+        
+        // Save Values
+        saveShiftStart(tempSortStartTime);
+        saveDOP(d);
+        
+        // Update UI elements immediately (if they exist on other tabs/views)
+        const settingsInput = document.getElementById('setting-shift-start');
+        if(settingsInput) settingsInput.value = tempSortStartTime;
+        
+        const dopDropdown = document.getElementById('dop-select');
+        if(dopDropdown) dopDropdown.value = d;
+        
+        closeModal('start-sort-modal-2');
+        
+        alert("Shift Started! Time set to " + tempSortStartTime + " with DOP " + d);
+        
+        // Refresh dashboard to reflect any time-based changes
+        renderDashboard();
     }
 
     init();
