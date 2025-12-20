@@ -528,6 +528,15 @@
             padding: 8px 14px; font-size: 13px; font-weight: 700;
             color: #000; cursor: pointer; display: flex; align-items: center; gap: 6px;
         }
+        
+        /* Search Bar */
+        .search-bar {
+            width: 100%; padding: 14px; 
+            border: 1px solid #e5e5ea; border-radius: 12px;
+            background: #f9f9f9; font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+        }
 
         /* --- BOTTOM NAV --- */
         .tab-bar {
@@ -844,7 +853,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.17</div>
+            <div class="app-version">Version 3.20</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -896,6 +905,8 @@
                 </button>
             </div>
         </div>
+        
+        <input type="text" id="log-search" class="search-bar" placeholder="Search by Wally ID or Trailer..." oninput="renderLogs()">
         
         <button class="stats-collapse-btn" onclick="toggleStats('unloader')">
             Unloader Statistics
@@ -1120,6 +1131,14 @@
                      <button class="btn-primary" style="background:#000; color:#fff;" onclick="startDemo()">Auto-Onboard</button>
                 </div>
             </div>
+            
+            <div class="settings-header">Changelog</div>
+            <div class="settings-group">
+                <div class="settings-row" onclick="viewChangelog()" style="cursor:pointer;">
+                    <span class="settings-label">View Version History</span>
+                    <i class="ph ph-caret-right" style="color:#ccc;"></i>
+                </div>
+            </div>
 
             <button class="btn-primary" onclick="resetData()" style="background:#ff3b30; margin-bottom:100px;">Reset All Data</button>
         </div>
@@ -1184,6 +1203,14 @@
         </div>
         <button class="btn-primary" onclick="finishStartSort()">Start Shift</button>
         <button class="btn-cancel" onclick="closeModal('start-sort-modal-2')">Back</button> 
+    </div>
+</div>
+
+<div class="modal-overlay" id="changelog-modal">
+    <div class="modal-sheet">
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Changelog</h2>
+        <div id="changelog-content" style="max-height:300px; overflow-y:auto; font-size:14px; line-height:1.5; color:#333; white-space: pre-wrap;"></div>
+        <button class="btn-cancel" onclick="closeModal('changelog-modal')" style="margin-top:20px;">Close</button>
     </div>
 </div>
 
@@ -1268,12 +1295,22 @@
 
 <div class="modal-overlay" id="filter-modal">
     <div class="modal-sheet">
-        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Filter by Door</h2>
+        <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Filter Logs</h2>
         
-        <div class="filter-grid" id="filter-grid">
-            </div>
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; display:block; margin-bottom:5px;">By Door</label>
+            <div class="filter-grid" id="filter-grid">
+                </div>
+        </div>
         
-        <button class="btn-primary" onclick="applyFilter('All')">Show All</button>
+        <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; display:block; margin-bottom:5px;">By Unloader</label>
+            <select id="filter-unloader-select" class="form-input">
+                <option value="All">All Unloaders</option>
+                </select>
+        </div>
+        
+        <button class="btn-primary" onclick="applyFilter()">Apply Filters</button>
         <button class="btn-cancel" onclick="closeModal('filter-modal')">Cancel</button>
     </div>
 </div>
@@ -1281,9 +1318,21 @@
 <div class="modal-overlay" id="duplicate-wally-modal">
     <div class="modal-sheet">
         <h2 style="margin: 0 0 10px 0; font-size:24px; text-align:center;">Duplicate Wally Detected</h2>
-        <p style="text-align:center; color:#757575; margin-bottom:25px; padding: 0 10px;">
-            Wally <span id="duplicate-wally-id"></span> has already been completed during this shift. This will be marked as a duplicate in the logs.
-        </p>
+        <div style="background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:20px; font-size:14px; line-height:1.5;">
+            <p style="margin:0 0 10px 0;">Wally <strong id="dup-wally-id"></strong> was already completed.</p>
+            <div style="display:flex; justify-content:space-between;">
+                <span style="color:#757575;">Door:</span>
+                <strong id="dup-door"></strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                <span style="color:#757575;">Completed:</span>
+                <strong id="dup-time"></strong>
+            </div>
+             <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                <span style="color:#757575;">Unloader:</span>
+                <strong id="dup-unloader"></strong>
+            </div>
+        </div>
         <button class="btn-primary" onclick="continueWithDuplicate()">Continue Anyway</button>
         <button class="btn-cancel" onclick="closeModal('duplicate-wally-modal')" style="margin-top:10px;">Cancel</button>
     </div>
@@ -1459,18 +1508,40 @@
     let currentType = 'Wally';
     let detailDoor = null;
     let currentLogFilter = 'All'; 
-    let activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' };
+    let activeLogFilter = { door: 'All', unloader: 'All', type: 'All', timeRange: 'All', search: '' };
     let statsVisible = false;
     let hourlyVisible = false;
     let lastSortStartTime = null; 
     let isFirstOnboard = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.17';
+    const APP_VERSION = '3.19';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
     
+    // --- CHANGELOG ---
+    const CHANGELOG = `
+v3.19:
+- Added search bar to logs (search by ID or Trailer).
+- Added filter by Unloader to logs.
+- Enhanced duplicate alerts with details (Time, Door, Who).
+- Added Changelog view in Settings.
+
+v3.18:
+- Removed automatic role switching. Manual role assignment is now strictly respected.
+- Fixed hour transfer logic. Hours now follow employee to their new role.
+
+v3.17:
+- Fixed staffing ranking to exclude "Cut" employees.
+- Verified time calculations are rounded correctly.
+
+v3.16:
+- Added "Start Sort" wizard to set shift start time and DOP easily.
+- First trailer added after "Start Sort" syncs to shift start time.
+- Added ability to edit Start Time during onboarding.
+    `;
+
     // --- STATE ---
     let doors = {};
     let historyLog = [];
@@ -1607,6 +1678,12 @@
             
             location.reload(); 
         } 
+    }
+    
+    // --- CHANGELOG ---
+    function viewChangelog() {
+        document.getElementById('changelog-content').textContent = CHANGELOG;
+        document.getElementById('changelog-modal').style.display = 'flex';
     }
     
     // --- START SORT WIZARD FLOW ---
@@ -1848,7 +1925,8 @@
         const now = Date.now();
         
         // Check if this Wally ID has been completed during the current shift
-        return historyLog.some(log => 
+        // If found, return the log object
+        return historyLog.find(log => 
             log.type === 'Wally' && 
             log.id === wallyId && 
             log.end >= shiftStartTime &&
@@ -1859,17 +1937,26 @@
     function continueWithDuplicate() {
         closeModal('duplicate-wally-modal');
         if (pendingWallyDuplicate) {
-            const { doorNum, wallyId, unloader } = pendingWallyDuplicate;
-            doors[doorNum] = {
+            const { doorNum, wallyId, unloader, startTime } = pendingWallyDuplicate;
+            // Proceed normally
+             doors[doorNum] = {
                 status: 'active', 
-                start: Date.now(), 
+                start: startTime, 
                 id: wallyId, 
                 account: "", 
                 type: 'Wally', 
                 unloader: unloader || "Unassigned",
                 isDuplicate: true,
-                unavailable: false
+                unavailable: false,
+                lastCompletionTime: null
             };
+            
+            // Reset first onboard flag since we just completed it
+            if (isFirstOnboard) {
+                isFirstOnboard = false;
+                localStorage.setItem('ps9_is_first_onboard', 'false');
+            }
+            
             saveData(); 
             closeModal('input-modal'); 
             renderDashboard();
@@ -2020,46 +2107,75 @@
             
             // Only proceed if role is actually changing
             if(oldRole !== newRole) {
+                // --- LIMIT ENFORCEMENT LOGIC ---
+                // If setting to Belt Tender, enforce Max 1
+                if (newRole === 'Belt Tender') {
+                    // Find existing Belt Tender and demote them
+                    staffing.forEach(other => {
+                        if (other.id !== s.id && other.role === 'Belt Tender') {
+                            // Demote Logic (replicate time tracking logic)
+                            if (other.status === 'active' && other.start) {
+                                const ms = now - other.start;
+                                other.accumulated = (other.accumulated || 0) + ms;
+                                other.start = now;
+                            }
+                            other.role = 'Unloader';
+                            limitChanged = true;
+                        }
+                    });
+                }
+                
+                // If setting to Bulk Sweep, enforce Max 2
+                if (newRole === 'Bulk Sweep') {
+                    const sweeps = staffing.filter(other => other.id !== s.id && other.role === 'Bulk Sweep');
+                    if (sweeps.length >= 2) {
+                        // Find the one with lowest hours to kick out
+                        sweeps.sort((a,b) => calculateTotalHours(a) - calculateTotalHours(b));
+                        const toDemote = sweeps[0]; // Lowest hours
+                        
+                        // Demote Logic
+                        if (toDemote.status === 'active' && toDemote.start) {
+                            const ms = now - toDemote.start;
+                            toDemote.accumulated = (toDemote.accumulated || 0) + ms;
+                            toDemote.start = now;
+                        }
+                        toDemote.role = 'Unloader';
+                        limitChanged = true;
+                    }
+                }
+                
+                // Now change the actual person's role
+                
                 // If staff is currently active, calculate current session hours
                 if(s.status === 'active' && s.start) {
                     const currentSessionMs = now - s.start;
                     const currentSessionHours = currentSessionMs / 3600000;
                     
-                    if(confirm(`${s.name} has ${currentSessionHours.toFixed(2)} hours in this session. Moving from ${oldRole} to ${newRole} will transfer these hours to the new role. Continue?`)) {
-                        // Add current session to accumulated BEFORE changing role
-                        s.accumulated = (s.accumulated || 0) + currentSessionMs;
-                        // Reset start time for the new role session
-                        s.start = now;
-                        s.role = newRole;
-                        
-                        saveData();
-                        renderStaffingView();
-                    } else {
-                        // User cancelled, revert the select to original value
-                        setTimeout(() => {
-                            const select = document.querySelector(`select[onchange*="${id}"]`);
-                            if(select) select.value = oldRole;
-                        }, 100);
-                        return;
-                    }
+                    // Simple confirm if hours > 0.5 to avoid annoying popups on quick changes
+                    // Or just do it silently as requested "move to new role"
+                    
+                    // Add current session to accumulated BEFORE changing role
+                    s.accumulated = (s.accumulated || 0) + currentSessionMs;
+                    // Reset start time for the new role session
+                    s.start = now;
+                    s.role = newRole;
+                    
+                    saveData();
+                    renderStaffingView();
+                    if(limitChanged) alert("Role limits enforced: Previous holder(s) moved to Unloader.");
+                    
                 } else if(s.status === 'paused') {
                     // For paused staff, the hours are already in accumulated
-                    if(confirm(`Change ${s.name}'s role from ${oldRole} to ${newRole}? Their ${(s.accumulated/3600000).toFixed(2)} accumulated hours will now count towards ${newRole}.`)) {
-                        s.role = newRole;
-                        saveData();
-                        renderStaffingView();
-                    } else {
-                        setTimeout(() => {
-                            const select = document.querySelector(`select[onchange*="${id}"]`);
-                            if(select) select.value = oldRole;
-                        }, 100);
-                        return;
-                    }
+                    s.role = newRole;
+                    saveData();
+                    renderStaffingView();
+                    if(limitChanged) alert("Role limits enforced.");
                 } else {
                     // For cut staff or other status, just change the role
                     s.role = newRole;
                     saveData();
                     renderStaffingView();
+                    if(limitChanged) alert("Role limits enforced.");
                 }
             }
         }
@@ -2128,47 +2244,7 @@
         const topThree = getTopThreeStaff();
         const topThreeIds = topThree.map(s => s.id);
         
-        // 2. Perform Auto-Role Assignment Logic
-        const now = Date.now();
-        let needsSave = false;
-        
-        staffing.forEach(s => {
-            let targetRole = 'Unloader'; // Default
-            
-            // Check if this person is in the top 3
-            const rankIndex = topThreeIds.indexOf(s.id);
-            
-            if (rankIndex === 0) {
-                targetRole = 'Belt Tender';
-            } else if (rankIndex === 1 || rankIndex === 2) {
-                targetRole = 'Bulk Sweep';
-            } else {
-                // If they were previously assigned a special role but lost rank, revert to Unloader
-                // (Unless manual override flag exists - for now we assume strict auto-assignment for simplicity)
-                // To prevent overwriting manual non-special roles, we only force Unloader if they held a special role previously
-                if (s.role === 'Belt Tender' || s.role === 'Bulk Sweep') {
-                    targetRole = 'Unloader';
-                } else {
-                    targetRole = s.role; // Keep existing role
-                }
-            }
-            
-            // If role needs changing, do it properly with time tracking
-            if (s.role !== targetRole) {
-                // If active, accumulating time for the old role needs to be saved
-                if (s.status === 'active' && s.start) {
-                    const currentSessionMs = now - s.start;
-                    s.accumulated = (s.accumulated || 0) + currentSessionMs;
-                    s.start = now; // Restart clock for new role
-                }
-                s.role = targetRole;
-                needsSave = true;
-            }
-        });
-        
-        if(needsSave) saveData();
-        
-        // 3. Now Render the UI with updated roles
+        // 2. Render the UI
         
         // Sorting logic for active list (Highest hours first)
         const activeStaff = staffing.filter(s => s.status === 'active' || s.status === 'paused');
@@ -2487,19 +2563,25 @@
 
     // --- LOGIC ---
     function populateUnloaderSelect() {
-        const ids = ['select-unloader', 'edit-select-unloader', 'edit-active-unloader'];
+        const ids = ['select-unloader', 'edit-select-unloader', 'edit-active-unloader', 'filter-unloader-select'];
         ids.forEach(id => {
             const el = document.getElementById(id);
             if(el) {
-                el.innerHTML = '<option value="" selected>Unassigned</option>';
+                // If filter, first option is "All"
+                const isFilter = id === 'filter-unloader-select';
+                el.innerHTML = isFilter ? '<option value="All">All Unloaders</option>' : '<option value="" selected>Unassigned</option>';
+                
                 [...teamNames].sort().forEach(name => {
                     const opt = document.createElement('option');
                     opt.value = name; opt.innerText = name;
                     el.appendChild(opt);
                 });
-                const cust = document.createElement('option');
-                cust.value = "Custom"; cust.innerText = "Custom / Other";
-                el.appendChild(cust);
+                
+                if(!isFilter) {
+                    const cust = document.createElement('option');
+                    cust.value = "Custom"; cust.innerText = "Custom / Other";
+                    el.appendChild(cust);
+                }
             }
         });
     }
@@ -2669,7 +2751,7 @@
 
         if (d.type === 'Wally' && navigator.share && !demoActive) {
              navigator.share({ 
-                 text: `Door ${doorNum} completed: ${d.type} ${d.id} | Duration: ${durationMinutes}m | ${new Date(end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`
+                 text: `Door ${doorNum} done` 
              }).then(() => {
                  // Auto-close the modal after sharing
                  closeModal('active-detail-modal');
@@ -2961,15 +3043,25 @@
         const formattedAccount = accVal.toUpperCase();
         
         // Check for duplicate Wally
-        if (currentType === 'Wally' && checkDuplicateWally(formattedId)) {
-            pendingWallyDuplicate = {
-                doorNum: currentDoor,
-                wallyId: formattedId,
-                unloader: unl || "Unassigned"
-            };
-            document.getElementById('duplicate-wally-id').textContent = formattedId;
-            document.getElementById('duplicate-wally-modal').style.display = 'flex';
-            return;
+        if (currentType === 'Wally') {
+            const dup = checkDuplicateWally(formattedId);
+            if (dup) {
+                pendingWallyDuplicate = {
+                    doorNum: currentDoor,
+                    wallyId: formattedId,
+                    unloader: unl || "Unassigned",
+                    startTime: Date.now() // temporary timestamp for logic
+                };
+                
+                // Show Duplicate Details
+                document.getElementById('dup-wally-id').textContent = formattedId;
+                document.getElementById('dup-door').textContent = `Door ${dup.door}`;
+                document.getElementById('dup-time').textContent = new Date(dup.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                document.getElementById('dup-unloader').textContent = dup.unloader;
+                
+                document.getElementById('duplicate-wally-modal').style.display = 'flex';
+                return;
+            }
         }
         
         // Use custom time from the input if provided, otherwise Date.now()
@@ -3404,6 +3496,7 @@
             const { shiftStart } = getShiftTimeWindows();
             const hourly = {};
             historyLog.forEach(l => {
+                if (l.type !== 'Wally') return; // FILTER ADDED
                 const effTime = l.end - (l.statOffset || 0);
                 const idx = Math.floor((effTime - shiftStart.getTime())/3600000) + 1;
                 if(!hourly[idx]) hourly[idx]=0; hourly[idx]++;
@@ -3411,7 +3504,7 @@
             const hourlyBody = Object.keys(hourly).sort((a,b)=>a-b).map(h => [getHourText(h), hourly[h]]);
             
             let finalY = doc.lastAutoTable.finalY + 15;
-            doc.text("Hourly Breakdown", 14, finalY);
+            doc.text("Hourly Breakdown (Wallies Only)", 14, finalY);
             doc.autoTable({
                 startY: finalY + 5,
                 head: [['Hour', 'Count']],
