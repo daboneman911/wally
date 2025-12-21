@@ -876,7 +876,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.25</div>
+            <div class="app-version">Version 3.26</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1571,13 +1571,16 @@
     let isFirstOnboard = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.25';
+    const APP_VERSION = '3.26';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
     
     // --- CHANGELOG ---
     const CHANGELOG = `
+v3.26:
+- Dynamic search in Logs (filters as you type).
+
 v3.25:
 - Added Date Filter to Logs (review previous days).
 
@@ -3406,7 +3409,6 @@ v3.16:
     }
     
     function openFilterModal() {
-        // Populate door grid
         const g = document.getElementById('filter-grid');
         g.innerHTML = `<div class="filter-btn ${currentLogFilter==='All'?'active':''}" onclick="setLogFilter('All')">All</div>`;
         for(let i=DOORS_START; i<=DOORS_END; i++) {
@@ -3426,7 +3428,7 @@ v3.16:
         document.getElementById('filter-modal').style.display='flex';
     }
     
-    function applyFilter() { 
+    function applyFilter(v) { 
         // Door is set via setLogFilter immediately for UI feedback
         // Unloader is read from select
         const sel = document.getElementById('filter-unloader-select');
