@@ -587,6 +587,19 @@
         .tab-badge.success {
             background: #34c759;
         }
+        
+        /* Auto-Save Toast */
+        .save-toast {
+            position: fixed; bottom: 100px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: white;
+            padding: 8px 16px; border-radius: 20px;
+            font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+            z-index: 3000; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .save-toast.visible { opacity: 1; }
 
         /* --- MODAL STYLES --- */
         .modal-overlay {
@@ -829,10 +842,20 @@
             white-space: nowrap;
             font-weight: 600;
         }
+        
+        /* New hidden input for Restore feature */
+        #restore-file-input { display: none; }
 
     </style>
 </head>
 <body>
+
+<input type="file" id="restore-file-input" accept=".json" onchange="restoreData(this)">
+
+<div id="save-toast" class="save-toast">
+    <i class="ph ph-check-circle" style="color:#4cd964; font-size:16px;"></i>
+    <span>Saved</span>
+</div>
 
 <div class="app-container">
     
@@ -853,7 +876,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.22</div>
+            <div class="app-version">Version 3.25</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1033,6 +1056,22 @@
 
         <div style="padding: 20px 20px 120px 20px;">
             
+            <div class="settings-header">Data Management</div>
+            <div class="settings-group">
+                <div class="settings-row" onclick="backupData('full')" style="cursor:pointer;">
+                    <span class="settings-label">Save Full Backup File</span>
+                    <i class="ph ph-download-simple" style="color:#000; font-size:20px;"></i>
+                </div>
+                 <div class="settings-row" onclick="backupData('logs')" style="cursor:pointer;">
+                    <span class="settings-label">Backup Logs Only</span>
+                    <i class="ph ph-file-text" style="color:#000; font-size:20px;"></i>
+                </div>
+                <div class="settings-row" onclick="triggerRestore()" style="cursor:pointer;">
+                    <span class="settings-label">Restore from Backup</span>
+                    <i class="ph ph-upload-simple" style="color:#000; font-size:20px;"></i>
+                </div>
+            </div>
+
             <div class="settings-header">Shift Configuration</div>
             <div class="settings-group">
                 <div class="settings-row">
@@ -1298,6 +1337,11 @@
         <h2 style="margin: 0 0 20px 0; font-size:24px; text-align:center;">Filter Logs</h2>
         
         <div style="margin-bottom:15px;">
+            <label style="font-size:12px; color:var(--text-sub); font-weight:600; display:block; margin-bottom:5px;">By Date</label>
+            <input type="date" id="filter-date-input" class="form-input" style="padding:12px;">
+        </div>
+
+        <div style="margin-bottom:15px;">
             <label style="font-size:12px; color:var(--text-sub); font-weight:600; display:block; margin-bottom:5px;">By Door</label>
             <div class="filter-grid" id="filter-grid">
                 </div>
@@ -1520,20 +1564,31 @@
     let currentType = 'Wally';
     let detailDoor = null;
     let currentLogFilter = 'All'; 
-    let activeLogFilter = { door: 'All', unloader: 'All', type: 'All', timeRange: 'All', search: '' };
+    let activeLogFilter = { door: 'All', unloader: 'All', type: 'All', timeRange: 'All', search: '', date: 'All' };
     let statsVisible = false;
     let hourlyVisible = false;
     let lastSortStartTime = null; 
     let isFirstOnboard = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.22';
+    const APP_VERSION = '3.25';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
     
     // --- CHANGELOG ---
     const CHANGELOG = `
+v3.25:
+- Added Date Filter to Logs (review previous days).
+
+v3.24:
+- Added "Backup Logs Only" (JSON) feature.
+- Added visual "Saved ✓" confirmation toast.
+- Clarified Backup/Restore options.
+
+v3.23:
+- Added Data Backup & Restore (JSON Export/Import) in Settings.
+
 v3.22:
 - Fixed bay door availability: Removed long-press.
 - Added explicit "Mark Unavailable/Available" button to Onboard menu.
@@ -1687,24 +1742,94 @@ v3.16:
     // --- RESET DATA ---
     function resetData() { 
         if(confirm("Reset all data? This will preserve saved account numbers.")) { 
-            // Save current accounts before clearing
-            const savedAccountsBackup = savedAccounts;
+            // 1. Backup accounts to memory
+            const savedAccountsBackup = [...savedAccounts]; 
             
-            // Clear all other data
+            // 2. Wipe LocalStorage
             localStorage.clear();
             
-            // Restore saved accounts
+            // 3. Restore accounts
             if (savedAccountsBackup.length > 0) {
                 localStorage.setItem('ps9_accounts', JSON.stringify(savedAccountsBackup));
             }
             
-            // Also save the default shift start time
+            // 4. Restore default preferences
             localStorage.setItem('ps9_shift_start', "19:55");
             
+            // 5. Reload
             location.reload(); 
         } 
     }
     
+    // --- DATA BACKUP & RESTORE ---
+    function backupData(mode) {
+        const data = {};
+        
+        if (mode === 'logs') {
+             // Backup only logs
+             data['ps9_history'] = localStorage.getItem('ps9_history');
+        } else {
+             // Full backup
+             for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('ps9_')) {
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+        }
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wally-${mode}-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        showSaveToast();
+    }
+
+    function triggerRestore() {
+        document.getElementById('restore-file-input').click();
+    }
+
+    function restoreData(input) {
+        const file = input.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                // Basic validation: check if it looks like our data
+                if(!data || Object.keys(data).length === 0) throw new Error("Empty or invalid file");
+
+                if(confirm("This will overwrite current data with the backup. Continue?")) {
+                    // Only clear keys present in the backup to allow partial restores (like logs only)
+                    // But usually restore implies full state reset. 
+                    // If it's logs only, we might want to keep other settings.
+                    // For safety, let's just overwrite the keys found in the file.
+                    
+                    Object.keys(data).forEach(k => {
+                        localStorage.setItem(k, data[k]);
+                    });
+
+                    alert("Data restored successfully!");
+                    location.reload();
+                }
+            } catch(err) {
+                alert("Error restoring data: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+        // Reset input so same file can be selected again if needed
+        input.value = '';
+    }
+    
+    function showSaveToast() {
+        const t = document.getElementById('save-toast');
+        t.classList.add('visible');
+        setTimeout(() => t.classList.remove('visible'), 2000);
+    }
+
     // --- CHANGELOG ---
     function viewChangelog() {
         document.getElementById('changelog-content').textContent = CHANGELOG;
@@ -1754,7 +1879,8 @@ v3.16:
         
         closeModal('start-sort-modal-2');
         
-        alert("Shift Started! Time set to " + tempSortStartTime + " with DOP " + d);
+        // Removed alert for smoother flow
+        showSaveToast();
         
         // Refresh dashboard to reflect any time-based changes
         renderDashboard();
@@ -1790,7 +1916,7 @@ v3.16:
 
     function saveAttributionSetting() {
         localStorage.setItem('ps9_attribution_config_v2', JSON.stringify(attributionConfig));
-        // alert('Attribution window saved!'); // Removed alert for smoother UX
+        showSaveToast();
     }
 
     function resetAttributionSetting() {
@@ -1935,8 +2061,7 @@ v3.16:
         door.unavailable = !door.unavailable;
         saveData();
         renderDashboard();
-        
-        // Removed alerts for smoother UX
+        showSaveToast();
     }
     
     // --- HANDLE TOGGLE FROM MODAL ---
@@ -1987,6 +2112,7 @@ v3.16:
             closeModal('input-modal'); 
             renderDashboard();
             updateTabBadges();
+            showSaveToast();
             pendingWallyDuplicate = null;
         }
     }
@@ -1995,6 +2121,7 @@ v3.16:
     function saveDOP(val) {
         currentDOP = val;
         localStorage.setItem('ps9_dop', currentDOP);
+        showSaveToast();
     }
     
     function openAddStaffModal() {
@@ -2053,6 +2180,7 @@ v3.16:
         closeModal('add-staff-modal');
         renderStaffingView();
         updateTabBadges();
+        showSaveToast();
     }
     
     function cutStaff(id) {
@@ -2074,6 +2202,7 @@ v3.16:
             saveData();
             renderStaffingView();
             updateTabBadges();
+            showSaveToast();
         }
     }
     
@@ -2121,6 +2250,7 @@ v3.16:
             saveData();
             renderStaffingView();
             closeModal('edit-staff-modal');
+            showSaveToast();
         }
     }
 
@@ -2177,9 +2307,6 @@ v3.16:
                     const currentSessionMs = now - s.start;
                     const currentSessionHours = currentSessionMs / 3600000;
                     
-                    // Simple confirm if hours > 0.5 to avoid annoying popups on quick changes
-                    // Or just do it silently as requested "move to new role"
-                    
                     // Add current session to accumulated BEFORE changing role
                     s.accumulated = (s.accumulated || 0) + currentSessionMs;
                     // Reset start time for the new role session
@@ -2188,6 +2315,7 @@ v3.16:
                     
                     saveData();
                     renderStaffingView();
+                    showSaveToast();
                     if(limitChanged) alert("Role limits enforced: Previous holder(s) moved to Unloader.");
                     
                 } else if(s.status === 'paused') {
@@ -2195,12 +2323,14 @@ v3.16:
                     s.role = newRole;
                     saveData();
                     renderStaffingView();
+                    showSaveToast();
                     if(limitChanged) alert("Role limits enforced.");
                 } else {
                     // For cut staff or other status, just change the role
                     s.role = newRole;
                     saveData();
                     renderStaffingView();
+                    showSaveToast();
                     if(limitChanged) alert("Role limits enforced.");
                 }
             }
@@ -2801,6 +2931,7 @@ v3.16:
         renderDashboard();
         renderActiveTab();
         updateTabBadges();
+        showSaveToast();
         
         if (demoActive && config.replenish) {
             setTimeout(() => { if (doors[doorNum].status === 'empty') randomArrival(doorNum); }, 7000);
@@ -3015,6 +3146,7 @@ v3.16:
         renderActiveTab(); 
         renderDashboard();
         updateTabBadges();
+        showSaveToast();
     }
 
     function checkCustomUnloader(select) {
@@ -3107,6 +3239,7 @@ v3.16:
         closeModal('input-modal'); 
         renderDashboard();
         updateTabBadges();
+        showSaveToast();
     }
     
     function openArrivalModal(specificDoor = null) {
@@ -3213,6 +3346,7 @@ v3.16:
         door.unavailable = !door.unavailable;
         saveData();
         renderDashboard();
+        showSaveToast();
     }
     
     // --- HANDLE TOGGLE FROM MODAL ---
@@ -3272,29 +3406,65 @@ v3.16:
     }
     
     function openFilterModal() {
+        // Populate door grid
         const g = document.getElementById('filter-grid');
-        g.innerHTML = `<div class="filter-btn ${currentLogFilter==='All'?'active':''}" onclick="applyFilter('All')">All</div>`;
-        for(let i=DOORS_START; i<=DOORS_END; i++) g.innerHTML += `<div class="filter-btn ${currentLogFilter==i?'active':''}" onclick="applyFilter(${i})">Door ${i}</div>`;
+        g.innerHTML = `<div class="filter-btn ${currentLogFilter==='All'?'active':''}" onclick="setLogFilter('All')">All</div>`;
+        for(let i=DOORS_START; i<=DOORS_END; i++) {
+             g.innerHTML += `<div class="filter-btn ${currentLogFilter==i?'active':''}" onclick="setLogFilter(${i})">Door ${i}</div>`;
+        }
+        
+        // Populate unloader dropdown if needed
+        const sel = document.getElementById('filter-unloader-select');
+        // This is handled by populateUnloaderSelect() on init but we ensure value is correct
+        if(sel) sel.value = activeLogFilter.unloader;
+        
+        // Reset or set date input
+        const dateInput = document.getElementById('filter-date-input');
+        if(activeLogFilter.date !== 'All') dateInput.value = activeLogFilter.date;
+        else dateInput.value = '';
+        
         document.getElementById('filter-modal').style.display='flex';
     }
     
-    function applyFilter(v) { 
-        currentLogFilter = v; 
-        activeLogFilter.door = v; 
+    function applyFilter() { 
+        // Door is set via setLogFilter immediately for UI feedback
+        // Unloader is read from select
+        const sel = document.getElementById('filter-unloader-select');
+        activeLogFilter.unloader = sel ? sel.value : 'All';
+        
+        // Date is read from input
+        const dateInput = document.getElementById('filter-date-input');
+        activeLogFilter.date = dateInput && dateInput.value ? dateInput.value : 'All';
+        
         closeModal('filter-modal'); 
         renderLogs(); 
     }
     
     function clearLogFilter() { 
         currentLogFilter = 'All'; 
-        activeLogFilter = { door: 'All', type: 'All', timeRange: 'All' }; 
+        activeLogFilter = { door: 'All', unloader: 'All', type: 'All', timeRange: 'All', search: '', date: 'All' }; 
+        document.getElementById('log-search').value = '';
         renderLogs(); 
     }
     
     function setLogFilter(v) { 
         currentLogFilter = v; 
-        activeLogFilter.door = v; 
-        renderLogs(); 
+        activeLogFilter.door = v;
+        // Re-render the grid to show active state
+        const g = document.getElementById('filter-grid');
+        if(g) {
+             const btns = g.getElementsByClassName('filter-btn');
+             for(let btn of btns) btn.classList.remove('active');
+             // This is a bit hacky to find the button by text content or index
+             // Simpler just to re-render in openFilterModal, but for immediate click feedback:
+             // We will just let applyFilter handle the actual log re-render
+        }
+        // Update styling in modal
+        const allBtns = document.querySelectorAll('#filter-grid .filter-btn');
+        allBtns.forEach(b => {
+             if(b.innerText === (v === 'All' ? 'All' : `Door ${v}`)) b.classList.add('active');
+             else b.classList.remove('active');
+        });
     }
     
     function toggleStats(section) {
@@ -3339,16 +3509,24 @@ v3.16:
         const list = document.getElementById('logs-list');
         const filterDisplay = document.getElementById('active-filter-display');
         const filterText = document.getElementById('filter-text-display');
+        
+        // Update search filter from input
+        const searchInput = document.getElementById('log-search');
+        if(searchInput) activeLogFilter.search = searchInput.value.trim().toUpperCase();
+
         const now = Date.now();
         list.innerHTML = '';
         
         // Use activeLogFilter state to decide if filtering
-        const isFiltering = activeLogFilter.door !== 'All' || activeLogFilter.type !== 'All' || activeLogFilter.timeRange !== 'All';
+        const isFiltering = activeLogFilter.door !== 'All' || activeLogFilter.type !== 'All' || activeLogFilter.timeRange !== 'All' || activeLogFilter.unloader !== 'All' || activeLogFilter.search !== '' || activeLogFilter.date !== 'All';
         
         if (isFiltering) { 
             filterDisplay.style.display = 'flex'; 
             let text = [];
+            if(activeLogFilter.date !== 'All') text.push(`Date: ${activeLogFilter.date}`);
             if(activeLogFilter.door !== 'All') text.push(`Door ${activeLogFilter.door}`);
+            if(activeLogFilter.unloader !== 'All') text.push(`${activeLogFilter.unloader}`);
+            if(activeLogFilter.search !== '') text.push(`"${activeLogFilter.search}"`);
             if(activeLogFilter.type !== 'All') text.push(`${activeLogFilter.type}`);
             if(activeLogFilter.timeRange === 'ThisHour') text.push(`This Hour`);
             if(activeLogFilter.timeRange === 'LastHour') text.push(`Last Hour`);
@@ -3363,10 +3541,35 @@ v3.16:
         let filtered = historyLog.map((l,i)=>({l,i}));
         
         filtered = filtered.filter(({l}) => {
+             // Date Filter
+             if (activeLogFilter.date !== 'All') {
+                 // Convert log timestamp to YYYY-MM-DD local time string manually or via Date object
+                 // Safest way: create a Date object from timestamp, get YYYY, MM, DD
+                 const logDate = new Date(l.end);
+                 const year = logDate.getFullYear();
+                 const month = String(logDate.getMonth() + 1).padStart(2, '0');
+                 const day = String(logDate.getDate()).padStart(2, '0');
+                 const logDateStr = `${year}-${month}-${day}`;
+                 
+                 if (logDateStr !== activeLogFilter.date) return false;
+             }
+             
              // Door Filter
              if (activeLogFilter.door !== 'All' && l.door != activeLogFilter.door) return false;
+             // Unloader Filter
+             if (activeLogFilter.unloader !== 'All' && l.unloader !== activeLogFilter.unloader) return false;
              // Type Filter
              if (activeLogFilter.type !== 'All' && l.type !== activeLogFilter.type) return false;
+             // Search Filter
+             if (activeLogFilter.search !== '') {
+                 const searchTerm = activeLogFilter.search;
+                 // Search in ID, Account, or Door
+                 if (!l.id.includes(searchTerm) && 
+                     !(l.account && l.account.includes(searchTerm)) &&
+                     l.door.toString() !== searchTerm) {
+                     return false;
+                 }
+             }
              // Time Filter
              if (activeLogFilter.timeRange !== 'All') {
                  const endTime = l.end - (l.statOffset || 0);
@@ -3542,6 +3745,7 @@ v3.16:
             const { shiftStart } = getShiftTimeWindows();
             const hourly = {};
             historyLog.forEach(l => {
+                if (l.type !== 'Wally') return; // FILTER ADDED
                 const effTime = l.end - (l.statOffset || 0);
                 const idx = Math.floor((effTime - shiftStart.getTime())/3600000) + 1;
                 if(!hourly[idx]) hourly[idx]=0; hourly[idx]++;
@@ -3549,7 +3753,7 @@ v3.16:
             const hourlyBody = Object.keys(hourly).sort((a,b)=>a-b).map(h => [getHourText(h), hourly[h]]);
             
             let finalY = doc.lastAutoTable.finalY + 15;
-            doc.text("Hourly Breakdown", 14, finalY);
+            doc.text("Hourly Breakdown (Wallies Only)", 14, finalY);
             doc.autoTable({
                 startY: finalY + 5,
                 head: [['Hour', 'Count']],
