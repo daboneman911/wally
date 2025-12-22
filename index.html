@@ -30,6 +30,7 @@
             --bay-green: #4cd964;
             --bay-purple: #bf5af2;
             --bay-orange: #ff9500;
+            --bay-red: #ff3b30;
             
             /* Safe Area Variables */
             --safe-top: max(env(safe-area-inset-top), 47px);
@@ -76,8 +77,8 @@
         /* --- BUTTONS & ACTIONS --- */
         .top-actions {
             display: flex;
-            gap: 15px;
-            padding: 15px 0 20px 0;
+            gap: 12px;
+            padding: 10px 0 20px 0;
             justify-content: center;
         }
 
@@ -85,15 +86,24 @@
             background: #000;
             color: white;
             border: none;
-            border-radius: 30px;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 50px; /* Streamlined Pill Shape */
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        
+        .action-btn:active {
+            transform: scale(0.96);
+        }
+        
+        .action-btn i {
+            font-size: 18px;
         }
 
         /* --- HEADER --- */
@@ -231,6 +241,7 @@
             transition: transform 0.1s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             position: relative;
+            box-sizing: border-box; /* Important for border */
         }
 
         .bay-circle:active { transform: scale(0.92); }
@@ -239,6 +250,7 @@
             background-color: #8e8e93 !important;
             opacity: 0.5;
             color: #666;
+            border: none !important;
         }
         
         .bay-circle.unavailable .bay-timer {
@@ -876,7 +888,7 @@
         <div class="dashboard-header">
             <h1 class="app-title">Wally Dashboard</h1>
             <div class="app-subtitle">by Fitz Joseph</div>
-            <div class="app-version">Version 3.26</div>
+            <div class="app-version">Version 3.27</div>
         </div>
 
         <div class="section-title">Sort Statistics</div>
@@ -1571,13 +1583,17 @@
     let isFirstOnboard = false;
     
     // --- CONFIG ---
-    const APP_VERSION = '3.26';
+    const APP_VERSION = '3.27';
     const DOORS_START = 9;
     const DOORS_END = 16;
     const DEFAULT_TEAM = ["David F", "Lorena R", "Matt R", "Matt S", "Robert W", "Trevon C", "Victor M", "Russell H", "Fonseca J"];
     
     // --- CHANGELOG ---
     const CHANGELOG = `
+v3.27:
+- New streamlined action buttons (compact pills).
+- Color-coded status rings for active bays (Green < 45m, Red > 60m).
+
 v3.26:
 - Dynamic search in Logs (filters as you type).
 
@@ -2987,6 +3003,17 @@ v3.16:
                 badge.className = d.type === 'Wally' ? 'type-badge badge-w' : 'type-badge badge-c';
                 badge.innerText = d.type === 'Wally' ? 'W' : 'C';
                 btn.appendChild(badge);
+                
+                // Color Coded Ring Logic
+                if (d.start > 0) {
+                     const duration = (Date.now() - d.start) / 60000;
+                     let borderColor = '#34c759'; // Green default < 45m
+                     if (duration > 60) borderColor = '#ff3b30'; // Red > 60m
+                     else if (duration > 45) borderColor = '#ff9500'; // Orange > 45m
+                     
+                     btn.style.border = `4px solid ${borderColor}`;
+                }
+                
                 btn.onclick = () => openActiveDetails(i);
                 activeTrailersGrid.appendChild(btn);
             } else {
@@ -3451,22 +3478,8 @@ v3.16:
     
     function setLogFilter(v) { 
         currentLogFilter = v; 
-        activeLogFilter.door = v;
-        // Re-render the grid to show active state
-        const g = document.getElementById('filter-grid');
-        if(g) {
-             const btns = g.getElementsByClassName('filter-btn');
-             for(let btn of btns) btn.classList.remove('active');
-             // This is a bit hacky to find the button by text content or index
-             // Simpler just to re-render in openFilterModal, but for immediate click feedback:
-             // We will just let applyFilter handle the actual log re-render
-        }
-        // Update styling in modal
-        const allBtns = document.querySelectorAll('#filter-grid .filter-btn');
-        allBtns.forEach(b => {
-             if(b.innerText === (v === 'All' ? 'All' : `Door ${v}`)) b.classList.add('active');
-             else b.classList.remove('active');
-        });
+        activeLogFilter.door = v; 
+        renderLogs(); 
     }
     
     function toggleStats(section) {
